@@ -4,7 +4,7 @@
     <!-- Contenido principal centrado -->
     <div class="container mt-4">
         <div class="text-center">
-            <h2 class="mb-4">Mis Pokémon Registrados</h2>
+            <h2 class="mb-4">Pokémon Registrados</h2>
             <router-link class="btn btn-primary btn-lg" to="/create-pokemon">Crear Pokémon</router-link>
             <div class="row">
               <template v-for="pokemon in listPokes" :key="pokemon.id">
@@ -34,10 +34,9 @@
 
 <script>
   import axios from 'axios';
-  import { jwtDecode } from 'jwt-decode';
 
   export default {
-      name: 'ViewEditPokemons',
+      name: 'ViewPokemonPublic',
       data() {
           return {
               listPokes: [],
@@ -45,34 +44,25 @@
           };
       },
       methods: {
-        async getPokes() {
-
-          const token = localStorage.getItem('token');
-          if (!token) {
-            throw new Error('El usuario no está autenticado');
-          }
-
-          const decodedToken = jwtDecode(token);
-          const userId = decodedToken.userId;
-    
-          axios.get('http://localhost:4000/api/pokemon/pokes-user/'+userId)
-              .then(
-              response => {
-                  this.listPokes = response.data;
-                  //console.log(response.data);
+          async getPokes() {
+      
+              axios.get('http://localhost:4000/api/pokemon/pokes-home')
+                  .then(
+                  response => {
+                      this.listPokes = response.data.data;
+                      //console.log(response.data);
+                  }
+                  ).catch(
+                  error => console.error('Error:', error)
+                  );
+              
               }
-              ).catch(
-              error => console.error('Error:', error)
-              );
-          
-          }
-        },
-        mounted() {
-            this.getPokes();
-        }
+      },
+      mounted() {
+          this.getPokes();
+      }
   };
 </script>
-
 
 <style scoped>
   .container {

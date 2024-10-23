@@ -1,6 +1,6 @@
 <!-- src/components/AppNavbar.vue -->
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light navbar-container">
         <div class="container-fluid">
             <a class="navbar-brand" >
                 <router-link class="nav-link" to="/">Home</router-link>
@@ -21,27 +21,59 @@
                         <router-link class="nav-link" to="/perfil">Perfil</router-link>
                     </li>
                 </ul>
-                <button class="btn btn-outline-danger" @click="logout">Logout</button>
+                
+                <!-- Botón de cerrar sesión -->
+                <ul class="navbar-nav">
+                  <li class="nav-item" v-if="isAuthenticated">
+                    <button class="btn btn-danger" @click="logout">Cerrar sesión</button>
+                  </li>
+                </ul>
+
+                <!-- Botón de iniciar sesión si no está autenticado -->
+                <ul class="navbar-nav">
+                  <li class="nav-item" v-if="!isAuthenticated">
+                    <router-link class="btn btn-primary" to="/login">Iniciar sesión</router-link>
+                  </li>
+                </ul>
             </div>
         </div>
     </nav>
 </template>
 
 <script>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import authService from '@/services/authService'
+
 export default {
-    name: 'AppNavbar',
-    methods: {
-        logout() {
-            // Lógica para cerrar sesión
-            alert('Cerrando sesión...');
-        }
+  setup() {
+    const router = useRouter()
+
+    // Observar el estado reactivo de isAuthenticated desde el servicio
+    const isAuthenticated = computed(() => authService.getAuthStatus().isAuthenticated)
+
+    // Función para cerrar sesión
+    const logout = () => {
+      authService.logout()
+      router.push('/login')
     }
-};
+
+    return {
+      isAuthenticated,
+      logout
+    }
+  }
+}
 </script>
 
 <style>
-nav {
-    display: flex;
-    gap: 10px;
-}
+  .navbar-container {
+      max-width: 1200px;  /* Ancho máximo */
+      margin: 0 auto;     /* Centrado */
+      padding: 1rem 0;    /* Añadir espaciado superior/inferior */
+  }
+
+  .btn {
+    margin-left: 10px;
+  }
 </style>

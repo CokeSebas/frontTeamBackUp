@@ -37,7 +37,7 @@
             </form>
             <div class="mt-3 text-center">
               <a href="#" class="d-block">¿Olvidaste tu contraseña?</a>
-              <router-link to="/register" class="d-block mt-2">
+              <router-link to="/create-account" class="d-block mt-2">
                 Crear una cuenta nueva
               </router-link>
             </div>

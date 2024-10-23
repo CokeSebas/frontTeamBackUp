@@ -56,6 +56,7 @@ IVs: 0 Atk
   import axios from 'axios';
   import { useRouter } from 'vue-router';
   import { isAuthenticated } from '../services/isAuthenticated';
+  import Swal from 'sweetalert2';
 
   import { jwtDecode } from 'jwt-decode';
 
@@ -96,8 +97,19 @@ IVs: 0 Atk
         },
       });
 
-      localStorage.removeItem('formPokemon');
-      console.log('Formulario guardado con éxito', response.data);
+      Swal.fire({
+        title: 'Registrar Pokemon',
+        text: response.data.salida.message,
+        icon: 'success', // Tipos: 'success', 'error', 'warning', 'info', 'question'
+        //confirmButtonText: 'Aceptar'
+      });
+      
+      setTimeout(() => {
+        localStorage.removeItem('formPokemon');
+        console.log('Formulario guardado con éxito', response.data);
+        const redirectTo = router.currentRoute.value.query.redirect || '/'; 
+        router.push(redirectTo);
+      }, 1500);
     } catch (error) {
       console.error(error);
     }

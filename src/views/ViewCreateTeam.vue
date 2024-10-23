@@ -64,6 +64,7 @@
   import axios from 'axios';
   import { useRouter } from 'vue-router';
   import { isAuthenticated } from '../services/isAuthenticated';
+  import Swal from 'sweetalert2';
 
   import { jwtDecode } from 'jwt-decode';
 
@@ -121,10 +122,23 @@
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });      
+      });
       
-      localStorage.removeItem('formTeam');
-      console.log('Formulario guardado con éxito', response.data);
+      Swal.fire({
+        title: 'Registrar Eqipo',
+        text: response.data.salida.message,
+        icon: 'success', // Tipos: 'success', 'error', 'warning', 'info', 'question'
+        //confirmButtonText: 'Aceptar'
+      });
+      
+      setTimeout(() => {
+        localStorage.removeItem('formTeam');
+        console.log('Formulario guardado con éxito', response.data);
+        const redirectTo = router.currentRoute.value.query.redirect || '/'; 
+        router.push(redirectTo);
+      }, 1500);
+      
+      
     } catch (error) {
       console.error('Error al guardar el formulario:', error);
     }

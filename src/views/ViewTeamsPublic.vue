@@ -4,7 +4,7 @@
         <!-- Contenido principal centrado -->
         <div class="container mt-4">
             <div class="text-center">
-                <h2 class="mb-4">Mis Equipos Registrados</h2>
+                <h2 class="mb-4">Equipos Registrados</h2>
                 <router-link class="btn btn-primary btn-lg" to="/create-team">Crear Equipo</router-link>
                 
                 <div class="row">
@@ -29,8 +29,7 @@
 </template>
 
 <script>
-  import axios from 'axios';
-  import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
   export default {
     name: 'ViewTeamsPublic',
     data() {
@@ -41,15 +40,7 @@
     methods: {
       async getTeams() {
 
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('El usuario no está autenticado');
-        }
-
-        const decodedToken = jwtDecode(token);
-        const userId = decodedToken.userId;
-
-        axios.get('http://localhost:4000/api/teams/teams-user/'+userId)
+        axios.get('http://localhost:4000/api/teams/')
           .then(
           response => {
               this.listTeams = response.data.data;

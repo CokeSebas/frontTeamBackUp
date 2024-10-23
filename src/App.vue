@@ -2,6 +2,7 @@
 <template>
   <div id="app">
     <AppNavbar />
+    <MyAppBreadcrumbs /> <!-- Cambiado aquí -->
     <router-view />
     
   </div>
@@ -9,11 +10,13 @@
 
 <script>
 import AppNavbar from './components/AppNavbar.vue';
+import MyAppBreadcrumbs from './components/AppBreadcrumbs.vue'; // Cambiado aquí
 
 export default {
   name: 'App',
   components: {
-    AppNavbar
+    AppNavbar,
+    MyAppBreadcrumbs // Cambiado aquí
   }
 };
 </script>
