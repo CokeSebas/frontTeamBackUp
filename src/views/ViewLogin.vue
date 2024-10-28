@@ -84,7 +84,7 @@ export default {
         passwordHash: password.value,
       };
 
-      axios.post("http://localhost:4000/api/users/login", datos)
+      axios.post(this.apiUrl + "api/users/login", datos)
         .then(response => {
           if (response.data.code == 200) {
             Swal.fire({

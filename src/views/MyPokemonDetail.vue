@@ -164,7 +164,7 @@
         let { pasteSd, namePoke, moves, ivs, evs, ...filteredPokemon } = this.pokemon;
 
         try {
-          const response = await axios.post(`http://localhost:4000/api/pokemon/edit/${this.id}`, filteredPokemon, {
+          const response = await axios.post(`${this.apiUrl}api/pokemon/edit/${this.id}`, filteredPokemon, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }

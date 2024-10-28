@@ -181,7 +181,7 @@
         }
 
         try {
-          const response = await axios.post(`http://localhost:4000/api/users/edit/password/${userId}`, {
+          const response = await axios.post(`${apiUrl}api/users/edit/password/${userId}`, {
             currentPassword: currentPassword.value,
             newPassword: newPassword.value,
           });

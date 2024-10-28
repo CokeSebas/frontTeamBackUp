@@ -183,7 +183,7 @@
           let { url_json, pokemons,  ...filteredTeam } = this.team;
 
           try {
-            const response = await axios.post(`http://localhost:4000/api/teams/edit/${this.id}`, filteredTeam, {
+            const response = await axios.post(`${this.apiUrl}api/teams/edit/${this.id}`, filteredTeam, {
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
               }
