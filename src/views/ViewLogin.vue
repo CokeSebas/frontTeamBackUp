@@ -58,7 +58,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';  // Importa `ref` para variables reactivas
+import { inject,ref } from 'vue';  // Importa `ref` para variables reactivas
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -70,6 +70,7 @@ export default {
   setup() {
     const router = useRouter();
     const authStore = useAuthStore();
+    const apiUrl = inject('apiUrl'); // Obtén la variable inyectada
 
     // Definir variables reactivas
     const email = ref('');
@@ -84,7 +85,7 @@ export default {
         passwordHash: password.value,
       };
 
-      axios.post(this.apiUrl + "api/users/login", datos)
+      axios.post(apiUrl + "api/users/login", datos)
         .then(response => {
           if (response.data.code == 200) {
             Swal.fire({
