@@ -6,7 +6,14 @@
         <div class="text-center">
             <h2 class="mb-4">Pokémon Registrados</h2>
             <router-link class="btn btn-primary btn-lg" to="/create-pokemon">Crear Pokémon</router-link>
-            <div class="row">
+            
+            <!-- Mostrar el div de carga si está cargando -->
+            <div v-if="isLoading" style="align-items: center; display: flex; justify-content: center;">
+              <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+            </div>
+
+            <!-- Mostrar la lista de Pokémon si ya no está cargando -->
+            <div v-else class="row">
               <template v-for="pokemon in listPokes" :key="pokemon.id">
                 <div class="col-md-4">
                   <!-- Tarjeta de Pokémon registrada -->
@@ -20,7 +27,7 @@
                       <p class="card-text">
                         Items: {{ pokemon.item }}
                       </p>
-                      <router-link class="btn btn-outline-primary btn-sm" :to="'/pokemon/' + pokemon.id">Ver Pokemon</router-link>
+                      <router-link class="btn btn-outline-primary btn-sm" :to="'/pokemon/' + pokemon.id">Ver Pokémon</router-link>
                     </div>
                   </div>
                 </div>
@@ -31,11 +38,11 @@
   </div>
 </template>
 
-
 <script>
   import axios from 'axios';
 
   export default {
+    inject: ['apiUrl'],
       name: 'ViewPokemonPublic',
       data() {
           return {
@@ -45,18 +52,21 @@
       },
       methods: {
           async getPokes() {
-      
-              axios.get('http://localhost:4000/api/pokemon/pokes-home')
+              this.isLoading = true; // Activar el estado de carga
+              
+              axios.get(this.apiUrl+'pokemon/pokes-home')
                   .then(
                   response => {
                       this.listPokes = response.data.data;
-                      //console.log(response.data);
+                      this.isLoading = false; // Desactivar el estado de carga cuando termina
                   }
                   ).catch(
-                  error => console.error('Error:', error)
+                  error => {
+                      console.error('Error:', error);
+                      this.isLoading = false; // Desactivar el estado de carga si hay un error
+                  }
                   );
-              
-              }
+          }
       },
       mounted() {
           this.getPokes();
@@ -67,5 +77,10 @@
 <style scoped>
   .container {
       margin-top: 50px;
+  }
+
+  .spinner-border {
+      width: 3rem;
+      height: 3rem;
   }
 </style>

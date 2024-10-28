@@ -60,15 +60,21 @@
 </template>
 
 <script setup>
-  import { reactive, ref, onMounted } from 'vue'; // Asegúrate de importar ref y onMounted
+  import { inject, reactive, ref, onMounted } from 'vue';
   import axios from 'axios';
   import { useRouter } from 'vue-router';
-  import { isAuthenticated } from '../services/isAuthenticated';
   import Swal from 'sweetalert2';
-
   import { jwtDecode } from 'jwt-decode';
+  
+
+
+  // Importar el store de autenticación de Pinia
+  import { useAuthStore } from '@/stores/authStore';
 
   const router = useRouter();
+  const authStore = useAuthStore(); // Instancia del store
+
+  const apiUrl = inject('apiUrl'); // Ahora tienes acceso a apiUrl
 
   const team = reactive({
     team_name: '',
@@ -87,20 +93,16 @@
   const formats = ref([]);
 
   async function fetchFormats() {
-    
-    axios.get('http://localhost:4000/api/formats')
-    .then(
-      response => {
-        formats.value = response.data;
-      }
-    ).catch(
-      error => console.error('Error:', error)
-    );
+    try {
+      const response = await axios.get(apiUrl+'formats');
+      formats.value = response.data;
+    } catch (error) {
+      console.error('Error al obtener formatos:', error);
+    }
   }
 
   async function saveTeam() {
-
-    if (!isAuthenticated.value) {
+    if (!authStore.isAuthenticated) {
       localStorage.setItem('formTeam', JSON.stringify(team)); // Almacena el equipo en localStorage
       const currentUrl = router.currentRoute.value.fullPath; // Obtiene la URL actual
 
@@ -108,7 +110,7 @@
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = authStore.token; // Obtener el token desde el store
     if (!token) {
       throw new Error('El usuario no está autenticado');
     }
@@ -117,33 +119,26 @@
     team.user_id = decodedToken.userId;
     
     try {
-
-      const response = await axios.post('http://localhost:4000/api/teams', team, {
+      const response = await axios.post(apiUrl+'teams', team, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       Swal.fire({
-        title: 'Registrar Eqipo',
+        title: 'Registrar Equipo',
         text: response.data.salida.message,
-        icon: 'success', // Tipos: 'success', 'error', 'warning', 'info', 'question'
-        //confirmButtonText: 'Aceptar'
+        icon: 'success',
       });
       
       setTimeout(() => {
         localStorage.removeItem('formTeam');
-        console.log('Formulario guardado con éxito', response.data);
-        const redirectTo = router.currentRoute.value.query.redirect || '/'; 
+        const redirectTo = router.currentRoute.value.query.redirect || '/';
         router.push(redirectTo);
       }, 1500);
-      
-      
     } catch (error) {
-      console.error('Error al guardar el formulario:', error);
+      console.error('Error al guardar el equipo:', error);
     }
-    
-
   }
 
   onMounted(() => {
@@ -151,10 +146,9 @@
 
     const storedData = JSON.parse(localStorage.getItem('formTeam'));
     if (storedData) {
-      Object.assign(team, storedData); // Rellena los datos del formulario
+      Object.assign(team, storedData); // Rellena los datos del formulario si están guardados
     }
   });
-
 </script>
 
 <style scoped>
@@ -173,7 +167,7 @@
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 800px; /* Ajusta este valor según el ancho máximo deseado */
+  max-width: 800px;
 }
 
 h2 {
@@ -224,6 +218,6 @@ input[type="checkbox"] {
 }
 
 .form-group-inline label {
-  margin-right: 0.5rem; /* Espacio entre la etiqueta y el checkbox */
+  margin-right: 0.5rem;
 }
 </style>

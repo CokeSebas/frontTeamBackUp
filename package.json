@@ -12,6 +12,7 @@
     "bootstrap": "^5.3.3",
     "core-js": "^3.8.3",
     "jwt-decode": "^4.0.0",
+    "pinia": "^2.2.4",
     "sweetalert2": "^11.14.3",
     "vue": "^3.2.13",
     "vue-router": "^4.4.5"

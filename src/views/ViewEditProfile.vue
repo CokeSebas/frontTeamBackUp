@@ -5,21 +5,74 @@
       <div class="col-8">
         <div class="user-profile">
           <h1>Perfil de Usuario</h1>
-          
-          <div v-if="loading">Cargando...</div>
+
+          <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
+            <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+          </div>
           <div v-if="error">{{ error }}</div>
-          
+
           <div v-if="user">
-            <div class="row">
-              <div class="col-6">
-                <img :src="user.avatarUrl" alt="User Image" style="width: 50%;" />
+            <div class="row align-items-center">
+              <!-- Columna para la imagen del usuario -->
+              <div class="col-4 text-center">
+                <img :src="user.avatarUrl" alt="User Image" style="width: 80%;" />
               </div>
-              <div class="col-6">
-                <p><strong>Nombre:</strong> {{ user.name }}</p>
-                <p><strong>Apellidos:</strong> {{ user.lastName }}</p>
-                <p><strong>Nickname:</strong> {{ user.nickName }}</p>
-                <p><strong>Email:</strong> {{ user.email }}</p>
-              </div>  
+
+              <!-- Columna para los datos del usuario -->
+              <div class="col-8">
+                <div class="form-group row">
+                  <label class="col-4 col-form-label"><strong>Nombre:</strong></label>
+                  <div class="col-8">
+                    <input v-if="isEditing" type="text" v-model="editedUser.name" class="form-control"/>
+                    <p v-else>{{ user.name }}</p>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-4 col-form-label"><strong>Apellidos:</strong></label>
+                  <div class="col-8">
+                    <input v-if="isEditing" type="text" v-model="editedUser.lastName" class="form-control"/>
+                    <p v-else>{{ user.lastName }}</p>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-4 col-form-label"><strong>Nickname:</strong></label>
+                  <div class="col-8">
+                    <input v-if="isEditing" type="text" v-model="editedUser.nickName" class="form-control"/>
+                    <p v-else>{{ user.nickName }}</p>
+                  </div>
+                </div>
+                <div v-if="isEditing" class="form-group row">
+                  <label class="col-4 col-form-label"><strong>Avatar URL:</strong></label>
+                  <div class="col-8">
+                    <input v-if="isEditing" type="text" v-model="editedUser.avatarUrl" class="form-control"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones para guardar y cancelar solo visibles en modo edición -->
+            <div v-if="isEditing" class="mt-3">
+              <button class="btn btn-success" @click="saveChanges">Guardar Cambios</button>
+              <button class="btn btn-secondary" @click="cancelEdit">Cancelar</button>
+            </div>
+
+            <!-- Formulario para cambiar la contraseña -->
+            <div v-if="showChangePasswordForm" class="mt-4">
+              <h3>Cambiar Contraseña</h3>
+              <div class="form-group">
+                <label for="currentPassword">Contraseña Actual:</label>
+                <input type="password" v-model="currentPassword" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="newPassword">Nueva Contraseña:</label>
+                <input type="password" v-model="newPassword" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirmar Nueva Contraseña:</label>
+                <input type="password" v-model="confirmPassword" class="form-control" />
+              </div>
+              <button class="btn btn-primary" @click="changePassword">Cambiar Contraseña</button>
+              <button class="btn btn-secondary" @click="cancelChangePassword">Cancelar</button>
             </div>
           </div>
         </div>
@@ -31,8 +84,8 @@
           <h2>Acciones</h2>
           <button class="btn btn-primary btn-block mb-2" @click="goToTeams">Mis Equipos</button>
           <button class="btn btn-primary btn-block mb-2" @click="goToPokemons">Mis Pokémon</button>
-          <button class="btn btn-secondary btn-block mb-2" @click="updateProfile">Actualizar Datos</button>
-          <button class="btn btn-secondary btn-block" @click="changePassword">Cambiar Contraseña</button>
+          <button class="btn btn-secondary btn-block mb-2" @click="enableEdit">Actualizar Datos</button>
+          <button class="btn btn-secondary btn-block" @click="showChangePasswordForm = true">Cambiar Contraseña</button>
         </div>
       </div>
     </div>
@@ -41,18 +94,27 @@
 
 
 <script>
-  import { ref, onMounted } from 'vue'
+  import { inject, ref, onMounted } from 'vue';
   import { jwtDecode } from 'jwt-decode';
   import axios from 'axios';
-  import { useRouter } from 'vue-router'
+  import { useRouter } from 'vue-router';
+  import Swal from 'sweetalert2';
 
   export default {
     name: 'UserProfile',
-   setup() {
-    const user = ref(null)
-    const loading = ref(true)
-    const error = ref(null)
-    const router = useRouter()
+    setup() {
+      const user = ref(null);
+      const editedUser = ref(null);
+      const loading = ref(true);
+      const error = ref(null);
+      const isEditing = ref(false);
+      const showChangePasswordForm = ref(false);
+      const currentPassword = ref('');
+      const newPassword = ref('');
+      const confirmPassword = ref('');
+      const router = useRouter();
+
+      const apiUrl = inject('apiUrl'); // Ahora tienes acceso a apiUrl
 
       const token = localStorage.getItem('token');
       if (!token) {
@@ -64,33 +126,117 @@
       
       // Cargar los datos del usuario al montar el componente
       onMounted(async () => {
+        console.log(apiUrl+'users/' + userId);
         try {
-          const response = await axios.get('http://localhost:4000/api/users/'+userId)  // Suponiendo que esta es la ruta para obtener los datos del perfil del usuario
+          const response = await axios.get(apiUrl+'users/' + userId);
           user.value = response.data[0].data;
+          editedUser.value = { ...user.value }; // Hacer una copia editable
         } catch (err) {
-          error.value = 'Error al cargar el perfil'
+          error.value = 'Error al cargar el perfil';
         } finally {
-          loading.value = false
+          loading.value = false;
         }
-      })
+      });
+
+      // Habilitar modo edición
+      const enableEdit = () => {
+        isEditing.value = true;
+      };
+
+      // Cancelar edición
+      const cancelEdit = () => {
+        isEditing.value = false;
+        editedUser.value = { ...user.value }; // Restablecer los valores originales
+      };
+
+      // Guardar cambios
+      const saveChanges = async () => {
+        try {
+          const response = await axios.post(this.apiUrl+'users/edit/' + userId, editedUser.value);
+          user.value = { ...editedUser.value }; // Actualizar los datos del usuario en la vista
+          isEditing.value = false;
+
+          // Mostrar una notificación de éxito
+          Swal.fire({
+            icon: 'success',
+            title: 'Datos actualizadas con éxito',
+            text: response.data.message,
+            showConfirmButton: false,
+            timer: 1500
+          });
+        } catch (err) {
+          error.value = 'Error al actualizar el perfil';
+        }
+      };
+
+      // Cambiar contraseña
+      const changePassword = async () => {
+        if (newPassword.value !== confirmPassword.value) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Las contraseñas no coinciden.',
+          });
+          return;
+        }
+
+        try {
+          const response = await axios.post(`http://localhost:4000/api/users/edit/password/${userId}`, {
+            currentPassword: currentPassword.value,
+            newPassword: newPassword.value,
+          });
+
+          // Mostrar notificación de éxito
+          Swal.fire({
+            icon: 'success',
+            title: 'Contraseña cambiada',
+            text: response.data.message,
+            showConfirmButton: false,
+            timer: 1500
+          });
+
+          // Restablecer los campos
+          currentPassword.value = '';
+          newPassword.value = '';
+          confirmPassword.value = '';
+          showChangePasswordForm.value = false;
+        } catch (err) {
+          error.value = 'Error al cambiar la contraseña';
+        }
+      };
+
+      // Cancelar el formulario de cambio de contraseña
+      const cancelChangePassword = () => {
+        showChangePasswordForm.value = false;
+        currentPassword.value = '';
+        newPassword.value = '';
+        confirmPassword.value = '';
+      };
 
       // Navegación a otras vistas
-      const goToTeams = () => router.push('/my-teams/'+userId)
-      const goToPokemons = () => router.push('/my-pokemons/'+userId)
-      const updateProfile = () => router.push('/update-profile')  // Vista para actualizar datos
-      const changePassword = () => router.push('/change-password')  // Vista para cambiar contraseña
+      const goToTeams = () => router.push('/my-teams/' + userId);
+      const goToPokemons = () => router.push('/my-pokemons/' + userId);
 
       return {
         user,
+        editedUser,
         loading,
         error,
+        isEditing,
+        showChangePasswordForm,
+        currentPassword,
+        newPassword,
+        confirmPassword,
+        enableEdit,
+        cancelEdit,
+        saveChanges,
+        changePassword,
+        cancelChangePassword,
         goToTeams,
         goToPokemons,
-        updateProfile,
-        changePassword
-      }
+      };
     }
-  }
+  };
 </script>
 
 <style scoped>
@@ -113,4 +259,17 @@
   .btn-block {
     width: 100%;
   }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .col-form-label {
+    text-align: right;
+  }
+
+  input[type="text"], input[type="email"] {
+    width: 100%;
+  }
 </style>
+

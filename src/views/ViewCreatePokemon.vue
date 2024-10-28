@@ -52,15 +52,18 @@ IVs: 0 Atk
 </template>
 
 <script setup>
-  import { reactive, onMounted } from 'vue'; // Asegúrate de importar ref y onMounted
+  import { inject, reactive, onMounted } from 'vue'; // Asegúrate de importar ref y onMounted
   import axios from 'axios';
   import { useRouter } from 'vue-router';
-  import { isAuthenticated } from '../services/isAuthenticated';
   import Swal from 'sweetalert2';
-
   import { jwtDecode } from 'jwt-decode';
+  const apiUrl = inject('apiUrl'); // Ahora tienes acceso a apiUrl
+
+  // Importar el store de autenticación de Pinia
+  import { useAuthStore } from '@/stores/authStore';
 
   const router = useRouter();
+  const authStore = useAuthStore(); // Instancia del store
 
   const pokemon = reactive({
     paste_sd: '',
@@ -74,7 +77,7 @@ IVs: 0 Atk
 
   async function createPokemon() {
 
-    if (!isAuthenticated.value) {
+    if (!authStore.isAuthenticated) {
       localStorage.setItem('formPokemon', JSON.stringify(pokemon)); // Almacena el pokemon en localStorage
       const currentUrl = router.currentRoute.value.fullPath; // Obtiene la URL actual
 
@@ -82,7 +85,7 @@ IVs: 0 Atk
       return;  
     }
 
-    const token = localStorage.getItem('token');
+    const token = authStore.token;
     if (!token) {
       throw new Error('El usuario no está autenticado');
     }
@@ -91,7 +94,7 @@ IVs: 0 Atk
     pokemon.user_id = decodedToken.userId;
 
     try {
-      const response = await axios.post('http://localhost:4000/api/pokemon', pokemon, {
+      const response = await axios.post(apiUrl+'pokemon', pokemon, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -106,7 +109,6 @@ IVs: 0 Atk
       
       setTimeout(() => {
         localStorage.removeItem('formPokemon');
-        console.log('Formulario guardado con éxito', response.data);
         const redirectTo = router.currentRoute.value.query.redirect || '/'; 
         router.push(redirectTo);
       }, 1500);

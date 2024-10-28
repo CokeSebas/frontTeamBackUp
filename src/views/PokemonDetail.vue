@@ -19,7 +19,7 @@
               <div class="pokemon-header text-center"> <!-- Contenido del Pokémon centrado -->
                 <img :src="pokemon.urlImage	" alt="Pokemon Image" class="pokemon-image" />
                 <div class="pokemon-info">
-                  <h4>{{ pokemon.name }} <span v-if="pokemon.item"> @ {{ pokemon.item }}</span></h4>
+                  <h4>{{ pokemon.namePoke }} <span v-if="pokemon.item"> @ {{ pokemon.item }}</span></h4>
                   <p style="margin-bottom: 0;"><strong>Ability:</strong> {{ pokemon.ability }}</p>
                   <p style="margin-bottom: 0;"><strong>Level:</strong> {{ pokemon.level }}</p>
                   <p style="margin-bottom: 0;"><strong>Tera Type:</strong> {{ pokemon.teraType }}</p>
@@ -41,10 +41,10 @@
         <div class="col-md-6">
 
           <button class="btn btn-primary" @click="copyText">Copiar paste</button>
-          
-          <p v-if="pokemon.spreadUse">{{ pokemon.spreadUse }}</p>
-          <p v-if="pokemon.teamMates">{{ pokemon.teamMates}}</p>
-          <p v-if="pokemon.calculosPrincipales">{{ pokemon.calculosPrincipales }}</p>  
+          <p></p>
+          <p v-if="pokemon.spreadUse"><strong>Uso de Spread: </strong> {{ pokemon.spreadUse }}</p>
+          <p v-if="pokemon.teamMates"><strong>Compañeros de equipo: </strong> {{ pokemon.teamMates}}</p>
+          <p v-if="pokemon.calculosPrincipales"><strong>Calculos principales: </strong> {{ pokemon.calculosPrincipales }}</p>  
         </div>
       </div>
     </div>
@@ -56,6 +56,7 @@
   import axios from 'axios';
 
   export default {
+    inject: ['apiUrl'],
     name: 'PokemonDetail',
     props: {
       id: {
@@ -74,7 +75,7 @@
       async getPokeDetail() {
         this.isLoading = true;
         try {
-          const response = await axios.get('http://localhost:4000/api/pokemon/'+this.id);
+          const response = await axios.get(this.apiUrl+'pokemon/'+this.id);
           this.pokemon = response.data[0];
         } catch (err) {
           console.log(err);

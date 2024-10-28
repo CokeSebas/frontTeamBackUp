@@ -4,19 +4,27 @@
     <AppNavbar />
     <MyAppBreadcrumbs /> <!-- Cambiado aquí -->
     <router-view />
-    
+    <Footer /> 
   </div>
 </template>
 
 <script>
 import AppNavbar from './components/AppNavbar.vue';
 import MyAppBreadcrumbs from './components/AppBreadcrumbs.vue'; // Cambiado aquí
+import Footer from './components/AppFooter.vue'; // Ajusta la ruta si es necesario
+
+import { API_URL } from '@/config/config';
+
 
 export default {
   name: 'App',
   components: {
     AppNavbar,
-    MyAppBreadcrumbs // Cambiado aquí
+    MyAppBreadcrumbs,
+    Footer
+  },
+  provide: {
+    apiUrl: API_URL
   }
 };
 </script>

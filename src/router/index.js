@@ -1,30 +1,34 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore'; // Importa el store de autenticación de Pinia
 
 // Importa los componentes correspondientes
 import HomeView from '@/views/HomeView.vue';
 import ViewEditProfile from '@/views/ViewEditProfile.vue';
 import ViewTeamsPublic from '@/views/ViewTeamsPublic.vue';
-import ViewEditTeams from '@/views/ViewEditTeams.vue';
+import ViewMyTeams from '@/views/ViewMyTeams.vue';
 import ViewPokemonPublic from '@/views/ViewPokemonsPublic.vue';
-import ViewEditPokemons from '@/views/ViewEditPokemons.vue';
+import ViewMyPokemons from '@/views/ViewMyPokemons.vue';
 import TeamDetail from '@/views/TeamDetail.vue';
 import PokemonDetail from '@/views/PokemonDetail.vue';
 import ViewCreateTeam from '@/views/ViewCreateTeam.vue';
 import ViewCreatePokemon from '@/views/ViewCreatePokemon.vue';
 import LoginPage from '@/views/ViewLogin.vue';
-import { isAuthenticated } from '../services/isAuthenticated';
 import ViewCreateAccount from '@/views/ViewCreateAccount.vue';
 
+import ViewEditTeamDetail from '@/views/MyTeamDetail.vue';
+import ViewEditPokemonDetail from '@/views/MyPokemonDetail.vue';
 
-console.log('isAuthenticated '+isAuthenticated.value);
+import ViewVerifyAccount from '@/views/VerifyAccount.vue';
+
+import ViewForgotPassword from '@/views/ViewForgotPassword.vue';
+import ViewResetPassword from '@/views/ViewRecuperarPassword.vue';
 
 // Define las rutas
 const routes = [
   {
-    path: '/', // Ruta principal
+    path: '/',
     name: 'Home',
-    component: HomeView, // Componente que se va a renderizar para esta ruta
+    component: HomeView,
   },
   {
     path: '/login',
@@ -34,178 +38,241 @@ const routes = [
       title: 'Login',
       breadcrumb: {
         text: 'Home',
-        link: '/'
-      } 
-    }
+        link: '/',
+      },
+    },
   },
   {
     path: '/create-team',
     name: 'ViewCreateTeam',
     component: ViewCreateTeam,
-    meta:{
+    meta: {
       title: 'Crear Equipo',
       breadcrumb: {
         text: 'Equipos',
-        link: '/teams'
-      }
-    }
+        link: '/teams',
+      },
+    },
   },
   {
     path: '/create-pokemon',
     name: 'ViewCreatePokemon',
     component: ViewCreatePokemon,
-    meta:{
+    meta: {
       title: 'Crear Pokemon',
-      breadcrumb:{ 
-        text: 'Pokémon', 
-        link:'pokemons'
-      }
-    }
+      breadcrumb: {
+        text: 'Pokémon',
+        link: 'pokemons',
+      },
+    },
   },
   {
     path: '/teams',
-    component: ViewTeamsPublic,
     name: 'ViewTeamsPublic',
-    meta:{
+    component: ViewTeamsPublic,
+    meta: {
       title: 'Equipos',
       breadcrumb: {
         text: 'Home',
-        link: '/'
-      }
-    }
+        link: '/',
+      },
+    },
   },
   {
     path: '/team/:id',
     name: 'TeamDetail',
     component: TeamDetail,
-    props: true, // Permite pasar el parámetro 'id' como prop al componente
-    meta:{
+    props: true,
+    meta: {
       title: 'Equipo',
       breadcrumb: {
         text: 'Equipos',
-        link: '/teams'
-      }
-    }
+        link: '/teams',
+      },
+    },
   },
   {
     path: '/pokemons',
     name: 'ViewPokemonPublic',
     component: ViewPokemonPublic,
-    meta:{
+    meta: {
       title: 'Pokemons',
       breadcrumb: {
         text: 'Home',
-        link: '/'
-      }
-    }
+        link: '/',
+      },
+    },
   },
   {
     path: '/pokemon/:id',
     name: 'PokemonDetail',
     component: PokemonDetail,
     props: true,
-    meta:{
+    meta: {
       title: 'Pokemon',
       breadcrumb: {
         text: 'Pokémons',
-        link: '/pokemons'
-      }
-    }
+        link: '/pokemons',
+      },
+    },
   },
   {
-    path:'/create-account',
+    path: '/create-account',
     name: 'CrearCuenta',
     component: ViewCreateAccount,
-    meta:{
+    meta: {
       title: 'Crear cuenta',
       breadcrumb: {
         text: 'Home',
-        link: '/'
-      }
-    }
+        link: '/',
+      },
+    },
   },
   {
     path: '/perfil',
     name: 'ViewEditProfile',
     component: ViewEditProfile,
     beforeEnter: (to, from, next) => {
-      if (!isAuthenticated.value) {
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
         next({ path: '/login', query: { redirect: to.fullPath } });
       } else {
         next();
       }
     },
-    meta:{
+    meta: {
       title: 'Perfil',
       breadcrumb: {
-        text: 'Home', 
-        link:'/'
-      }
-    }
+        text: 'Home',
+        link: '/',
+      },
+    },
   },
   {
     path: '/my-pokemons/:id_user',
-    name: 'ViewEditPokemons',
-    component: ViewEditPokemons,
+    name: 'ViewMyPokemons',
+    component: ViewMyPokemons,
     props: true,
     beforeEnter: (to, from, next) => {
-      if (!isAuthenticated.value) {
-        //next('/login'); // Redirige a la página de inicio de sesión si no está autenticado
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
         next({ path: '/login', query: { redirect: to.fullPath } });
       } else {
         next();
       }
     },
-    meta:{
+    meta: {
       title: 'Mis Pokemons',
       breadcrumb: {
         text: 'Pokémon',
-        link: '/pokemons'
+        link: '/pokemons',
+      },
+    },
+  },
+  {
+    path: '/my-pokemon-detail/:id',
+    name: 'ViewEditPokemonDetail',
+    component: ViewEditPokemonDetail,
+    props: true,
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
+        next({ path: '/login', query: { redirect: to.fullPath } });
+      } else {
+        next();
+      }
+    },
+    meta: {
+      title: 'Mis Pokemons',
+      breadcrumb: {
+        text: 'Pokémons',
+        link: '/pokemons',
       }
     }
   },
   {
     path: '/my-teams/:id_user',
-    component: ViewEditTeams,
-    name: 'ViewEditTeams',
+    name: 'ViewMyTeams',
+    component: ViewMyTeams,
     props: true,
     beforeEnter: (to, from, next) => {
-      if (!isAuthenticated.value) {
-        //next('/login'); // Redirige a la página de inicio de sesión si no está autenticado
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
         next({ path: '/login', query: { redirect: to.fullPath } });
       } else {
         next();
       }
     },
-    meta:{
+    meta: {
       title: 'Mis Equipos',
       breadcrumb: {
         text: 'Equipos',
-        link: '/teams'
-      }
-    }
+        link: '/teams',
+      },
+    },
   },
-  /*
   {
-    path: '/my-team/:id',
-    name: 'TeamDetail',
-    component: TeamDetail,
-    props: true, // Permite pasar el parámetro 'id' como prop al componente
+    path:'/my-team-detail/:id',
+    name: 'ViewEditTeamDetail',
+    component: ViewEditTeamDetail,
+    props: true,
     beforeEnter: (to, from, next) => {
-      if (!isAuthenticated.value) {
-        //next('/login'); // Redirige a la página de inicio de sesión si no está autenticado
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
         next({ path: '/login', query: { redirect: to.fullPath } });
       } else {
         next();
       }
+    },
+    meta: {
+      title: 'Mi Equipo',
+      breadcrumb: {
+        text: 'Equipos',
+        link: '/teams',
+      }
     }
-  }*/
+  },
+  {
+    path: '/verify-account',
+    name: 'VerifyAccount',
+    component: ViewVerifyAccount,
+    meta: {
+      title: 'Verificar cuenta',
+      //breadcrumb: {
+      //  text: 'Home',
+      //  link: '/',
+      //},
+    }
+  },
+  {
+    path: '/forgot-password',
+    name: 'ViewForgotPassword',
+    component: ViewForgotPassword,
+    meta: {
+      title: 'Olvide mi contraseña',
+    }
+  },
+  {
+    path: '/reset-password',
+    name: 'ViewResetPassword',
+    component: ViewResetPassword,
+    meta: {
+      title: 'Restablecer contraseña',
+    }
+  }
 ];
+
+
 
 // Crea el router
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
+  routes,
+});
+
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title || 'Respaldo Equipos Pokémon'; // Cambiar el título dinámicamente
+  next();
 });
 
 export default router;

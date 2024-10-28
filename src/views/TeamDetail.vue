@@ -46,11 +46,12 @@
               URL Paste: <a :href="team.url_paste" target="_blank">{{ team.url_paste }}</a>
               <button class="btn btn-primary" @click="copyText">Copiar paste</button>
           </p>
-          <p v-if="team.desc_uso">Descripción del Equipo: {{ team.desc_uso }}</p>
-          <p v-if="team.tournament_using">Torneo donde se usó: {{ team.tournament_using }}</p>
-          <p v-if="team.mus_fav">MatchUp Favorables: {{ team.mus_fav }}</p>
-          <p v-if="team.counters">Teams Counter: {{ team.counters }}</p>
-          <p v-if="team.damage_calcs">Cálculos de Daño: {{ team.damage_calcs }}</p>
+          <p></p>
+          <p v-if="team.desc_uso"><strong>Descripción del Equipo: </strong> {{ team.desc_uso }}</p>
+          <p v-if="team.tournament_using"><strong>Torneo donde se usó: </strong> {{ team.tournament_using }}</p>
+          <p v-if="team.mus_fav"><strong>MatchUp Favorables: </strong> {{ team.mus_fav }}</p>
+          <p v-if="team.counters"><strong>Teams Counter: </strong> {{ team.counters }}</p>
+          <p v-if="team.damage_calcs"><strong>Cálculos de Daño: </strong> {{ team.damage_calcs }}</p>
         </div>
       </div>
     </div>
@@ -62,6 +63,7 @@
 import axios from 'axios';
 
 export default {
+  inject: ['apiUrl'],
     name: 'TeamDetail',
     props: {
       id: {
@@ -81,7 +83,7 @@ export default {
         this.isLoading = true;
 
         try {
-          const response = await axios.get('http://localhost:4000/api/teams/'+this.id); // Realiza la solicitud con Axios
+          const response = await axios.get(this.apiUrl+'teams/'+this.id); // Realiza la solicitud con Axios
           this.team = response.data.data; // Almacenar los datos recibidos
         } catch (err) {
           this.error = 'Error al cargar los datos'; // Manejar errores
