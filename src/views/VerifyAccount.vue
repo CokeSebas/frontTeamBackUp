@@ -13,7 +13,7 @@
 
 <script setup>
 /* eslint-disable */ // sacar de esta sección
-import { onMounted, ref } from 'vue';
+import { inject, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore'; // Asegúrate de que el store esté correctamente importado
