@@ -9,7 +9,7 @@
     
     <div class="container">
       <div v-if="isLoading" style="align-items: center; display: flex; justify-content: center;">
-        <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+        <img :src="gifLoading">
       </div>
       <div v-else-if="team"  class="row justify-content-center"> <!-- Contenedor centrado -->
         <div class="col-md-8">
@@ -63,7 +63,7 @@
 import axios from 'axios';
 
 export default {
-  inject: ['apiUrl'],
+  inject: ['apiUrl', 'gifLoading'],
     name: 'TeamDetail',
     props: {
       id: {
@@ -132,8 +132,6 @@ export default {
       transform: rotate(360deg);
     }
   }
-
-
 
   .pokemon-card {
     border: 1px solid #ddd;

@@ -7,7 +7,7 @@
           <h1>Perfil de Usuario</h1>
 
           <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
-            <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+            <img :src="gifLoading">
           </div>
           <div v-if="error">{{ error }}</div>
 
@@ -115,6 +115,7 @@
       const router = useRouter();
 
       const apiUrl = inject('apiUrl'); // Ahora tienes acceso a apiUrl
+      const gifLoading = inject('gifLoading');
 
       const token = localStorage.getItem('token');
       if (!token) {
@@ -126,7 +127,6 @@
       
       // Cargar los datos del usuario al montar el componente
       onMounted(async () => {
-        console.log(apiUrl+'users/' + userId);
         try {
           const response = await axios.get(apiUrl+'users/' + userId);
           user.value = response.data[0].data;
@@ -181,7 +181,7 @@
         }
 
         try {
-          const response = await axios.post(`${apiUrl}api/users/edit/password/${userId}`, {
+          const response = await axios.post(`${apiUrl}users/edit/password/${userId}`, {
             currentPassword: currentPassword.value,
             newPassword: newPassword.value,
           });
@@ -227,6 +227,7 @@
         currentPassword,
         newPassword,
         confirmPassword,
+        gifLoading,
         enableEdit,
         cancelEdit,
         saveChanges,

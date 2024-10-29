@@ -9,7 +9,7 @@
     
     <div class="container">
       <div v-if="isLoading" style="align-items: center; display: flex; justify-content: center;">
-        <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+        <img :src="gifLoading">
       </div>
       <div v-else-if="pokemon" class="row justify-content-center">
         <div class="col-md-6">
@@ -56,7 +56,7 @@
   import axios from 'axios';
 
   export default {
-    inject: ['apiUrl'],
+    inject: ['apiUrl', 'gifLoading'],
     name: 'PokemonDetail',
     props: {
       id: {
@@ -121,8 +121,6 @@
     }
   }
 
-
-
   .pokemon-card {
     border: 1px solid #ddd;
     border-radius: 10px;
@@ -131,34 +129,34 @@
     background-color: #f9f9f9;
   }
 
-.pokemon-image {
-  width: 100px; /* Ajusta el tamaño de la imagen */
-  height: auto;
-  margin-bottom: 15px;
-}
+  .pokemon-image {
+    width: 100px; /* Ajusta el tamaño de la imagen */
+    height: auto;
+    margin-bottom: 15px;
+  }
 
-.pokemon-header {
-  margin-bottom: 15px;
-}
+  .pokemon-header {
+    margin-bottom: 15px;
+  }
 
-.pokemon-moves ul {
-  list-style-type: none;
-  padding-left: 0;
-}
+  .pokemon-moves ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
 
-.pokemon-moves li {
-  margin-bottom: 5px;
-}
+  .pokemon-moves li {
+    margin-bottom: 5px;
+  }
 
-.pokemon-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
+  .pokemon-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 
-.row.justify-content-center {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
+  .row.justify-content-center {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 </style>

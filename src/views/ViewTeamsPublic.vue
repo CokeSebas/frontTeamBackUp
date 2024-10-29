@@ -9,7 +9,7 @@
                 
                 <!-- Mostrar el div de carga si está cargando -->
                 <div v-if="isLoading" style="align-items: center; display: flex; justify-content: center;">
-                  <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+                  <img :src="gifLoading">
                 </div>
 
                 <!-- Mostrar la lista de equipos si ya no está cargando -->
@@ -36,7 +36,7 @@
 import axios from 'axios';
 
 export default {
-  inject: ['apiUrl'],
+  inject: ['apiUrl', 'gifLoading'],
     name: 'ViewTeamsPublic',
     data() {
       return {

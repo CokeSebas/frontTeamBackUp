@@ -9,7 +9,7 @@
     
     <div class="container">
       <div v-if="isLoading" style="align-items: center; display: flex; justify-content: center;">
-        <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+        <img :src="gifLoading">
       </div>
       <div v-else-if="team"  class="row justify-content-center"> <!-- Contenedor centrado -->
         <div class="col-md-8">
@@ -118,7 +118,7 @@
   import Swal from 'sweetalert2';
 
   export default {
-    inject: ['apiUrl'],
+    inject: ['apiUrl', 'gifLoading'],
       name: 'TeamDetail',
       props: {
         id: {
@@ -183,7 +183,7 @@
           let { url_json, pokemons,  ...filteredTeam } = this.team;
 
           try {
-            const response = await axios.post(`${this.apiUrl}api/teams/edit/${this.id}`, filteredTeam, {
+            const response = await axios.post(`${this.apiUrl}teams/edit/${this.id}`, filteredTeam, {
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
               }

@@ -19,7 +19,7 @@
 
           <!-- Indicador de carga para equipos -->
           <div v-if="loadingTeams" class="text-center">
-            <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+            <img :src="gifLoading">
           </div>
           <div v-else>
             <div class="row">
@@ -45,7 +45,7 @@
 
           <!-- Indicador de carga para Pokémon -->
           <div v-if="loadingPokes" class="text-center">
-            <img src="https://i.pinimg.com/originals/c3/ef/e3/c3efe3c72dc3a0d598735ca29822e80a.gif">
+            <img :src="gifLoading">
           </div>
           <div v-else>
             <div class="row">
@@ -78,7 +78,7 @@
 <script>
 import axios from 'axios';
 export default {
-  inject: ['apiUrl'],
+  inject: ['apiUrl', 'gifLoading'],
   name: 'HomeView',
   data() {
     return {
