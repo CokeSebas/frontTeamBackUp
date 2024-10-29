@@ -65,7 +65,7 @@ import Swal from 'sweetalert2';
 import { useAuthStore } from '@/stores/authStore';
 
 export default {
-  inject: ['apiUrl'],
+  inject: ['apiUrl', 'gifLoading'],
   name: "LoginView",
   setup() {
     const router = useRouter();

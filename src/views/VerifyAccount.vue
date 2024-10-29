@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-/* eslint-disable */ // sacar de esta sección
+
 import { inject, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';

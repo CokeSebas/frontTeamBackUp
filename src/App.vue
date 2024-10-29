@@ -13,7 +13,7 @@ import AppNavbar from './components/AppNavbar.vue';
 import MyAppBreadcrumbs from './components/AppBreadcrumbs.vue'; // Cambiado aquí
 import Footer from './components/AppFooter.vue'; // Ajusta la ruta si es necesario
 
-import { API_URL } from '@/config/config';
+import { API_URL, GIF_LOAD } from '@/config/config';
 
 
 export default {
@@ -24,7 +24,8 @@ export default {
     Footer
   },
   provide: {
-    apiUrl: API_URL
+    apiUrl: API_URL,
+    gifLoading: GIF_LOAD,
   }
 };
 </script>

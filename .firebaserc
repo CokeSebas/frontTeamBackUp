@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "backupteams-a1bc2"
-  }
+    "default": "backupteams-a1bc2",
+    "backupteamsV2": "backupteams-5d57b"
+  },
+  "targets": {},
+  "etags": {}
 }
