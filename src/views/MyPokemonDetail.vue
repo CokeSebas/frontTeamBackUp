@@ -3,8 +3,9 @@
   <div>
     <!-- Contenido principal centrado -->
     <div class="container mt-4">
-      <div class="text-center"></div>
-        <h1 class="mb-4">Detalle de mi Pokémon</h1>
+      <div class="text-center">
+        <h1 class="mb-4">{{ $t('pokemonsSeccion.detailMyPokemon') }}</h1>
+      </div>
     </div>
     
     <div class="container">
@@ -15,14 +16,14 @@
         <div class="col-md-6">
           
           <div v-if="!isEditing" class="d-flex align-items-stretch"> <!-- Columna Pokémon flexible para el estiramiento -->
-            <div class="pokemon-card">
+            <div :class="mode === 'dark' ? 'pokemon-card-dark' : 'pokemon-card'">
               <div class="pokemon-header text-center"> <!-- Contenido del Pokémon centrado -->
                 <img :src="pokemon.urlImage	" alt="Pokemon Image" class="pokemon-image" />
                 <div class="pokemon-info">
                   <h4>{{ pokemon.namePoke }} <span v-if="pokemon.item"> @ {{ pokemon.item }}</span></h4>
-                  <p style="margin-bottom: 0;"><strong>Ability:</strong> {{ pokemon.ability }}</p>
-                  <p style="margin-bottom: 0;"><strong>Level:</strong> {{ pokemon.level }}</p>
-                  <p style="margin-bottom: 0;"><strong>Tera Type:</strong> {{ pokemon.teraType }}</p>
+                  <p style="margin-bottom: 0;"><strong>{{ $t('pokemonsSeccion.ability') }}:</strong> {{ pokemon.ability }}</p>
+                  <!--<p style="margin-bottom: 0;"><strong>{{ $t('pokemonsSeccion.level') }}:</strong> {{ pokemon.level }}</p> -->
+                  <p style="margin-bottom: 0;"><strong>{{ $t('pokemonsSeccion.teraType') }}:</strong> {{ pokemon.teraType }}</p>
                   <p style="margin-bottom: 0;"><strong>EVs:</strong> {{ pokemon.evs }}</p>
                   <p style="margin-bottom: 0;"><strong>{{ pokemon.nature }} Nature</strong></p>
                   <p style="margin-bottom: 0;" v-if="pokemon.ivs"><strong>IVs:</strong> {{ pokemon.ivs }}</p>
@@ -36,9 +37,9 @@
             </div>
           </div>
 
-          <div v-else class="form-card">
+          <div v-else :class="['form-card', { 'dark-card': mode === 'dark' }]">
             <div class="form-group">
-              <label for="paste_sd">Datos Pokémon:</label>
+              <label for="paste_sd">{{ $t('pokemonsSeccion.dataPokemon') }}:</label>
               <textarea v-model="pokemon.pasteSd" style="width: 500px; height: 300px;"
                 placeholder="Pokémon @ Item  
     Ability: Ability
@@ -58,40 +59,41 @@
         </div>
 
         <div class="col-md-6"> 
-          <div v-if="isEditing" class="form-card">
+          <div v-if="isEditing" :class="['form-card', { 'dark-card': mode === 'dark' }]">
             <div class="form-group">
-              <label for="spread_use">Usos del Spread:</label>
+              <label for="spread_use">{{ $t('pokemonsSeccion.useSpread') }}:</label>
               <textarea v-model="pokemon.spreadUse"></textarea>
             </div>
 
             <div class="form-group">
-              <label for="team_mates">Compañeros de Equipo:</label>
+              <label for="team_mates">{{ $t('pokemonsSeccion.teamMates') }}:</label>
               <textarea v-model="pokemon.teamMates"></textarea>
             </div>
 
             <div class="form-group">
-              <label for="calculos_principales">Cálculos Principales:</label>
+              <label for="calculos_principales">{{ $t('pokemonsSeccion.calculations') }}:</label>
               <textarea v-model="pokemon.calculosPrincipales"></textarea>
             </div>
 
             <div class="form-group form-group-inline">
-              <label for="is_public">Hacerlo Público:</label>
+              <label for="is_public">{{ $t('pokemonsSeccion.isPublic') }}:</label>
               <input type="checkbox" v-model="pokemon.isPublic" />
           </div>
           
           </div>
           <div v-else>
-            <button class="btn btn-primary" @click="copyText">Copiar paste</button>
+            <button class="btn btn-success" @click="copyText">{{ $t('buttons.copyPaste') }}</button>
             <p></p>
-            <p v-if="pokemon.spreadUse"><strong>Uso de Spread: </strong> {{ pokemon.spreadUse }}</p>
-            <p v-if="pokemon.teamMates"><strong>Compañeros de equipo: </strong> {{ pokemon.teamMates}}</p>
-            <p v-if="pokemon.calculosPrincipales"><strong>Calculos principales: </strong> {{ pokemon.calculosPrincipales }}</p>
+            <p v-if="pokemon.subFormatName"><strong>{{ $t('teamsSeccion.subFormat') }}: </strong> {{ pokemon.subFormatName }}</p>
+            <p v-if="pokemon.spreadUse"><strong>{{ $t('pokemonsSeccion.useSpread') }}: </strong> {{ pokemon.spreadUse }}</p>
+            <p v-if="pokemon.teamMates"><strong>{{ $t('pokemonsSeccion.teamMates') }}: </strong> {{ pokemon.teamMates}}</p>
+            <p v-if="pokemon.calculosPrincipales"><strong>{{ $t('pokemonsSeccion.calculations') }}: </strong> {{ pokemon.calculosPrincipales }}</p>
           </div>
 
           <!-- Botón para alternar entre vista y edición -->
-          <button v-if="!isEditing" class="btn btn-warning mt-3" @click="toggleEditMode">Editar</button>
-          <button v-if="isEditing" class="btn btn-success mt-3" @click="saveChanges">Guardar Cambios</button>
-          <button v-if="isEditing" class="btn btn-secondary mt-3" @click="cancelEdit">Cancelar</button>
+          <button v-if="!isEditing" class="btn btn-warning mt-3" @click="toggleEditMode">{{ $t('buttons.editPokemon') }}</button>
+          <button v-if="isEditing" class="btn btn-success mt-3" @click="saveChanges">{{ $t('buttons.saveChanges') }}</button>
+          <button v-if="isEditing" class="btn btn-secondary mt-3" @click="cancelEdit">{{ $t('buttons.cancel') }}</button>
 
         </div>
       </div>
@@ -105,7 +107,7 @@
   import Swal from 'sweetalert2';
 
   export default {
-    inject: ['apiUrl', 'gifLoading'],
+    inject: ['apiUrl', 'gifLoading', 'mode'],
     name: 'PokemonDetail',
     props: {
       id: {
@@ -135,12 +137,12 @@
           }else{
             Swal.fire({
               icon: 'error',
-              title: 'Oops...',
-              text: 'Error al cargar los datos',
+              title: this.$t('responseApisSeccion.oops'),
+              text: this.$t('responseApisSeccion.loadingDataError'),
             })
           }
         } catch (err) {
-          console.log(err);
+          this.error = this.$t('responseApisSeccion.loadingDataError'); // Manejar errores
         } finally {
           this.isLoading = false;
         }
@@ -151,11 +153,11 @@
         navigator.clipboard.writeText(this.pokemon.pasteSd)
           .then(() => {
             // Mostramos un mensaje de éxito al copiar el texto
-            this.copySuccess = 'Texto copiado con éxito!';
+            this.copySuccess = this.$t('responseApisSeccion.copySuccess');
           })
           .catch(err => {
             // Manejar cualquier error si ocurre
-            console.error('Error al copiar el texto: ', err);
+            console.error(this.$t('responseApisSeccion.copyError'), err);
           });
       },
 
@@ -163,36 +165,40 @@
         // eslint-disable-next-line no-unused-vars
         let { pasteSd, namePoke, moves, ivs, evs, ...filteredPokemon } = this.pokemon;
 
+        const objPokemon = {
+          pasteSd: this.pokemon.pasteSd,
+          spreadUse: this.pokemon.spreadUse,
+          teamMates: this.pokemon.teamMates,
+          calculosPrincipales: this.pokemon.calculosPrincipales,
+          isPublic: this.pokemon.isPublic,
+        }
+
         try {
-          const response = await axios.post(`${this.apiUrl}pokemon/edit/${this.id}`, filteredPokemon, {
+          const response = await axios.post(`${this.apiUrl}pokemon/edit/${this.id}`, objPokemon, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
           });
-          console.log(response.data);
           if (response.data.status == 'success') {
-            //this.pokemon = { ...this.editedPokemon };
             this.toggleEditMode();
-            Swal.fire('¡Éxito!', 'El Pokémon ha sido actualizado correctamente.', 'success');
+            Swal.fire(this.$t('responseApisSeccion.exito'), this.$t('responseApisSeccion.updatePokemonSuccess'), 'success');
           } else {
-            Swal.fire('Error', 'Hubo un problema al actualizar el Pokémon.', 'error');
+            Swal.fire(this.$t('responseApisSeccion.error'), this.$t('responseApisSeccion.errorUpdatePokemon'), 'error');
           }
         } catch (err) {
           console.error(err);
-          Swal.fire('Error', 'Hubo un problema al actualizar el Pokémon.', 'error');
+          Swal.fire(this.$t('responseApisSeccion.error'), this.$t('responseApisSeccion.errorUpdatePokemon'), 'error');
         }
       },
 
       cancelEdit() {
         this.editedPokemon = { ...this.pokemon };
-        //this.editedMoves = [...this.pokemon.moves];
         this.toggleEditMode();
       },
 
       toggleEditMode() {
         this.isEditing = !this.isEditing;
       },
-
 
     },
     mounted() {
@@ -286,6 +292,48 @@
 
   input[type="checkbox"] {
     width: auto;
+  }
+
+  .dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+
+  .dark-mode .card {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #e0e0e0;
+  }
+  
+  .pokemon-card-dark {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px; /* Espacio entre tarjetas */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Estilos de modo oscuro */
+  .dark-mode {
+    background-color: #121212;
+  }
+  .dark-card {
+    background-color: #333;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+  }
+  .dark-text {
+    color: #ffffff;
+  }
+  .dark-input {
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #555;
+  }
+  .btn-dark {
+    background-color: #444;
+    color: #fff;
   }
 
 

@@ -1,12 +1,12 @@
 <template>
   <div class="verify-account-container">
-    <h2>Verificación de Cuenta</h2>
+    <h2>{{ $t('verifyAccount') }}</h2>
     <div v-if="loading">
-      <p>Verificando tu cuenta, por favor espera...</p>
+      <p> {{ $t('verifyingAccount') }}</p>
     </div>
     <div v-else>
-      <p v-if="verificationSuccess" class="success-message">¡Tu cuenta ha sido verificada exitosamente!</p>
-      <p v-else class="error-message">Hubo un problema al verificar tu cuenta. El enlace podría haber expirado o ser inválido.</p>
+      <p v-if="verificationSuccess" class="success-message">{{ $t('verifyAccountSuccess') }}</p>
+      <p v-else class="error-message">{{ $t('verifyAccountError') }}</p>
     </div>
   </div>
 </template>
