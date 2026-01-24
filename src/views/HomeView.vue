@@ -32,6 +32,16 @@
                       <p class="card-text" style="margin-bottom: 0;">{{ team.desc_uso }}</p>
                       <p class="card-text" style="margin-bottom: 0;">{{ team.subFormatName }}</p>
                       <p></p>
+                      <!-- Contenedor de los 6 pokémon -->
+                      <div class="pokemons">
+                        <img :src="team.poke1" />
+                        <img :src="team.poke2" />
+                        <img :src="team.poke3" />
+                        <img :src="team.poke4" />
+                        <img :src="team.poke5" />
+                        <img :src="team.poke6" />
+                      </div>
+                      <p></p>
                       <router-link class="btn btn-outline-success btn-sm" :to="'/team/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>
                     </div>
                   </div>
@@ -149,5 +159,12 @@
     background-color: #1e1e1e;
     color: #e0e0e0;
     border-color: #e0e0e0;
+  }
+
+  .pokemons img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    /* border-radius: 50%;  // si quieres redondear */
   }
 </style>

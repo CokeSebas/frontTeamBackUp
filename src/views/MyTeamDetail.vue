@@ -117,6 +117,7 @@
 <script>
   import axios from 'axios';
   import Swal from 'sweetalert2';
+  import { useHead } from '@vueuse/head';
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -149,6 +150,19 @@
 
             if(response.data.status == "success"){
               this.team = response.data.data; // Almacenar los datos recibidos
+
+              useHead({
+                title: 'Equipo ' + this.team.team_name, // Usa el nombre del Equipo en el título
+                meta: [
+                  { name: 'description', content: `Detalles sobre ${this.team.team_name}` },
+                  { name: 'keywords', content: `${this.team.team_name}, Team, Tournament, VGC ` },
+                  { name: 'og:title', content: 'Team ' + this.team.team_name },
+                  { name: 'og:description', content: `Detalles sobre ${this.team.team_name}` },
+                  { name: 'og:regulation', content: `Regulation ${this.team.subFormatName}` },
+                  { name: 'og:format', content: `format VGC` },
+                ]
+              });
+              
             }else{
               Swal.fire({
                 icon: 'error',

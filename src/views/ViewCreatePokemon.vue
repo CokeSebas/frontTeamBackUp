@@ -27,7 +27,7 @@ IVs: 0 Atk
 
         <div class="form-group">
           <label for="sub_format_id">{{ $t('teamsSeccion.subFormat') }}:</label>
-            <select v-model="pokemon.subFormatId" required>
+            <select class="form-select" v-model="pokemon.subFormatId" required>
               <option value="" disabled>{{ $t('teamsSeccion.selectSubFormat') }}</option>
               <option v-for="subFormat in subFormats" :key="subFormat.id" :value="subFormat.id">
                 {{ subFormat.abrevSubFormat }}
