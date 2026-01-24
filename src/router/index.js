@@ -23,6 +23,13 @@ import ViewVerifyAccount from '@/views/VerifyAccount.vue';
 import ViewForgotPassword from '@/views/ViewForgotPassword.vue';
 import ViewResetPassword from '@/views/ViewRecuperarPassword.vue';
 
+import ViewAddTournament from '@/views/ViewAddTournament.vue';
+import ViewOrgTorneo from '@/views/ViewOrgTorneo.vue';
+import ViewGoToRound from '@/views/ViewGoToRound.vue';
+import ViewGoToStanding from '@/views/ViewGoToStanding.vue';
+import ViewGoToResults from '@/views/ViewGoToResults.vue';
+import ViewTournaments from '@/views/ViewSeeTournamets.vue';
+
 // Define las rutas
 const routes = [
   {
@@ -185,8 +192,8 @@ const routes = [
     meta: {
       title: 'Mis Pokemons',
       breadcrumb: {
-        text: 'Pokémons',
-        link: '/pokemons',
+        text: 'Perfil',
+        link: '/perfil',
       }
     }
   },
@@ -227,8 +234,8 @@ const routes = [
     meta: {
       title: 'Mi Equipo',
       breadcrumb: {
-        text: 'Equipos',
-        link: '/teams',
+        text: 'Perfil',
+        link: '/perfil/',
       }
     }
   },
@@ -238,10 +245,6 @@ const routes = [
     component: ViewVerifyAccount,
     meta: {
       title: 'Verificar cuenta',
-      //breadcrumb: {
-      //  text: 'Home',
-      //  link: '/',
-      //},
     }
   },
   {
@@ -259,7 +262,87 @@ const routes = [
     meta: {
       title: 'Restablecer contraseña',
     }
-  }
+  },
+  {
+    path: '/add-tournament/:id_user',
+    name: 'ViewAddTournament',
+    component: ViewAddTournament,
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
+        next({ path: '/login', query: { redirect: to.fullPath } });
+      } else {
+        next();
+      }
+    },
+    meta: {
+      title: 'Agregar Torneo',
+      breadcrumb: {
+        text: 'Perfil',
+        link: '/perfil',
+      },
+    }
+  },
+  {
+    path: '/ver-torneos',
+    name: 'ViewTournaments',
+    component: ViewTournaments,
+    meta: {
+      title: 'Ver Torneos',
+      breadcrumb: {
+        text: 'Home',
+        link: '/',
+      },
+    }
+  },
+  {
+    path: '/organizar-torneo/:id_torneo',
+    name: 'ViewOrgTorneo',
+    component: ViewOrgTorneo,
+    meta: {
+      title: 'Organizar Torneo',
+      breadcrumb: {
+        text: 'Agregar Torneo',
+        link: 'back',
+      }
+    }
+  },
+  {
+    path: '/view-round/:id_torneo',
+    name: 'ViewGoToRound',
+    component: ViewGoToRound,
+    meta: {
+      title: 'Ronda Actual',
+      breadcrumb: {
+        text: 'Organizar Torneo',
+        link: 'back',
+      }
+    }
+  },
+  {
+    path: '/goToStanding/:id_torneo',
+    name: 'ViewGoToStanding',
+    component: ViewGoToStanding,
+    meta: {
+      title: 'Standing',
+      breadcrumb: {
+        text: 'Organizar Torneo',
+        link: 'back',
+      }
+    }
+  },
+  {
+    path: '/goToResults/:id_torneo',
+    name: 'ViewGoToResults',
+    component: ViewGoToResults,
+    meta: {
+      title: 'Resultados',
+      breadcrumb: {
+        text: 'Organizar Torneo',
+        link: 'back',
+      }
+    }
+  },
 ];
 
 

@@ -17,7 +17,7 @@
           <div class="row">
             <div class="col-6">
               <label for="format_id">{{ $t('teamsSeccion.format') }}:</label>
-              <select v-model="team.formatId" required>
+              <select class="form-select" v-model="team.formatId" required>
                 <option value="" disabled>{{ $t('teamsSeccion.selectFormat') }}</option>
                 <option v-for="format in formats" :key="format.id" :value="format.id">
                   {{ format.formatName }}
@@ -26,7 +26,7 @@
             </div>
             <div class="col-6">
               <label for="sub_format_id">{{ $t('teamsSeccion.subFormat') }}:</label>
-              <select v-model="team.subFormatId" required>
+              <select class="form-select" v-model="team.subFormatId" required>
                 <option value="" disabled>{{ $t('teamsSeccion.selectSubFormat') }}</option>
                 <option v-for="subFormat in subFormats" :key="subFormat.id" :value="subFormat.id">
                   {{ subFormat.abrevSubFormat }}

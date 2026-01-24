@@ -16,7 +16,9 @@
   "createTeam": "Create Team",
   "share": "Share",
   "lastTeamsAndLastPokemons": "Last Teams and Last Pokemons",
-
+  "subir": "Go Up",
+  "uploadFiles": "Upload Files",
+  "seeTournaments": "View Tournaments",
   "home": {
     "title": "Register your Pokémon Teams or Pokémon individually.",
     "subtitle": "Create and organize your teams to be ready for competition.",
@@ -44,7 +46,11 @@
     "goToMyTeams": "Go to My Teams",
     "goToMyPokemons": "Go to My Pokémon",
     "sendLinkRecovery": "Send Recovery Link",
-    "accept": "Accept"
+    "accept": "Accept",
+    "organizar": "Organize Tournaments",
+    "goToRound": "Go to Round",
+    "goToStanding": "Go to Standing",
+    "goToResults": "Go to Results"
   },
 
   "teamsSeccion": {
@@ -91,7 +97,10 @@
     "searchPokemon": "Search Pokémon by name",
     "dataPokemon": "Pokémon Data",
     "nickPokemon": "Pokemón Nick",
-    "pasteForSd": "Team paste copied successfully!"
+    "pasteForSd": "Team paste copied successfully!",
+    "subtitle": "If you select 6 Pokémon, you can get the SD format",
+    "tittleSwal": "You have selected 6 Pokémon!",
+    "subTittleSwal": "Now you can create a team."
   },
 
   "profileSeccion": {
@@ -122,7 +131,8 @@
     "ingPassword": "Enter your password",
     "ingConfirmPassword": "Confirm your password",
     "ingAvatarUrl": "Enter your profile image URL",
-    "ingNickName": "Enter your username"
+    "ingNickName": "Enter your username",
+    "isOrganizer": "Is Organizer"
   },
 
 
@@ -170,6 +180,63 @@
     "passwordRestabled": "Password reset successfully!",
     "passwordRestableError": "There was a problem resetting the password."
   },
+
+  "tournamentsSeccion":{
+    "title": "Tournaments",
+    "noTournaments": "There are no organized tournaments yet!",
+    "myTournaments": "My Organized Tournaments",
+    "name": "Name",
+    "type": "Type",
+    "date": "Date",
+    "round": "Round",
+    "standing": "Standing",
+    "results": "Results",
+    "goToRound": "Go to Round",
+    "goToStanding": "Go to Standing",
+    "goToResults": "Go to Results",
+    "addTournamet": "Create Tournament",
+    "subAddTournament": "Fill in the following fields to create a new tournament",
+    "tournamentName": "Tournament Name",
+    "selectType": "Select a tournament type",
+    "dateTournament": "Tournament Date",
+    "actions": "Actions",
+    "viewTournament": "View",
+    "loadRound": "Load Round",
+    "loadResults": "Load Results",
+    "loadStanding": "Load Standing",
+    "uploadingRound": "Uploading round...",
+    "roundUploaded": "Round uploaded",
+    "uploadingResults": "Uploading results...",
+    "resultsUploaded": "Results uploaded",
+    "uploadingStanding": "Uploading standing...",
+    "standingUploaded": "Standing uploaded",
+    "uploadSuccessfully": "Uploaded successfully",
+    "matchRound": "Match Round",
+    "mesa": "Table",
+    "resultRound": "Results – Round",
+    "resultVictorias": "Victories",
+    "resultDerrotas": "Defeats",
+    "resultEmpates": "Ties",
+    "standingRound": "Standing – Round",
+    "standingSeccion": "Flight",
+    "standingRoundDrop": "Drop Round",
+    "standingHistorial": "Match Record",
+    "standingPuntos": "Match Points",
+    "standingVictory1": "Opponent Win %",
+    "standingVictory2": "Opponents' Opponents' Win %",
+    "":""
+  },
+
+  "filesSeccion":{
+    "currentRound": "Current Round",
+    "currentResults": "Current Results",
+    "standing": "Standing",
+    "selectFile": "Select a file",
+    "uploadFile": "Upload file",
+    "fileUploaded": "File uploaded successfully!"
+  },
+
+  
 
   "": ""
 }

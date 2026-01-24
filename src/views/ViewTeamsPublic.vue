@@ -12,7 +12,7 @@
               <input v-model="searchName" type="text" class="form-control flex-grow-1" :placeholder="$t('teamsSeccion.searchTeam')" />
               
               <!-- Selector de subformato -->
-              <select v-model="searchSubFormat" class="form-control w-50">
+              <select  v-model="searchSubFormat" class="form-control w-50 form-select">
                   <option value="">{{ $t('teamsSeccion.subFormat') }}</option>
                   <option v-for="format in subFormats" :key="format.id" :value="format.subFormatName">{{ format.subFormatName }}</option>
               </select>
@@ -27,7 +27,7 @@
 
           <!-- Mostrar la lista de equipos si ya no está cargando -->
           <div v-else class="row">
-            <template v-for="team in filteredTeams" :key="team.id">
+            <template v-for="team in currentItems" :key="team.id">
                 <div class="col-md-6" :class="mode === 'dark' ? 'dark-mode' : ''">
                   <!-- Ejemplo de tarjeta de equipo registrado -->
                     <div class="card mb-4 shadow-sm">
@@ -36,87 +36,126 @@
                             <p v-if="team.desc_uso" class="card-text" style="margin-bottom: 0;">{{ team.desc_uso }}</p>
                             <p v-if="team.subFormatName" class="card-text" style="margin-bottom: 0;">{{ team.subFormatName }}</p>
                             <p></p>
+                            <p></p>
+                            <!-- Contenedor de los 6 pokémon -->
+                            <div class="pokemons">
+                              <img :src="team.poke1" />
+                              <img :src="team.poke2" />
+                              <img :src="team.poke3" />
+                              <img :src="team.poke4" />
+                              <img :src="team.poke5" />
+                              <img :src="team.poke6" />
+                            </div>
+                            <p></p>
                             <router-link class="btn btn-outline-success btn-sm" :to="'/team/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>
                         </div>
                     </div>
                 </div>
             </template>
           </div>
+
+          <Paginator
+            :items="filteredTeams"
+            :itemsPerPage="10"
+            @page-changed="handlePageChanged"
+          />
+
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+  import axios from 'axios';
+  import Paginator from '@/components/AppPaginator.vue';
 
-export default {
-  inject: ['apiUrl', 'gifLoading', 'mode'],
-  name: 'ViewTeamsPublic',
-  data() {
-    return {
-      listTeams: [],
-      subFormats: [],            // Lista de subformatos cargados desde la API
-      isLoading: false,
-      searchName: '',            // Campo de búsqueda por nombre
-      searchSubFormat: ''        // Campo de búsqueda para el selector de subformato
-    };
-  },
-  computed: {
-    darkMode() {
-      return this.mode;
+  export default {
+    inject: ['apiUrl', 'gifLoading', 'mode'],
+    name: 'ViewTeamsPublic',
+    components: {
+      Paginator
     },
-    filteredTeams() {
-      return this.listTeams.filter(team => {
-        const matchesName = team.team_name.toLowerCase().includes(this.searchName.toLowerCase());
-        const matchesSubFormat = this.searchSubFormat
-          ? team.subFormatName === this.searchSubFormat
-          : true;
-        return matchesName && matchesSubFormat;
-      });
-    }
-  },
-  methods: {
-    async getTeams() {
-      this.isLoading = true;
-      try {
-        const response = await axios.get(this.apiUrl + 'teams/');
-        this.listTeams = response.data.data;
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        this.isLoading = false;
+    data() {
+      return {
+        listTeams: [],
+        subFormats: [],            // Lista de subformatos cargados desde la API
+        isLoading: false,
+        searchName: '',            // Campo de búsqueda por nombre
+        searchSubFormat: '',        // Campo de búsqueda para el selector de subformato
+        currentItems: [], // Elementos de la página actual
+      };
+    },
+    computed: {
+      darkMode() {
+        return this.mode;
+      },
+      filteredTeams() {
+        return this.listTeams.filter(team => {
+          const matchesName = team.team_name.toLowerCase().includes(this.searchName.toLowerCase());
+          const matchesSubFormat = this.searchSubFormat
+            ? team.subFormatName === this.searchSubFormat
+            : true;
+          return matchesName && matchesSubFormat;
+        });
       }
     },
-    async getSubFormats() {
-      try {
-        const response = await axios.get(this.apiUrl + 'subformats');
-        this.subFormats = response.data;
-      } catch (error) {
-        console.error('Error al cargar los subformatos:', error);
+    methods: {
+      async getTeams() {
+        this.isLoading = true;
+        try {
+          const response = await axios.get(this.apiUrl + 'teams/');
+          this.listTeams = response.data.data;
+          this.currentItems = this.filteredTeams.slice(0, 10); 
+        } catch (error) {
+          console.error('Error:', error);
+        } finally {
+          this.isLoading = false;
+        }
+      },
+      async getSubFormats() {
+        try {
+          const response = await axios.get(this.apiUrl + 'subformats');
+          this.subFormats = response.data;
+        } catch (error) {
+          console.error('Error al cargar los subformatos:', error);
+        }
+      },
+      handlePageChanged(paginatedItems) {
+        this.currentItems = paginatedItems;
+      },
+    },
+    watch: {
+      filteredTeams(newFilteredTeams) {
+        this.currentItems = newFilteredTeams.slice(0, 10); // Muestra los primeros 5 elementos en la página inicial
       }
+    },
+    mounted() {
+      this.getTeams();
+      this.getSubFormats();   // Cargar los subformatos cuando se monta el componente
     }
-  },
-  mounted() {
-    this.getTeams();
-    this.getSubFormats();   // Cargar los subformatos cuando se monta el componente
-  }
-};
+  };
 </script>
 
 <style scoped>
-/* Estilos específicos para ViewTeamsPublic */
-.spinner-border {
-    width: 3rem;
-    height: 3rem;
-}
-.dark-mode {
-    background-color: #121212;
-    color: #e0e0e0;
-}
-.dark-mode .card {
-    background-color: #1e1e1e;
-    color: #e0e0e0;
-    border-color: #e0e0e0;
-}
+  /* Estilos específicos para ViewTeamsPublic */
+  .spinner-border {
+      width: 3rem;
+      height: 3rem;
+  }
+  .dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+  }
+  .dark-mode .card {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+      border-color: #e0e0e0;
+  }
+
+  .pokemons img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    /* border-radius: 50%;  // si quieres redondear */
+  }
 </style>

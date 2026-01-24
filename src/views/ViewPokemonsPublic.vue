@@ -5,6 +5,7 @@
     <div class="container mt-4">
       <div class="text-center">
         <h2 class="mb-4">{{ $t('pokemonsSeccion.title') }}</h2>
+        <h3 v-if="selectedPokemons.length != 6">{{ $t('pokemonsSeccion.subtitle') }}</h3>
         <router-link class="btn btn-success btn-lg" to="/create-pokemon">{{ $t('buttons.createPokemon') }}</router-link>
 
         <button v-if="selectedPokemons.length === 6" class="btn btn-success btn-lg" @click="createTeam">{{ $t('buttons.obtainFormatSd') }}</button>
@@ -19,7 +20,7 @@
           />
           
           <!-- Selector de subformato -->
-          <select v-model="searchSubFormat" class="form-control w-50">
+          <select  v-model="searchSubFormat" class="form-control w-50 form-select">
             <option value="">{{ $t('teamsSeccion.subFormat') }}</option>
             <option v-for="format in subFormats" :key="format.id" :value="format.subFormatName">
               {{ format.subFormatName }}
@@ -37,7 +38,7 @@
         <!-- Mostrar la lista de Pokémon filtrada -->
         <div v-else class="row">
           <div v-if="filteredPokes.length > 0" class="row">
-            <template v-for="pokemon in filteredPokes" :key="pokemon.id">
+            <template v-for="pokemon in currentItems" :key="pokemon.id">
               <div class="col-md-4" :class="mode === 'dark' ? 'dark-mode' : ''">
                 <label
                   :class="[
@@ -101,6 +102,13 @@
               {{ $t('pokemonsSeccion.notFound') }}
             </p>
           </div>
+          
+          <Paginator
+            :items="filteredPokes"
+            :itemsPerPage="9"
+            @page-changed="handlePageChanged"
+          />
+
         </div>
 
       </div>
@@ -138,11 +146,15 @@
 
 <script>
   import axios from 'axios';
-import Swal from 'sweetalert2';
+  import Swal from 'sweetalert2';
+  import Paginator from '@/components/AppPaginator.vue';
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
     name: 'ViewPokemonsPublic',
+    components: {
+      Paginator
+    },
     data() {
       return {
         listPokes: [],
@@ -153,6 +165,7 @@ import Swal from 'sweetalert2';
         isModalOpen: false,
         searchQuery: '', // Campo de búsqueda por nombre
         searchSubFormat: '', // Campo para el filtro de subformato
+        currentItems: [], // Elementos de la página actual
       };
     },
     computed: {
@@ -178,6 +191,7 @@ import Swal from 'sweetalert2';
         try {
           const response = await axios.get(this.apiUrl + 'pokemon');
           this.listPokes = response.data.data;
+          this.currentItems = this.filteredPokes.slice(0, 9); 
         } catch (error) {
           console.error('Error:', error);
         } finally {
@@ -189,7 +203,7 @@ import Swal from 'sweetalert2';
           const response = await axios.get(this.apiUrl + 'subformats');
           this.subFormats = response.data;
         } catch (error) {
-          console.error('Error al cargar los subformatos:', error);
+          //console.error('Error al cargar los subformatos:', error);
         }
       },
       async createTeam() {
@@ -203,6 +217,9 @@ import Swal from 'sweetalert2';
           confirmButtonText: this.$t('buttons.accept')
         })
       },
+      handlePageChanged(paginatedItems) {
+        this.currentItems = paginatedItems;
+      },
       toggleSelection(pokemon) {
         if (pokemon.checked) {
           pokemon.checked = false;
@@ -210,7 +227,21 @@ import Swal from 'sweetalert2';
         } else if (this.selectedPokemons.length < 6) {
           pokemon.checked = true;
           this.selectedPokemons.push({ id: pokemon.id, pasteSd: pokemon.pasteSd });
+
+          if (this.selectedPokemons.length === 6) {
+            Swal.fire({
+              title: this.$t('pokemonsSeccion.tittleSwal'),
+              text: this.$t('pokemonsSeccion.subTittleSwal'),
+              icon: 'info',
+              confirmButtonText: this.$t('subir')
+            });
+            this.scrollToTop();
+          }
         }
+      },
+
+      scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Vuelve al inicio con un desplazamiento suave
       },
       isPokemonSelected(pokemon) {
         return this.selectedPokemons.some(item => item.id === pokemon.id);
@@ -232,6 +263,11 @@ import Swal from 'sweetalert2';
             // Manejar cualquier error si ocurre
             console.error('Error al copiar el texto: ', err);
           });
+      },
+    },
+    watch: {
+      filteredPokes(newFilteredPokes) {
+        this.currentItems = newFilteredPokes.slice(0, 9); // Muestra los primeros 5 elementos en la página inicial
       },
     },
     mounted() {

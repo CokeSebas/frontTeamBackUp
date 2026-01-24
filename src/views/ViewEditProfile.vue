@@ -41,6 +41,12 @@
                     <p v-else>{{ user.nickName }}</p>
                   </div>
                 </div>
+                <div class="form-group row" v-if="isOrganizer">
+                  <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.isOrganizer') }}:</strong></label>
+                  <div class="col-8">
+                    <p>{{ user.isOrganizer }}</p>
+                  </div>
+                </div>
                 <div v-if="isEditing" class="form-group row">
                   <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.avatarUrl') }}:</strong></label>
                   <div class="col-8">
@@ -84,6 +90,7 @@
           <h2>{{ $t('profileSeccion.actions') }}</h2>
           <button class="btn btn-success btn-block mb-2" @click="goToTeams">{{ $t('buttons.goToMyTeams') }}</button>
           <button class="btn btn-success btn-block mb-2" @click="goToPokemons">{{ $t('buttons.goToMyPokemons') }}</button>
+          <button v-if="isOrganizer" class="btn btn-success btn-block mb-2" @click="goToOrgTorneo">{{ $t('buttons.organizar') }}</button>
           <button class="btn btn-secondary btn-block mb-2" @click="enableEdit">{{ $t('buttons.editProfile') }}</button>
           <button class="btn btn-secondary btn-block" @click="showChangePasswordForm = true">{{ $t('buttons.changePassword') }}</button>
         </div>
@@ -94,7 +101,7 @@
 
 
 <script>
-  import { inject, ref, onMounted } from 'vue';
+  import { inject, ref, onMounted, computed } from 'vue';
   import { jwtDecode } from 'jwt-decode';
   import axios from 'axios';
   import { useRouter } from 'vue-router';
@@ -148,6 +155,10 @@
       const enableEdit = () => {
         isEditing.value = true;
       };
+
+      const isOrganizer = computed(() => {
+        return user.value?.isOrganizer === true
+      })
 
       // Cancelar edición
       const cancelEdit = () => {
@@ -259,6 +270,7 @@
       // Navegación a otras vistas
       const goToTeams = () => router.push('/my-teams/' + userId);
       const goToPokemons = () => router.push('/my-pokemons/' + userId);
+      const goToOrgTorneo = () => router.push('/add-tournament/' + userId);
 
       return {
         user,
@@ -271,6 +283,7 @@
         newPassword,
         confirmPassword,
         gifLoading,
+        isOrganizer,
         enableEdit,
         cancelEdit,
         saveChanges,
@@ -278,6 +291,7 @@
         cancelChangePassword,
         goToTeams,
         goToPokemons,
+        goToOrgTorneo,
         mode
       };
     }

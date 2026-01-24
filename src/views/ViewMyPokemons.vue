@@ -5,6 +5,7 @@
     <div class="container mt-4">
       <div class="text-center">
         <h2 class="mb-4">{{ $t('pokemonsSeccion.myTitle') }}</h2>
+        <h3 v-if="selectedPokemons.length != 6">{{ $t('pokemonsSeccion.subtitle') }}</h3>
         <router-link class="btn btn-success btn-lg" to="/create-pokemon">{{ $t('buttons.createPokemon') }}</router-link>
 
         <button v-if="selectedPokemons.length === 6" class="btn btn-success btn-lg" @click="createTeam">{{ $t('buttons.obtainFormatSd') }}</button>
@@ -19,7 +20,7 @@
           />
           
           <!-- Selector de subformato -->
-          <select v-model="searchSubFormat" class="form-control w-50">
+          <select  v-model="searchSubFormat" class="form-control w-50 form-select">
             <option value="">{{ $t('teamsSeccion.subFormat') }}</option>
             <option v-for="format in subFormats" :key="format.id" :value="format.subFormatName">
               {{ format.subFormatName }}
@@ -37,7 +38,7 @@
         <!-- Mostrar la lista de Pokémon filtrada -->
         <div v-else class="row">
           <div v-if="filteredPokes.length > 0" class="row">
-            <template v-for="pokemon in filteredPokes" :key="pokemon.id">
+            <template v-for="pokemon in currentItems" :key="pokemon.id">
               <div class="col-md-4" :class="mode === 'dark' ? 'dark-mode' : ''">
                 <label
                   :class="[
@@ -101,6 +102,13 @@
               {{ $t('pokemonsSeccion.notFound') }}
             </p>
           </div>
+
+          <Paginator
+            :items="filteredPokes"
+            :itemsPerPage="9"
+            @page-changed="handlePageChanged"
+          />
+
         </div>
         
       </div>
@@ -139,10 +147,14 @@
   import axios from 'axios';
   import { jwtDecode } from 'jwt-decode';
   import Swal from 'sweetalert2';
+  import Paginator from '@/components/AppPaginator.vue';
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
     name: 'ViewEditPokemons',
+    components: {
+      Paginator
+    },
     data() {
       return {
         listPokes: [],
@@ -153,6 +165,7 @@
         isModalOpen: false,
         searchQuery: '', // Campo de búsqueda por nombre
         searchSubFormat: '', // Campo para el filtro de subformato
+        currentItems: [], // Elementos de la página actual
       };
     },
     computed: {
@@ -190,6 +203,7 @@
           }
         }).then(response => {
           this.listPokes = response.data.data;
+          this.currentItems = this.filteredPokes.slice(0, 9); 
           this.isLoading = false;
         }).catch(error => {
           console.error('Error:', error);
@@ -222,7 +236,20 @@
         } else if (this.selectedPokemons.length < 6) {
           pokemon.checked = true;
           this.selectedPokemons.push({ id: pokemon.id, pasteSd: pokemon.pasteSd });
+
+          if (this.selectedPokemons.length === 6) {
+            Swal.fire({
+              title: this.$t('pokemonsSeccion.tittleSwal'),
+              text: this.$t('pokemonsSeccion.subTittleSwal'),
+              icon: 'info',
+              confirmButtonText: this.$t('subir')
+            });
+            this.scrollToTop();
+          }
         }
+      },
+      scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Vuelve al inicio con un desplazamiento suave
       },
       isPokemonSelected(pokemon) {
           return this.selectedPokemons.some(item => item.id === pokemon.id);
@@ -234,17 +261,25 @@
         this.isModalOpen = false;
       },
       copyText() {
-          // Utilizamos la API de Clipboard para copiar el texto
-          navigator.clipboard.writeText(this.pasteSdTeam)
-            .then(() => {
-              // Mostramos un mensaje de éxito al copiar el texto
-              this.copySuccess = 'Texto copiado con éxito!';
-            })
-            .catch(err => {
-              // Manejar cualquier error si ocurre
-              console.error('Error al copiar el texto: ', err);
-            });
-        },
+        // Utilizamos la API de Clipboard para copiar el texto
+        navigator.clipboard.writeText(this.pasteSdTeam)
+          .then(() => {
+            // Mostramos un mensaje de éxito al copiar el texto
+            this.copySuccess = 'Texto copiado con éxito!';
+          })
+          .catch(err => {
+            // Manejar cualquier error si ocurre
+            console.error('Error al copiar el texto: ', err);
+          });
+      },
+      handlePageChanged(paginatedItems) {
+        this.currentItems = paginatedItems;
+      },
+    },
+    watch: {
+      filteredPokes(newFilteredPokes) {
+        this.currentItems = newFilteredPokes.slice(0, 9); // Muestra los primeros 5 elementos en la página inicial
+      }
     },
     mounted() {
       this.getPokes();

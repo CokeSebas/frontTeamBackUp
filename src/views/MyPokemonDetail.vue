@@ -105,6 +105,7 @@
 <script>
   import axios from 'axios';
   import Swal from 'sweetalert2';
+  import { useHead } from '@vueuse/head';
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -134,6 +135,19 @@
           });
           if(response.data.status == "success"){
             this.pokemon = response.data.data[0]; // Almacenar los datos recibidos
+
+            useHead({
+              title: 'Pokémon ' + this.pokemon.name, // Usa el nombre del Pokémon en el título
+              meta: [
+                { name: 'description', content: `Detalles sobre ${this.pokemon.name}` },
+                { name: 'keywords', content: `${this.pokemon.name}, Pokemon, SpreadUse, VGC ` },
+                { name: 'og:title', content: 'Pokémon ' + this.pokemon.name },
+                { name: 'og:description', content: `Detalles sobre ${this.pokemon.name}` },
+                { name: 'og:image', content: this.pokemon.urlImage },
+                { name: 'og:regulation', content: this.pokemon.subFormatName },
+                { name: 'og:format', content: 'VGC' },
+              ]
+            });
           }else{
             Swal.fire({
               icon: 'error',

@@ -18,6 +18,9 @@
               <li class="nav-item">
                   <router-link class="nav-link" to="/perfil">{{ $t('profile') }}</router-link>
               </li>
+              <li class="nav-item">
+                  <router-link class="nav-link" to="/ver-torneos">{{ $t('seeTournaments') }}</router-link>
+              </li>
               <li v-if="isAuthenticated" class="nav-item">
                   <router-link class="nav-link" :to="`/my-teams/${userId}`">{{ $t('myTeams') }}</router-link>
               </li>
@@ -105,6 +108,7 @@ export default {
 
     const logout = () => {
       authStore.logout();
+      localStorage.removeItem('token');
       router.push('/login');
     };
 

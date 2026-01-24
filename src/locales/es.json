@@ -16,7 +16,9 @@
   "createTeam": "Crear Equipo",
   "share": "Compartir",
   "lastTeamsAndLastPokemons": "Últimos Equipos y Pokemón registrados",
-
+  "subir": "Subir",
+  "uploadFiles": "Subir Archivos",
+  "seeTournaments": "Ver Torneos",
   "home":{
     "title": "Registra tus Equipos de Pokémon o Pokémon de manera individual.",
     "subtitle": "Crea y organiza tus equipos para estar listo en la competición.",
@@ -44,7 +46,11 @@
     "goToMyTeams": "Ir a Mis Equipos",
     "goToMyPokemons": "Ir a Mis Pokemón",
     "sendLinkRecovery": "Enviar enlace de recuperación",
-    "accept": "Aceptar"
+    "accept": "Aceptar",
+    "organizar": "Organizar Torneos",
+    "goToRound": "Ir a Ronda",
+    "goToStanding": "Ir a Clasificación",
+    "goToResults": "Ir a Resultados"
   },
 
   "teamsSeccion":{
@@ -91,7 +97,10 @@
     "searchPokemon": "Buscar Pokémon por nombre",
     "dataPokemon": "Datos del Pokemón",
     "nickPokemon": "Mote Pokemón",
-    "pasteForSd": "Paste del equipo copiado con exito"
+    "pasteForSd": "Paste del equipo copiado con exito",
+    "subtitle": "Si seleccionas 6 pokes, puedes obtener el formato SD",
+    "tittleSwal": "¡Has seleccionado 6 Pokémon!",
+    "subTittleSwal": "Ahora puedes crear un equipo."
   },
 
   "profileSeccion":{
@@ -122,8 +131,10 @@
     "ingPassword": "Ingrese su contraseña",
     "ingConfirmPassword": "Confirme su contraseña",
     "ingAvatarUrl": "Ingrese la URL de su imagen de perfil",
-    "ingNickName": "Ingrese su nombre de usuario"
+    "ingNickName": "Ingrese su nombre de usuario",
+    "isOrganizer": "Es Organizador"
   },
+
 
   "errorsSeccion":{
     "errorName": "El nombre debe tener al menos 3 caracteres.",
@@ -169,6 +180,63 @@
     "passwordRestabled": "Contraseña Restablecida con exito!",
     "passwordRestableError": "Hubo un problema al restablecer la contraseña."
   },
+
+  "tournamentsSeccion":{
+    "title": "Torneos",
+    "noTournaments": "¡Aún no hay torneos organizados!",
+    "myTournaments": "Mis Torneos Organizados",
+    "name": "Nombre",
+    "type": "Tipo",
+    "date": "Fecha",
+    "round": "Ronda",
+    "standing": "Clasificación",
+    "results": "Resultados",
+    "goToRound": "Ir a Ronda",
+    "goToStanding": "Ir a Clasificación",
+    "goToResults": "Ir a Resultados",
+    "addTournamet": "Crear Torneo",
+    "subAddTournament": "Rellene los siguientes campos para crear un nuevo torneo",
+    "tournamentName": "Nombre del Torneo",
+    "selectType": "Seleccione un tipo de torneo",
+    "dateTournament": "Fecha del Torneo",
+    "actions": "Acción",
+    "viewTournament": "Ver",
+    "loadRound": "Cargar Ronda",
+    "loadResults": "Cargar Resultados",
+    "loadStanding": "Cargar Clasificación",
+    "uploadingRound": "Subiendo ronda...",
+    "roundUploaded": "Ronda cargada",
+    "uploadingResults": "Subiendo resultados...",
+    "resultsUploaded": "Resultados cargados",
+    "uploadingStanding": "Subiendo clasificación...",
+    "standingUploaded": "Clasificación cargada",
+    "uploadSuccessfully": "Subido con exito",
+    "matchRound": "Emparejamientos – Ronda",
+    "mesa": "Mesa",
+    "resultRound": "Resultados – Ronda",
+    "resultVictorias": "Victorias",
+    "resultDerrotas": "Derrotas",
+    "resultEmpates": "Empates",
+    "standingRound": "Clasificación – Ronda",
+    "standingSeccion": "Sección",
+    "standingRoundDrop": "Ronda de retirada",
+    "standingHistorial": "Historial de Resultados",
+    "standingPuntos": "Puntos de Partida",
+    "standingVictory1": "% Victorias rivales",
+    "standingVictory2": "% de victorias de los rivales de todos los rivales",
+    "":""
+  },
+
+  "filesSeccion":{
+    "currentRound": "Ronda Actual",
+    "currentResults": "Resultados Actuales",
+    "standing": "Clasificación",
+    "selectFile": "Seleccione un archivo",
+    "uploadFile": "Subir archivo",
+    "fileUploaded": "Archivo subido con exito!"
+  },
+
+  
   
   "":""
 }
