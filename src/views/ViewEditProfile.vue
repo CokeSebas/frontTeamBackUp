@@ -47,6 +47,12 @@
                     <p>{{ user.isOrganizer }}</p>
                   </div>
                 </div>
+                <div class="form-group row" v-if="isAdmin">
+                  <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.isAdmin') }}:</strong></label>
+                  <div class="col-8">
+                    <p>{{ user.isAdmin }}</p>
+                  </div>
+                </div>
                 <div v-if="isEditing" class="form-group row">
                   <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.avatarUrl') }}:</strong></label>
                   <div class="col-8">
@@ -91,6 +97,7 @@
           <button class="btn btn-success btn-block mb-2" @click="goToTeams">{{ $t('buttons.goToMyTeams') }}</button>
           <button class="btn btn-success btn-block mb-2" @click="goToPokemons">{{ $t('buttons.goToMyPokemons') }}</button>
           <button v-if="isOrganizer" class="btn btn-success btn-block mb-2" @click="goToOrgTorneo">{{ $t('buttons.organizar') }}</button>
+          <button v-if="isAdmin" class="btn btn-success btn-block mb-2" @click="goToListUsers">{{ $t('buttons.goToListUsers') }}</button>
           <button class="btn btn-secondary btn-block mb-2" @click="enableEdit">{{ $t('buttons.editProfile') }}</button>
           <button class="btn btn-secondary btn-block" @click="showChangePasswordForm = true">{{ $t('buttons.changePassword') }}</button>
         </div>
@@ -159,6 +166,13 @@
       const isOrganizer = computed(() => {
         return user.value?.isOrganizer === true
       })
+
+      const isAdmin = computed(() => {
+        return user.value?.isAdmin === true
+      })
+
+      console.log('isOrganizer:', isOrganizer.value);
+      console.log('isAdmin:', isAdmin.value);
 
       // Cancelar edición
       const cancelEdit = () => {
@@ -271,6 +285,7 @@
       const goToTeams = () => router.push('/my-teams/' + userId);
       const goToPokemons = () => router.push('/my-pokemons/' + userId);
       const goToOrgTorneo = () => router.push('/add-tournament/' + userId);
+      const goToListUsers = () => router.push('/list-users');
 
       return {
         user,
@@ -284,6 +299,7 @@
         confirmPassword,
         gifLoading,
         isOrganizer,
+        isAdmin,
         enableEdit,
         cancelEdit,
         saveChanges,
@@ -292,6 +308,7 @@
         goToTeams,
         goToPokemons,
         goToOrgTorneo,
+        goToListUsers,
         mode
       };
     }

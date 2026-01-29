@@ -24,11 +24,14 @@ import ViewForgotPassword from '@/views/ViewForgotPassword.vue';
 import ViewResetPassword from '@/views/ViewRecuperarPassword.vue';
 
 import ViewAddTournament from '@/views/ViewAddTournament.vue';
+import ViewListUsers from '@/views/ViewListUsers.vue';
 import ViewOrgTorneo from '@/views/ViewOrgTorneo.vue';
 import ViewGoToRound from '@/views/ViewGoToRound.vue';
 import ViewGoToStanding from '@/views/ViewGoToStanding.vue';
 import ViewGoToResults from '@/views/ViewGoToResults.vue';
 import ViewTournaments from '@/views/ViewSeeTournamets.vue';
+import ViewAddStanding from '@/views/ViewAddStanding.vue';
+import ViewTopsTournament from '@/views/ViewTopsTournament.vue';
 
 // Define las rutas
 const routes = [
@@ -267,6 +270,51 @@ const routes = [
     path: '/add-tournament/:id_user',
     name: 'ViewAddTournament',
     component: ViewAddTournament,
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
+        next({ path: '/login', query: { redirect: to.fullPath } });
+      } else {
+        next();
+      }
+    },
+  },
+  {
+    path: '/add-standing/:id_torneo',
+    name: 'ViewAddStanding',
+    component: ViewAddStanding,
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
+        next({ path: '/login', query: { redirect: to.fullPath } });
+      } else {
+        next();
+      }
+    },
+    meta: {
+      title: 'Organizar Torneo',
+      breadcrumb: {
+        text: 'Agregar Torneo',
+        link: 'back',
+      }
+    }
+  },
+  {
+    path:'/goToTops/:id_torneo',
+    name: 'ViewTopsTournament',
+    component: ViewTopsTournament,
+    meta: {
+      title: 'Ver Top',
+      breadcrumb: {
+        text: 'Ver Torneos',
+        link: 'back',
+      }
+    }
+  },
+  {
+    path: '/list-users',
+    name: 'ViewListUsers',
+    component: ViewListUsers,
     beforeEnter: (to, from, next) => {
       const authStore = useAuthStore(); // Usa el authStore de Pinia
       if (!authStore.isAuthenticated) {

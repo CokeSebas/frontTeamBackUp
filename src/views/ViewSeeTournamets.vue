@@ -12,6 +12,7 @@
               <th class="text-center">{{ $t('tournamentsSeccion.round') }}</th>
               <th class="text-center">{{ $t('tournamentsSeccion.standing') }}</th>
               <th class="text-center">{{ $t('tournamentsSeccion.results') }}</th>
+              <th class="text-center">{{ $t('tournamentsSeccion.imgTop') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -34,10 +35,15 @@
                   {{ $t('tournamentsSeccion.goToResults') }}
                 </button>
               </td>
+              <td class="text-center">
+                <button class="btn btn-success btn-sm" @click="goToTops(tournament.id)">
+                  {{ $t('tournamentsSeccion.seeImgTop') }}
+                </button>
+              </td>
             </tr>
 
             <tr v-if="tournaments.length === 0">
-              <td colspan="6" class="text-center">
+              <td colspan="7" class="text-center">
                 {{ $t('tournamentsSeccion.noTournaments') }}
               </td>
             </tr>
@@ -88,6 +94,7 @@
 
   const goToStanding = (idTorneo) => router.push('/goToStanding/' + idTorneo);
   const goToResults = (idTorneo) => router.push('/goToResults/' + idTorneo);
+  const goToTops = (idTorneo) => router.push('/goToTops/' + idTorneo);
 
 
   onMounted(loadTournaments)
