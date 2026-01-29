@@ -50,7 +50,9 @@
     "organizar": "Organizar Torneios",
     "goToRound": "Ir a Ronda",
     "goToStanding": "Ir a Clasificación",
-    "goToResults": "Ir a Resultados"
+    "goToResults": "Ir a Resultados",
+    "goToListUsers": "Ir para Lista de Usuários",
+    "addTeam": "Adicionar Equipe"
   },
 
   "teamsSeccion": {
@@ -132,7 +134,8 @@
     "ingConfirmPassword": "Confirme sua senha",
     "ingAvatarUrl": "Insira o URL da sua imagem de perfil",
     "ingNickName": "Insira seu apelido",
-    "isOrganizer": "É Organizador"
+    "isOrganizer": "É Organizador",
+    "isAdmin": "É Administrador"
   },
 
 
@@ -224,6 +227,16 @@
     "standingPuntos": "Match Points",
     "standingVictory1": "Opponent Win %",
     "standingVictory2": "Opponents' Opponents' Win %",
+    "dowloadLight": "BaixarClaro",
+    "dowloadDark": "BaixarEscuro",
+    "tournamentImgFooter": "Imagem gerada por",
+    "typeTournament": "Tipo Torneio",
+    "seeImgTop": "Ver Imagem Top",
+    "imgTop": "Imagem Top",
+    "topPlayer": "Top de Jogadores",
+    "position": "Posição",
+    "selectPlayer": "Selecione um jogador",
+    "addPlayer": "Adicionar Jogador",
     "":""
   },
 

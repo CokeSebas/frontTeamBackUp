@@ -4,7 +4,7 @@
     <div class="row">
 
       <!-- COLUMNA IZQUIERDA: CREAR TORNEO -->
-      <div class="col-8">
+      <div class="col-6">
         <header :class="mode === 'dark' ? 'dark-header' : ''">
           <h1>{{ $t('tournamentsSeccion.addTournamet') }}</h1>
           <p>{{ $t('tournamentsSeccion.subAddTournament') }}</p>
@@ -37,6 +37,19 @@
             </div>
 
             <div class="form-group">
+              <label>{{ $t('tournamentsSeccion.typeTournament') }}</label>
+              <select
+                v-model="form.format"
+                class="form-control"
+                required
+              >
+                <option disabled value="">{{ $t('tournamentsSeccion.typeTournament') }}</option>
+                <option value="tcg">Trading Card Game</option>
+                <option value="vg">VideoGame</option>
+              </select>
+            </div>
+
+            <div class="form-group">
               <label>{{ $t('tournamentsSeccion.dateTournament') }}</label>
               <input
                 v-model="form.date"
@@ -56,7 +69,7 @@
           </form>
         </div>
       </div>
-      <div class="col-4">
+      <div class="col-6">
         <div :class="['list-card', mode === 'dark' ? 'dark-card' : '']">
           <h2 class="mb-3">{{ $t('tournamentsSeccion.myTournaments') }}</h2>
 
@@ -65,24 +78,32 @@
               <tr>
                 <th>{{ $t('tournamentsSeccion.name') }}</th>
                 <th>{{ $t('tournamentsSeccion.type') }}</th>
+                <th>{{ $t('teamsSeccion.format') }}</th>
                 <th>{{ $t('tournamentsSeccion.date') }}</th>
-                <th class="text-center">{{ $t('tournamentsSeccion.actions') }}</th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="tournament in tournaments.datos" :key="tournament.id">
                 <td>{{ tournament.nombre }}</td>
-                <td>{{ tournament.tipo_torneo === "1" ? 'Challenge' : 'Cup' }}</td>
+                <td>{{ tournament.tipo_torneo === "challenge" ? 'Challenge' : 'Cup' }}</td>
+                <td>{{ tournament.formato_torneo === "tcg" ? 'Trading Card Game' : 'VideoGame' }}</td>
                 <td>{{ moment(tournament.fecha_torneo).format('DD/MM/YYYY') }}</td>
                 <td class="text-center">
                   <button class="btn btn-primary btn-sm" @click="ViewOrgTorneo(tournament.id)">
                     {{ $t('tournamentsSeccion.viewTournament') }}
                   </button>
                 </td>
+                <td class="text-center">
+                  <button class="btn btn-primary btn-sm" @click="uploadTeams(tournament.id)">
+                    {{ $t('buttons.addTeam') }}
+                  </button>
+                </td>
               </tr>
 
               <tr v-if="tournaments.length === 0">
-                <td colspan="2" class="text-center">
+                <td colspan="6" class="text-center">
                   {{ $t('tournamentsSeccion.noTournaments') }}
                 </td>
               </tr>
@@ -120,6 +141,7 @@
   const form = ref({
     nombre: '',
     tipo_torneo: '',
+    formato_torneo: '',
     fecha: ''
   })
 
@@ -139,7 +161,7 @@
     loading.value = true
 
     let params = { 
-      nombre: form.value.name, tipo_torneo: form.value.type, fecha_torneo: form.value.date, userId: userId };
+      nombre: form.value.name, tipo_torneo: form.value.type, formato_torneo: form.value.format, fecha_torneo: form.value.date, userId: userId };
 
     try {
       await axios.post(`${apiUrl}tournaments`, params)
@@ -151,7 +173,7 @@
         timer: 1500
       })
 
-      form.value = { nombre: '', tipo_torneo: '', fecha: '' }
+      form.value = { nombre: '', tipo_torneo: '', formato_torneo: '', fecha: '' }
       loadTournaments();
     } catch (error) {
       Swal.fire({
@@ -167,6 +189,14 @@
   const ViewOrgTorneo = (tournamentId) => {
     router.push({
       name: 'ViewOrgTorneo',
+      params: { id_torneo: tournamentId }
+    })
+  }
+
+  const uploadTeams = (tournamentId) => {
+    console.log("Subir equipos para el torneo ID:", tournamentId);
+    router.push({
+      name: 'ViewAddStanding',
       params: { id_torneo: tournamentId }
     })
   }
