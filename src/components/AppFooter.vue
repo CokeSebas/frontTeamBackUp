@@ -1,76 +1,122 @@
 <!-- src/components/AppFooter.vue -->
 <template>
-  <footer :class="footerClass">
+  <footer :class="['footer', footerClass]">
     <div class="footer-content">
-      <p>Creado por MakiseVGC ({{ currentYear }})</p>
-      <p>
-        Contacto: <a :href="'mailto:' + contactEmail">{{ contactEmail }}</a>
-      </p>
+
+      <!-- Logo -->
+      <div class="footer-logo">
+        <img
+          :src="logoSrc"
+          alt="MakiseVGC Logo"
+        />
+      </div>
+
+      <!-- Información -->
+      <div class="footer-info">
+        <p>
+          Creado por <a href="https://x.com/CokeSebas"> <strong>CokeSebas </strong> ({{ currentYear }}) </a>
+        </p>
+        <p>
+          Contacto:
+          <a :href="'mailto:' + contactEmail">
+            {{ contactEmail }}
+          </a>
+        </p>
+      </div>
+
     </div>
   </footer>
 </template>
 
 <script>
-import { inject, computed } from 'vue';
+  import { inject, computed } from 'vue';
+  import logo from '@/assets/pokecircuit.png'; // 👈 ajusta el path si es necesario
 
-export default {
-  setup() {
-    const mode = inject('mode'); // Inyectar el modo
+  export default {
+    setup() {
+      const mode = inject('mode');
 
-    // Computed para definir la clase del footer
-    const footerClass = computed(() => {
-      return mode.value === 'dark' ? 'footer-dark' : 'footer-light';
-    });
+      const footerClass = computed(() =>
+        mode.value === 'dark' ? 'footer-dark' : 'footer-light'
+      );
 
-    return {
-      mode,
-      footerClass, // Retorna la clase calculada
-      currentYear: new Date().getFullYear(),
-      contactEmail: 'teamsbackupokemon@gmail.com'
-    };
-  },
-};
+      return {
+        footerClass,
+        logoSrc: logo,
+        currentYear: new Date().getFullYear(),
+        contactEmail: 'teamsbackupokemon@gmail.com'
+      };
+    },
+  };
 </script>
 
 <style scoped>
+  /* Base footer */
+  .footer {
+    width: 100%;
+    padding: 30px 0;
+  }
 
-.footer {
-  display: flex;
-  justify-content: center; /* Centra los elementos horizontalmente */
-  align-items: center; /* Centra los elementos verticalmente */
-  flex-direction: column; /* Alinea el contenido en columna */
-  background-color: #f1f1f1;
-  color: #000;
-  padding: 20px 0;
-  text-align: center;
-  width: 100%; /* Asegura que el footer ocupe el ancho completo */
-}
+  /* Light / Dark */
+  .footer-light {
+    background-color: #f1f1f1;
+    color: #000;
+  }
+
+  .footer-dark {
+    background-color: #333;
+    color: #fff;
+  }
+
+  /* Layout */
+  .footer-content {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 16px;
+  }
+
+  /* Logo */
+  .footer-logo img {
+    height: 70px;
+    width: auto;
+    max-height: 60px;
+  }
 
 
-.footer-light {
-  background-color: #f1f1f1;
-  color: #000;
-  padding: 20px 0;
-  text-align: center;
-}
+  /* Info */
+  .footer-info {
+    text-align: left;
+    font-size: 14px;
+  }
 
-.footer-dark {
-  background-color: #333;
-  color: #fff;
-  padding: 20px 0;
-  text-align: center;
-}
+  .footer-info p {
+    margin: 4px 0;
+  }
 
-.footer-content {
-  max-width: 800px;
-  margin: 0 auto;
-}
+  /* Links */
+  .footer a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+  }
 
-.footer a {
-  color: #007bff;
-  text-decoration: none;
-}
-.footer a:hover {
-  text-decoration: underline;
-}
+  .footer a:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .footer-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .footer-info {
+      text-align: center;
+    }
+  }
 </style>

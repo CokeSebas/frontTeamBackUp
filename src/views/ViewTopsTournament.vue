@@ -1,28 +1,33 @@
 <template>
   <div :class="['container', { 'dark-mode': mode === 'dark' }]">
     <div class="top-actions">
+      <div class="download-actions">
         <button
           class="btn btn-download"
           @click="downloadImage('light')"
         >
-          <img :src="sunIcon" width="20" height="20"> {{ $t('tournamentsSeccion.dowloadLight') }}
+          <img :src="sunIcon" width="20" height="20">
+          {{ $t('tournamentsSeccion.dowloadLight') }}
         </button>
 
         <button
           class="btn btn-download dark"
           @click="downloadImage('dark')"
         >
-          <img :src="moonIcon" width="20" height="20"> {{ $t('tournamentsSeccion.dowloadDark') }}
+          <img :src="moonIcon" width="20" height="20">
+          {{ $t('tournamentsSeccion.dowloadDark') }}
         </button>
+      </div>
 
-        <div class="share-box">
-          <h3>{{ $t('share') }}</h3>
-          <ShareButtons
-            :shareUrl="currentUrl"
-            shareText="Check this Tournament Top"
-          />
-        </div>
+      <div class="share-box">
+        <h3>{{ $t('share') }}</h3>
+        <ShareButtons
+          :shareUrl="currentUrl"
+          shareText="Check this Tournament Top"
+        />
+      </div>
     </div>
+
 
     <!-- LOADING -->
     <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
@@ -69,7 +74,7 @@
         </div>
       </div>
 
-      <h6 align="center">{{ $t('tournamentsSeccion.tournamentImgFooter') }} {{ currentUrl }} </h6>
+      <h6 align="center">{{ $t('tournamentsSeccion.tournamentImgFooter') }} <a :href="currentUrl" target="_blank">{{ currentUrl }}</a> </h6>
 
     </div>
   </div>
@@ -338,6 +343,78 @@
   .btn-download:hover {
     opacity: 0.9;
   }
+
+  .top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Botones */
+.download-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-download {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* Share box */
+.share-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dark-mode .btn-download {
+  background: #2c2c2c;
+  color: #ecf0f1;
+}
+
+.btn-download.dark {
+  background: #34495e;
+}
+
+
+/* =====================
+   📱 MOBILE
+   ===================== */
+@media (max-width: 768px) {
+  .top-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .download-actions {
+    flex-direction: column;
+  }
+
+  .btn-download {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .share-box {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f7f7f7;
+    flex-direction: column;
+  }
+
+  .dark-mode .share-box {
+    background: #1f1f1f;
+  }
+}
+
 
 
 

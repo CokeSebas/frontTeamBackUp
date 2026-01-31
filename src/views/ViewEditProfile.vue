@@ -1,105 +1,201 @@
 <template>
   <div class="container mt-4">
     <div class="row">
-      <!-- Columna para mostrar los datos del perfil -->
-      <div class="col-8">
+      <!-- PERFIL -->
+      <div class="col-12 col-md-8">
         <div :class="['user-profile', mode === 'dark' ? 'dark-mode' : '']">
-          <h1>{{ $t('profileSeccion.title') }}</h1>
+          <h1 class="text-center text-md-start">
+            {{ $t('profileSeccion.title') }}
+          </h1>
 
-          <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
-            <img :src="gifLoading">
+          <!-- Loading -->
+          <div
+            v-if="loading"
+            class="d-flex justify-content-center align-items-center"
+          >
+            <img :src="gifLoading" />
           </div>
+
           <div v-if="error">{{ error }}</div>
 
           <div v-if="user">
-            <div class="row align-items-center">
-              <!-- Columna para la imagen del usuario -->
-              <div class="col-4 text-center">
-                <img :src="user.avatarUrl" alt="User Image" style="width: 80%;" />
+            <div class="row align-items-center text-center text-md-start">
+              <!-- Avatar -->
+              <div class="col-12 col-md-4 text-center mb-3 mb-md-0">
+                <img
+                  :src="user.avatarUrl"
+                  alt="User Image"
+                  class="img-fluid rounded-circle shadow"
+                  style="max-width: 160px"
+                />
               </div>
 
-              <!-- Columna para los datos del usuario -->
-              <div class="col-8">
-                <div class="form-group row">
-                  <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.name') }}:</strong></label>
-                  <div class="col-8">
-                    <input v-if="isEditing" type="text" v-model="editedUser.name" class="form-control"/>
-                    <p v-else>{{ user.name }}</p>
+              <!-- Datos -->
+              <div class="col-12 col-md-8">
+                <!-- Nombre -->
+                <div class="profile-row">
+                  <span class="label">{{ $t('profileSeccion.name') }}</span>
+                  <div class="value">
+                    <input
+                      v-if="isEditing"
+                      type="text"
+                      v-model="editedUser.name"
+                      class="form-control"
+                    />
+                    <span v-else>{{ user.name }}</span>
                   </div>
                 </div>
-                <div class="form-group row">
-                  <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.lastName') }}:</strong></label>
-                  <div class="col-8">
-                    <input v-if="isEditing" type="text" v-model="editedUser.lastName" class="form-control"/>
-                    <p v-else>{{ user.lastName }}</p>
+
+                <!-- Apellido -->
+                <div class="profile-row">
+                  <span class="label">{{ $t('profileSeccion.lastName') }}</span>
+                  <div class="value">
+                    <input
+                      v-if="isEditing"
+                      type="text"
+                      v-model="editedUser.lastName"
+                      class="form-control"
+                    />
+                    <span v-else>{{ user.lastName }}</span>
                   </div>
                 </div>
-                <div class="form-group row">
-                  <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.nickName') }}:</strong></label>
-                  <div class="col-8">
-                    <input v-if="isEditing" type="text" v-model="editedUser.nickName" class="form-control"/>
-                    <p v-else>{{ user.nickName }}</p>
+
+                <!-- Nick -->
+                <div class="profile-row">
+                  <span class="label">{{ $t('profileSeccion.nickName') }}</span>
+                  <div class="value">
+                    <input
+                      v-if="isEditing"
+                      type="text"
+                      v-model="editedUser.nickName"
+                      class="form-control"
+                    />
+                    <span v-else class="nickname">
+                      {{ user.nickName }}
+                    </span>
                   </div>
                 </div>
-                <div class="form-group row" v-if="isOrganizer">
-                  <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.isOrganizer') }}:</strong></label>
-                  <div class="col-8">
-                    <p>{{ user.isOrganizer }}</p>
-                  </div>
+
+                <!-- Organizer -->
+                <div class="profile-row" v-if="isOrganizer">
+                  <span class="label">
+                    {{ $t('profileSeccion.isOrganizer') }}
+                  </span>
+                  <span class="badge bg-success">
+                    Organizer
+                  </span>
                 </div>
-                <div class="form-group row" v-if="isAdmin">
-                  <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.isAdmin') }}:</strong></label>
-                  <div class="col-8">
-                    <p>{{ user.isAdmin }}</p>
-                  </div>
+
+                <!-- Admin -->
+                <div class="profile-row" v-if="isAdmin">
+                  <span class="label">
+                    {{ $t('profileSeccion.isAdmin') }}
+                  </span>
+                  <span class="badge bg-danger">
+                    Admin
+                  </span>
                 </div>
-                <div v-if="isEditing" class="form-group row">
-                  <label class="col-4 col-form-label"><strong>{{ $t('profileSeccion.avatarUrl') }}:</strong></label>
-                  <div class="col-8">
-                    <input v-if="isEditing" type="text" v-model="editedUser.avatarUrl" class="form-control"/>
-                  </div>
+
+                <!-- Avatar URL (solo edición) -->
+                <div class="profile-row" v-if="isEditing">
+                  <span class="label">
+                    {{ $t('profileSeccion.avatarUrl') }}
+                  </span>
+                  <input
+                    type="text"
+                    v-model="editedUser.avatarUrl"
+                    class="form-control"
+                  />
                 </div>
               </div>
             </div>
 
-            <!-- Botones para guardar y cancelar solo visibles en modo edición -->
-            <div v-if="isEditing" class="mt-3">
-              <button class="btn btn-success" @click="saveChanges">{{ $t('buttons.saveChanges') }}</button>
-              <button class="btn btn-secondary" @click="cancelEdit">{{ $t('buttons.cancel') }}</button>
+            <!-- Botones edición -->
+            <div v-if="isEditing" class="mt-3 text-center text-md-start">
+              <button class="btn btn-success me-2" @click="saveChanges">
+                {{ $t('buttons.saveChanges') }}
+              </button>
+              <button class="btn btn-secondary" @click="cancelEdit">
+                {{ $t('buttons.cancel') }}
+              </button>
             </div>
 
-            <!-- Formulario para cambiar la contraseña -->
+            <!-- Cambio de contraseña -->
             <div v-if="showChangePasswordForm" class="mt-4">
               <h3>{{ $t('profileSeccion.changePassword') }}</h3>
+
               <div class="form-group">
-                <label for="currentPassword">{{  $t('profileSeccion.currentPassword') }}:</label>
-                <input type="password" v-model="currentPassword" class="form-control" />
+                <label>{{ $t('profileSeccion.currentPassword') }}</label>
+                <input
+                  type="password"
+                  v-model="currentPassword"
+                  class="form-control"
+                />
               </div>
+
               <div class="form-group">
-                <label for="newPassword">{{ $t('profileSeccion.newPassword') }}:</label>
-                <input type="password" v-model="newPassword" class="form-control" />
+                <label>{{ $t('profileSeccion.newPassword') }}</label>
+                <input
+                  type="password"
+                  v-model="newPassword"
+                  class="form-control"
+                />
               </div>
+
               <div class="form-group">
-                <label for="confirmPassword">{{ $t('profileSeccion.confirmPassword') }}:</label>
-                <input type="password" v-model="confirmPassword" class="form-control" />
+                <label>{{ $t('profileSeccion.confirmPassword') }}</label>
+                <input
+                  type="password"
+                  v-model="confirmPassword"
+                  class="form-control"
+                />
               </div>
-              <button class="btn btn-success" @click="changePassword">{{ $t('buttons.changePassword') }}</button>
-              <button class="btn btn-secondary" @click="cancelChangePassword">{{ $t('buttons.cancel') }}</button>
+
+              <button class="btn btn-success me-2" @click="changePassword">
+                {{ $t('buttons.changePassword') }}
+              </button>
+              <button class="btn btn-secondary" @click="cancelChangePassword">
+                {{ $t('buttons.cancel') }}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Columna para los botones de acciones -->
-      <div class="col-4">
-        <div class="actions">
+      <!-- ACCIONES -->
+      <div class="col-12 col-md-4 mt-4 mt-md-0">
+        <div class="actions text-center text-md-start">
           <h2>{{ $t('profileSeccion.actions') }}</h2>
-          <button class="btn btn-success btn-block mb-2" @click="goToTeams">{{ $t('buttons.goToMyTeams') }}</button>
-          <button class="btn btn-success btn-block mb-2" @click="goToPokemons">{{ $t('buttons.goToMyPokemons') }}</button>
-          <button v-if="isOrganizer" class="btn btn-success btn-block mb-2" @click="goToOrgTorneo">{{ $t('buttons.organizar') }}</button>
-          <button v-if="isAdmin" class="btn btn-success btn-block mb-2" @click="goToListUsers">{{ $t('buttons.goToListUsers') }}</button>
-          <button class="btn btn-secondary btn-block mb-2" @click="enableEdit">{{ $t('buttons.editProfile') }}</button>
-          <button class="btn btn-secondary btn-block" @click="showChangePasswordForm = true">{{ $t('buttons.changePassword') }}</button>
+
+          <button class="btn btn-success w-100 mb-2" @click="goToTeams">
+            {{ $t('buttons.goToMyTeams') }}
+          </button>
+          <button class="btn btn-success w-100 mb-2" @click="goToPokemons">
+            {{ $t('buttons.goToMyPokemons') }}
+          </button>
+          <button
+            v-if="isOrganizer"
+            class="btn btn-success w-100 mb-2"
+            @click="goToOrgTorneo"
+          >
+            {{ $t('buttons.organizar') }}
+          </button>
+          <button
+            v-if="isAdmin"
+            class="btn btn-success w-100 mb-2"
+            @click="goToListUsers"
+          >
+            {{ $t('buttons.goToListUsers') }}
+          </button>
+          <button class="btn btn-secondary w-100 mb-2" @click="enableEdit">
+            {{ $t('buttons.editProfile') }}
+          </button>
+          <button
+            class="btn btn-secondary w-100"
+            @click="showChangePasswordForm = true"
+          >
+            {{ $t('buttons.changePassword') }}
+          </button>
         </div>
       </div>
     </div>
@@ -150,6 +246,15 @@
         try {
           const response = await axios.get(apiUrl+'users/' + userId);
           user.value = response.data[0].data;
+
+          if(user.value.isAdmin === true){
+            sessionStorage.setItem('isAdmin', 'true');
+          }
+
+          if(user.value.isOrganizer === true){
+            sessionStorage.setItem('isOrganizer', 'true');
+          }
+
           editedUser.value = { ...user.value }; // Hacer una copia editable
         } catch (err) {
           error.value = 'Error al cargar el perfil';
@@ -171,8 +276,6 @@
         return user.value?.isAdmin === true
       })
 
-      console.log('isOrganizer:', isOrganizer.value);
-      console.log('isAdmin:', isAdmin.value);
 
       // Cancelar edición
       const cancelEdit = () => {
@@ -282,9 +385,9 @@
       };
 
       // Navegación a otras vistas
-      const goToTeams = () => router.push('/my-teams/' + userId);
-      const goToPokemons = () => router.push('/my-pokemons/' + userId);
-      const goToOrgTorneo = () => router.push('/add-tournament/' + userId);
+      const goToTeams = () => router.push('/vgc/my-teams/' + userId);
+      const goToPokemons = () => router.push('/vgc/my-pokemons/' + userId);
+      const goToOrgTorneo = () => router.push('/tournament/add-tournament/' + userId);
       const goToListUsers = () => router.push('/list-users');
 
       return {
@@ -363,19 +466,37 @@
     color: #e0e0e0;
   }
 
-  /*
-  .dark-mode .btn-success {
-    background-color: #4e4e4e;
-    color: #fff;
-    border-color: #666;
+  .profile-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  .dark-mode .btn-secondary {
-    background-color: #666;
-    color: #fff;
-    border-color: #888;
+  .profile-row:last-child {
+    border-bottom: none;
   }
-    */
+
+  .profile-row .label {
+    font-weight: 600;
+    opacity: 0.85;
+  }
+
+  .profile-row .value {
+    flex: 1;
+    text-align: right;
+  }
+
+  .nickname {
+    font-style: italic;
+    opacity: 0.9;
+  }
+
+  .dark-mode .profile-row {
+    border-color: rgba(255, 255, 255, 0.15);
+  }
 
 </style>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container" v-if="isOrganizer">
     <div :class="['form-container', { 'dark-mode': mode === 'dark' }]">
       <div :class="['form-card full-width', { 'dark-card': mode === 'dark' }]">
         <h2 :class="['form-title', { 'dark-text': mode === 'dark' }]">
@@ -78,7 +78,7 @@
 
 
 <script setup>
-  import { inject, ref, computed } from 'vue'; //reactive, 
+  import { inject, ref, computed, onMounted } from 'vue'; //reactive, 
   import axios from 'axios';
   import { useRouter, useRoute } from 'vue-router';
   import Swal from 'sweetalert2';
@@ -93,6 +93,9 @@
   const route = useRoute();
   const isLoading = ref(false);
   //const authStore = useAuthStore(); // Instancia del store
+
+
+  //añadir lo de organizador para que solo ellos lo puedan ver
 
   const apiUrl = inject('apiUrl'); // Ahora tienes acceso a apiUrl
   const idTorneo = Number(route.params.id_torneo);
@@ -109,6 +112,25 @@
   const { t } = useI18n(); // Usa `useI18n` para obtener `t`
 
 
+  const isOrganizer = computed(() => {
+    return sessionStorage.getItem('isOrganizer') === 'true';
+  })
+
+  onMounted(() => {
+    
+    if (!isOrganizer.value) {
+      Swal.fire({
+          icon: 'error',
+          title: 'No autorizado',
+          text: 'No tienes permisos para ver esta página.',
+          confirmButtonText: 'Volver al inicio'
+        }).then(() => {
+          //window.location.href = '/'
+          router.push('/'); // Redirigir al usuario a la página de inicio u otra página adecuada
+        })
+
+    }
+  })
 
   // Computed
   const hasAnyFile = computed(() =>
@@ -227,8 +249,8 @@
   }
 
 
-  const goToStanding = () => router.push('/goToStanding/' + idTorneo);
-  const goToResults = () => router.push('/goToResults/' + idTorneo);
+  const goToStanding = () => router.push('/tournament/goToStanding/' + idTorneo);
+  const goToResults = () => router.push('/tournament/goToResults/' + idTorneo);
 
 </script>
 

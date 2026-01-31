@@ -1,52 +1,116 @@
 <template>
   <div :class="['container', mode === 'dark' ? 'dark-mode' : '']">
     <br>
-    <header>
-      <h1>{{ $t('tournamentsSeccion.standingRound') }} {{ currentRound }}/{{ totalRounds }}</h1>
-    </header>
 
-    <h2>{{ category }}</h2>
+    <!-- 🔄 LOADING -->
+    <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
+      <img :src="gifLoading">
+    </div>
 
-    <table :class="mode === 'dark' ? 'dark-table' : ''">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>{{ $t('tournamentsSeccion.name') }}</th>
-          <th>{{ $t('tournamentsSeccion.standingSeccion') }}</th>
-          <th>{{ $t('tournamentsSeccion.standingRoundDrop') }}</th>
-          <th>{{ $t('tournamentsSeccion.standingHistorial') }}</th>
-          <th>{{ $t('tournamentsSeccion.standingPuntos') }}</th>
-          <th>{{ $t('tournamentsSeccion.standingVictory1') }}</th>
-          <th>{{ $t('tournamentsSeccion.standingVictory2') }}</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr
+    <template v-else>
+      <header>
+        <h1>
+          {{ $t('tournamentsSeccion.standingRound') }}
+          {{ currentRound }}/{{ totalRounds }}
+        </h1>
+      </header>
+  
+      <h2>{{ category }}</h2>
+  
+      <!-- =======================
+           🖥️ DESKTOP TABLE
+           ======================= -->
+      <table class="standing-table" :class="mode === 'dark' ? 'dark-table' : ''">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{ $t('tournamentsSeccion.name') }}</th>
+            <th>{{ $t('tournamentsSeccion.standingSeccion') }}</th>
+            <th>{{ $t('tournamentsSeccion.standingRoundDrop') }}</th>
+            <th>{{ $t('tournamentsSeccion.standingHistorial') }}</th>
+            <th>{{ $t('tournamentsSeccion.standingPuntos') }}</th>
+            <th>{{ $t('tournamentsSeccion.standingVictory1') }}</th>
+            <th>{{ $t('tournamentsSeccion.standingVictory2') }}</th>
+          </tr>
+        </thead>
+  
+        <tbody>
+          <tr
+            v-for="player in standings"
+            :key="player.rank"
+            :class="{ 'top-cut': player.isTopCut }"
+          >
+            <td class="rank">{{ player.rank }}</td>
+            <td>
+              {{ player.name }}
+              <span v-if="player.isTopCut" class="top-badge">
+                TOP {{ top }}
+              </span>
+            </td>
+            <td>{{ player.section }}</td>
+            <td>{{ player.withdrawRound || '-' }}</td>
+            <td>{{ player.record }}</td>
+            <td>{{ player.points }}</td>
+            <td>{{ player.opponentWinRate }}</td>
+            <td>{{ player.opponentOpponentWinRate }}</td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <!-- =======================
+           📱 MOBILE CARDS
+           ======================= -->
+      <div class="standing-cards">
+        <div
           v-for="player in standings"
           :key="player.rank"
-          :class="{ 'top-cut': player.isTopCut }"
+          :class="['standing-card', { 'top-cut': player.isTopCut }]"
         >
-          <td class="rank">{{ player.rank }}</td>
+          <div class="card-header">
+            <strong>#{{ player.rank }} – {{ player.name }}</strong>
+            <span v-if="player.isTopCut" class="top-badge">
+              TOP {{ top }}
+            </span>
+          </div>
+  
+          <div class="card-row">
+            <span>{{ $t('tournamentsSeccion.standingSeccion') }}</span>
+            <span>{{ player.section }}</span>
+          </div>
+  
+          <div class="card-row">
+            <span>{{ $t('tournamentsSeccion.standingHistorial') }}</span>
+            <span>{{ player.record }}</span>
+          </div>
+  
+          <div class="card-row">
+            <span>{{ $t('tournamentsSeccion.standingPuntos') }}</span>
+            <span>{{ player.points }}</span>
+          </div>
+  
+          <div class="card-row">
+            <span>{{ $t('tournamentsSeccion.standingVictory1') }}</span>
+            <span>{{ player.opponentWinRate }}</span>
+          </div>
+  
+          <div class="card-row">
+            <span>{{ $t('tournamentsSeccion.standingVictory2') }}</span>
+            <span>{{ player.opponentOpponentWinRate }}</span>
+          </div>
+  
+          <div class="card-row">
+            <span>{{ $t('tournamentsSeccion.standingRoundDrop') }}</span>
+            <span>{{ player.withdrawRound || '-' }}</span>
+          </div>
+        </div>
+      </div>
+  
+      <footer>
+        <div>{{ lastUpdate }}</div>
+      </footer>
+    </template>
 
-          <td>
-            {{ player.name }}
-            <span v-if="player.isTopCut" class="top-badge"> TOP {{ top }}</span>
-          </td>
 
-          <td>{{ player.section }}</td>
-          <td>{{ player.withdrawRound || '-' }}</td>
-          <td>{{ player.record }}</td>
-          <td>{{ player.points }}</td>
-          <td>{{ player.opponentWinRate }}</td>
-          <td>{{ player.opponentOpponentWinRate }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <footer>
-      <div>{{ lastUpdate }}</div>
-    </footer>
     <br>
   </div>
 </template>
@@ -59,6 +123,8 @@
 
   export default {
     name: 'ClasificacionRonda',
+
+    loading: true,
 
     setup() {
       const mode = inject('mode')
@@ -75,12 +141,22 @@
         totalRounds: 0,
         lastUpdate: '',
         top: '',
-        standings: []
+        standings: [],
+        loading: false,
+        gifLoading: inject('gifLoading')
       }
     },
 
     async mounted() {
-      await this.loadStandings()
+      
+      this.loading = true
+      try {
+        await Promise.all([
+          this.loadStandings()
+        ])
+      } finally {
+        this.loading = false
+      }
     },
 
     methods: {
@@ -298,5 +374,76 @@
   .dark-mode footer {
     color: #bbb;
   }
+
+
+  /* =======================
+   DESKTOP / MOBILE TOGGLE
+   ======================= */
+  .standing-cards {
+    display: none;
+  }
+
+  /* =======================
+    MOBILE VIEW
+    ======================= */
+  @media (max-width: 768px) {
+    .standing-table {
+      display: none;
+    }
+
+    .standing-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .standing-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid #ddd;
+    }
+
+    .dark-mode .standing-card {
+      background: #1e1e1e;
+      border-color: #333;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 4px 0;
+    }
+
+    .card-row span:first-child {
+      opacity: 0.7;
+    }
+  }
+
+  /* =======================
+    TOP CUT
+    ======================= */
+  .top-cut {
+    background: rgba(46, 204, 113, 0.08);
+  }
+
+  .top-badge {
+    background: #2ecc71;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 6px;
+  }
+
 
 </style>

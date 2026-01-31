@@ -1,43 +1,52 @@
 <template>
   <div :class="['container', mode === 'dark' ? 'dark-mode' : '']">
     <br>
-    <header :class="mode === 'dark' ? 'dark-header' : ''">
-      <h1>{{ $t('tournamentsSeccion.matchRound') }} {{ round }}</h1>
-    </header>
 
-    <div class="pairings">
-      <div
-        v-for="match in matches"
-        :key="match.table"
-        :class="['match', mode === 'dark' ? 'dark-match' : '']"
-      >
-        <div class="table-number">
-          {{ $t('tournamentsSeccion.mesa') }} {{ match.table }}
-        </div>
+    <!-- 🔄 LOADING -->
+    <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
+      <img :src="gifLoading">
+    </div>
 
-        <div class="players">
-          <div class="player">
-            <strong>{{ match.player1.name }}</strong>
-            <div class="stats">
-              ({{ match.player1.stats }})
-            </div>
+    <template v-else>
+      <header :class="mode === 'dark' ? 'dark-header' : ''">
+        <h1>{{ $t('tournamentsSeccion.matchRound') }} {{ round }}</h1>
+      </header>
+  
+      <div class="pairings">
+        <div
+          v-for="match in matches"
+          :key="match.table"
+          :class="['match', mode === 'dark' ? 'dark-match' : '']"
+        >
+          <div class="table-number">
+            {{ $t('tournamentsSeccion.mesa') }} {{ match.table }}
           </div>
-
-          <div class="vs">VS</div>
-
-          <div class="player">
-            <strong>{{ match.player2.name }}</strong>
-            <div class="stats">
-              ({{ match.player2.stats }})
+  
+          <div class="players">
+            <div class="player">
+              <strong>{{ match.player1.name }}</strong>
+              <div class="stats">
+                ({{ match.player1.stats }})
+              </div>
+            </div>
+  
+            <div class="vs">VS</div>
+  
+            <div class="player">
+              <strong>{{ match.player2.name }}</strong>
+              <div class="stats">
+                ({{ match.player2.stats }})
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <footer :class="mode === 'dark' ? 'dark-footer' : ''">
-      <div>{{ date }}</div>
-    </footer>
+  
+      <footer :class="mode === 'dark' ? 'dark-footer' : ''">
+        <div>{{ date }}</div>
+      </footer>
+    </template>
+    
     <br>
   </div>
 </template>
@@ -67,11 +76,21 @@
 
   const matches = ref([])
 
+  const loading = ref(true);
+  const gifLoading = inject('gifLoading');
+
 
   // ---- lifecycle ----
-  onMounted(() => {
-    loadLatestRound()
-  })
+  onMounted(async () => {
+    loading.value = true
+    try {
+      await Promise.all([
+        loadLatestRound()
+      ])
+    } finally {
+      loading.value = false
+    }
+  });
 
   // ---- api ----
   async function loadLatestRound() {

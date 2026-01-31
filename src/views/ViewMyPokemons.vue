@@ -6,7 +6,7 @@
       <div class="text-center">
         <h2 class="mb-4">{{ $t('pokemonsSeccion.myTitle') }}</h2>
         <h3 v-if="selectedPokemons.length != 6">{{ $t('pokemonsSeccion.subtitle') }}</h3>
-        <router-link class="btn btn-success btn-lg" to="/create-pokemon">{{ $t('buttons.createPokemon') }}</router-link>
+        <router-link class="btn btn-success btn-lg" to="/vgc/create-pokemon">{{ $t('buttons.createPokemon') }}</router-link>
 
         <button v-if="selectedPokemons.length === 6" class="btn btn-success btn-lg" @click="createTeam">{{ $t('buttons.obtainFormatSd') }}</button>
 

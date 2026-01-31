@@ -1,5 +1,5 @@
 <template>
-  <nav aria-label="Page navigation" v-if="totalPages > 1">
+  <nav aria-label="Page navigation" v-if="totalPages > 1" class="d-none d-md-block">
     <ul :class="['pagination justify-content-center', { 'pagination-dark': mode === 'dark' }]">
       <!-- Botón "Anterior" -->
       <li :class="['page-item', { disabled: currentPage === 1 }]">
@@ -10,7 +10,7 @@
 
       <!-- Números de página -->
       <li
-        v-for="page in totalPages"
+        v-for="page in visiblePages"
         :key="page"
         :class="['page-item', { active: currentPage === page }]"
       >
@@ -27,6 +27,43 @@
       </li>
     </ul>
   </nav>
+
+  <!-- PAGINADOR MOBILE -->
+  <nav
+    class="d-md-none mobile-paginator"
+    aria-label="Page navigation"
+    v-if="totalPages > 1"
+  >
+    <button
+      class="btn btn-success"
+      :disabled="currentPage === 1"
+      @click="changePage(currentPage - 1)"
+    >
+      &laquo;
+    </button>
+
+    <ul :class="['pagination mb-0', { 'pagination-dark': mode === 'dark' }]">
+      <li
+        v-for="page in mobilePages"
+        :key="page"
+        :class="['page-item', { active: currentPage === page }]"
+      >
+        <button class="page-link" @click="changePage(page)">
+          {{ page }}
+        </button>
+      </li>
+    </ul>
+
+    <button
+      class="btn btn-success"
+      :disabled="currentPage === totalPages"
+      @click="changePage(currentPage + 1)"
+    >
+      &raquo;
+    </button>
+  </nav>
+
+
 </template>
 
 <script>
@@ -57,7 +94,52 @@ export default {
     },
     darkMode() {
       return this.mode;
+    },
+    visiblePages() {
+      const maxVisible = 30;
+      const half = Math.floor(maxVisible / 2);
+
+      let start = this.currentPage - half;
+      let end = this.currentPage + half - 1;
+
+      if (start < 1) {
+        start = 1;
+        end = Math.min(this.totalPages, maxVisible);
+      }
+
+      if (end > this.totalPages) {
+        end = this.totalPages;
+        start = Math.max(1, end - maxVisible + 1);
+      }
+
+      return Array.from(
+        { length: end - start + 1 },
+        (_, i) => start + i
+      );
+    },
+    mobilePages() {
+      const maxVisible = 5;
+      const half = Math.floor(maxVisible / 2);
+
+      let start = this.currentPage - half;
+      let end = this.currentPage + half;
+
+      if (start < 1) {
+        start = 1;
+        end = Math.min(this.totalPages, maxVisible);
+      }
+
+      if (end > this.totalPages) {
+        end = this.totalPages;
+        start = Math.max(1, end - maxVisible + 1);
+      }
+
+      return Array.from(
+        { length: end - start + 1 },
+        (_, i) => start + i
+      );
     }
+
   },
   watch: {
     paginatedItems(newItems) {
@@ -93,4 +175,29 @@ export default {
   .page-link {
     cursor: pointer;
   }
+
+  .mobile-paginator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .mobile-paginator .pagination {
+    display: flex;
+    gap: 4px;
+  }
+
+  .mobile-paginator .page-link {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  /* Dark mode */
+  .pagination-dark .page-item .page-link {
+    background-color: #333;
+    color: #e0e0e0;
+  }
+
+
 </style>
