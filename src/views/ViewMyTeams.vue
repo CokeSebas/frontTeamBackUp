@@ -5,7 +5,7 @@
     <div class="container mt-4">
       <div class="text-center">
         <h2 class="mb-4">{{ $t('teamsSeccion.myTitle') }}</h2>
-        <router-link class="btn btn-success btn-lg" to="/create-team">{{ $t('buttons.createTeam') }}</router-link>
+        <router-link class="btn btn-success btn-lg" to="/vgc/create-team">{{ $t('buttons.createTeam') }}</router-link>
 
         <!-- Formulario de búsqueda -->
         <div class="mt-4 d-flex align-items-center gap-2">
@@ -47,7 +47,7 @@
                         <img :src="team.poke6" />
                       </div>
                       <p></p>
-                    <router-link class="btn btn-outline-success btn-sm" :to="'/my-team-detail/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>
+                    <router-link class="btn btn-outline-success btn-sm" :to="'/vgc/my-team-detail/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>
                   </div>
                 </div>
               </div>
@@ -91,7 +91,8 @@
         subFormats: [],            // Lista de subformatos cargados desde la API
         isLoading: false,
         searchName: '',            // Campo de búsqueda por nombre
-        searchSubFormat: ''        // Campo de búsqueda para el selector de subformato
+        searchSubFormat: '',        // Campo de búsqueda para el selector de subformato
+        currentItems: [], // Elementos de la página actual
       };
     },
     computed: {

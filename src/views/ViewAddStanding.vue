@@ -2,112 +2,120 @@
   <div :class="['container', { 'dark-mode': mode === 'dark' }]">
     <div :class="['card', { 'dark-card': mode === 'dark' }]">
 
-      <h2 class="title">
-        {{ $t('tournamentsSeccion.topPlayer') }} – {{ tournamentTop.nombre }}
-      </h2>
-
-      <div
-        v-for="(player, index) in players"
-        :key="index"
-        class="player-card"
-      >
-        <h4 class="player-title">
-          {{ $t('tournamentsSeccion.position') }} {{ index + 1 }}
-        </h4>
-
-        <div class="row">
-
-          <!-- 🟢 NO HAY STANDINGS → INPUTS -->
-          <template v-if="!hasStandings">
-            <input
-              v-model="player.name"
-              class="input"
-              placeholder="Nombre"
-              :disabled="hasStandings"
-            />
-
-            <input
-              v-model="player.lastName"
-              class="input"
-              placeholder="Apellido"
-            />
-          </template>
-
-          <!-- 🔵 HAY STANDINGS → COMBOBOX -->
-          <template v-else>
-            <select
-              class="input"
-              @change="onSelectPlayer(player, $event.target.value)"
-            >
-              <option value="" disabled selected>
-                {{ $t('tournamentsSeccion.selectPlayer') }}
-              </option>
-
-              <option
-                v-for="option in standingsOptions"
-                :key="option.id"
-                :value="option.id"
-              >
-                {{ option.label }}
-              </option>
-            </select>
-          </template>
-
-        </div>
-
-
-        <div class="pokemon-grid">
-          <div
-            v-for="(poke, i) in player.pokemons"
-            :key="i"
-            class="autocomplete"
-          >
-            <!-- Input -->
-            <input
-              v-model="player.pokemons[i]"
-              class="input"
-              placeholder="Pokémon"
-              @input="onPokemonInput(player, i)"
-            />
-
-            <!-- Suggestions -->
-            <ul
-              v-if="player.suggestions[i]?.length"
-              class="suggestions"
-            >
-              <li
-                v-for="pokemon in player.suggestions[i]"
-                :key="pokemon.id"
-                @click="selectPokemon(player, i, pokemon)"
-                class="suggestion-item"
-              >
-                <img
-                  :src="pokemon.imageUrl"
-                  class="pokemon-thumb"
-                  alt="pokemon"
-                />
-                <span>{{ pokemon.name }}</span>
-              </li>
-            </ul>
-          </div>
-
-        </div>
+      <!-- 🔄 LOADING -->
+      <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
+        <img :src="gifLoading">
       </div>
 
-      <div class="actions">
-        <button class="btn btn-add" @click="addPlayer">
-          + {{ $t('tournamentsSeccion.addPlayer') }}
-        </button>
-
-        <button
-          class="btn btn-save"
-          :disabled="saving"
-          @click="saveTop"
+      <template v-else>
+        <h2 class="title">
+          {{ $t('tournamentsSeccion.topPlayer') }} – {{ tournamentTop.nombre }}
+        </h2>
+  
+        <div
+          v-for="(player, index) in players"
+          :key="index"
+          class="player-card"
         >
-          <span v-if="saving" class="spinner"></span>
-          {{ saving ? 'Guardando...' : 'Guardar Top' }}
-        </button>
-      </div>
+          <h4 class="player-title">
+            {{ $t('tournamentsSeccion.position') }} {{ index + 1 }}
+          </h4>
+  
+          <div class="row">
+  
+            <!-- 🟢 NO HAY STANDINGS → INPUTS -->
+            <template v-if="!hasStandings">
+              <input
+                v-model="player.name"
+                class="input"
+                placeholder="Nombre"
+                :disabled="hasStandings"
+              />
+  
+              <input
+                v-model="player.lastName"
+                class="input"
+                placeholder="Apellido"
+              />
+            </template>
+  
+            <!-- 🔵 HAY STANDINGS → COMBOBOX -->
+            <template v-else>
+              <select
+                class="input"
+                @change="onSelectPlayer(player, $event.target.value)"
+              >
+                <option value="" disabled selected>
+                  {{ $t('tournamentsSeccion.selectPlayer') }}
+                </option>
+  
+                <option
+                  v-for="option in standingsOptions"
+                  :key="option.id"
+                  :value="option.id"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </template>
+  
+          </div>
+  
+  
+          <div class="pokemon-grid">
+            <div
+              v-for="(poke, i) in player.pokemons"
+              :key="i"
+              class="autocomplete"
+            >
+              <!-- Input -->
+              <input
+                v-model="player.pokemons[i]"
+                class="input"
+                placeholder="Pokémon"
+                @input="onPokemonInput(player, i)"
+              />
+  
+              <!-- Suggestions -->
+              <ul
+                v-if="player.suggestions[i]?.length"
+                class="suggestions"
+              >
+                <li
+                  v-for="pokemon in player.suggestions[i]"
+                  :key="pokemon.id"
+                  @click="selectPokemon(player, i, pokemon)"
+                  class="suggestion-item"
+                >
+                  <img
+                    :src="pokemon.imageUrl"
+                    class="pokemon-thumb"
+                    alt="pokemon"
+                  />
+                  <span>{{ pokemon.name }}</span>
+                </li>
+              </ul>
+            </div>
+  
+          </div>
+        </div>
+  
+        <div class="actions">
+          <button class="btn btn-add" @click="addPlayer">
+            + {{ $t('tournamentsSeccion.addPlayer') }}
+          </button>
+  
+          <button
+            class="btn btn-save"
+            :disabled="saving"
+            @click="saveTop"
+          >
+            <span v-if="saving" class="spinner"></span>
+            {{ saving ? 'Guardando...' : 'Guardar Top' }}
+          </button>
+        </div>
+      </template>
+
     </div>
   </div>
 </template>
@@ -129,6 +137,9 @@
 
   const saving = ref(false)
   const router = useRouter();
+
+  const loading = ref(true);
+  const gifLoading = inject('gifLoading');
 
 
   // ===============================
@@ -232,7 +243,7 @@
           text: 'No se pudo guardar el top'
         });
       }).finally(() => {
-        router.push('/goToTops/' + idTorneo);
+        router.push('/tournament/goToTops/' + idTorneo);
       });
 
     } catch (error) {
@@ -277,10 +288,15 @@
   // Lifecycle
   // ===============================
   onMounted(async () => {
-    await Promise.all([
-      loadPokemons(),
-      loadDataTorneo(),
-    ]);
+    loading.value = true
+    try {
+      await Promise.all([
+        loadPokemons(),
+        loadDataTorneo(),
+      ])
+    } finally {
+      loading.value = false
+    }
   });
 
 
@@ -472,6 +488,99 @@
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+
+  /* Evita overflow horizontal */
+  .pokemon-grid {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .autocomplete {
+    width: 100%;
+    min-width: 0; /* CLAVE para grids */
+  }
+
+  .input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+
+
+  /* ============================
+   📱 RESPONSIVE (MOBILE)
+   ============================ */
+  @media (max-width: 768px) {
+
+    /* Inputs de nombre / apellido */
+    .row {
+      flex-direction: column;
+    }
+
+    .player-card {
+      padding: 14px;
+    }
+
+    .player-title {
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    /* Pokémon: 2 por fila en mobile */
+    .pokemon-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .autocomplete {
+      max-width: 100%;
+    }
+
+    .suggestions {
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+
+    /* Inputs más cómodos */
+    .input {
+      font-size: 0.95rem;
+      padding: 10px;
+    }
+
+    /* Autocomplete no se salga */
+    .autocomplete {
+      width: 100%;
+    }
+
+    /* Botones apilados */
+    .actions {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      font-size: 0.95rem;
+    }
+
+    .dark-card .player-card {
+      background: #1f1f1f;
+    }
+
+    .dark-card .player-title {
+      color: #ffffff;
+    }
+
+    .dark-card .input {
+      background: #262626;
+    }
+
+    .dark-card .suggestions {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+
 
 
 

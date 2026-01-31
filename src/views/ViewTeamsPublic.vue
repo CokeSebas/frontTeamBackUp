@@ -5,7 +5,7 @@
     <div class="container mt-4">
       <div class="text-center">
           <h2 class="mb-4">{{ $t('teamsSeccion.title') }}</h2>
-          <router-link class="btn btn-success btn-lg" to="/create-team">{{ $t('buttons.createTeam') }}</router-link>
+          <router-link class="btn btn-success btn-lg" to="/vgc/create-team">{{ $t('buttons.createTeam') }}</router-link>
 
           <!-- Formulario de búsqueda -->
           <div class="mt-4 d-flex align-items-center gap-2">
@@ -47,7 +47,7 @@
                               <img :src="team.poke6" />
                             </div>
                             <p></p>
-                            <router-link class="btn btn-outline-success btn-sm" :to="'/team/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>
+                            <router-link class="btn btn-outline-success btn-sm" :to="'/vgc/team/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>
                         </div>
                     </div>
                 </div>

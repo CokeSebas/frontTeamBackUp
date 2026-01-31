@@ -6,8 +6,8 @@
       <p class="lead">{{  $t('home.subtitle') }}</p>
 
       <div class="d-flex justify-content-between mt-4" style="max-width: 600px; margin: 0 auto;">
-        <router-link class="btn btn-success btn-lg" to="/create-team">{{ $t('buttons.createTeam') }}</router-link>
-        <router-link class="btn btn-success btn-lg" to="/create-pokemon">{{ $t('buttons.createPokemon') }}</router-link>
+        <router-link class="btn btn-success btn-lg" to="/vgc/create-team">{{ $t('buttons.createTeam') }}</router-link>
+        <router-link class="btn btn-success btn-lg" to="/vgc/create-pokemon">{{ $t('buttons.createPokemon') }}</router-link>
       </div>
     </div>
 
@@ -42,7 +42,7 @@
                         <img :src="team.poke6" />
                       </div>
                       <p></p>
-                      <router-link class="btn btn-outline-success btn-sm" :to="'/team/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>
+                      <router-link class="btn btn-outline-success btn-sm" :to="'/vgc/team/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>
                     </div>
                   </div>
                 </div>
@@ -90,6 +90,7 @@
 <script>
   import axios from 'axios';
   import { useHead } from '@vueuse/head';
+  import logo from '@/assets/pokecircuit.png'; // 👈 ajusta el path si es necesario
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
     name: 'HomeView',
@@ -130,15 +131,63 @@
             this.loadingPokes = false; // En caso de error, también termina la carga
           });
       },
-      async setHead(){
+      async setHead() {
         useHead({
           title: this.$t('lastTeamsAndLastPokemons'),
           meta: [
-            { name: 'description', content: this.$t('lastTeamsAndLastPokemons') },
-            { name: 'keywords', content: `VGC, Pokémon, Team, Tournament, Regiona, International Championship, Global Challenge, Regulation H` },
+            // SEO básico
+            {
+              name: 'description',
+              content: this.$t('descripcionMetaTag')
+            },
+            {
+              name: 'robots',
+              content: 'index, follow'
+            },
+
+            // Open Graph (Facebook, WhatsApp, etc.)
+            {
+              property: 'og:title',
+              content: this.$t('lastTeamsAndLastPokemons')
+            },
+            {
+              property: 'og:description',
+              content: this.$t('descripcionMetaTag')
+            },
+            {
+              property: 'og:type',
+              content: 'website'
+            },
+            {
+              property: 'og:url',
+              content: window.location.origin
+            },
+            {
+              property: 'og:image',
+              content: logo
+            },
+
+            // Twitter
+            {
+              name: 'twitter:card',
+              content: 'summary_large_image'
+            },
+            {
+              name: 'twitter:title',
+              content: this.$t('lastTeamsAndLastPokemons')
+            },
+            {
+              name: 'twitter:description',
+              content: this.$t('descripcionMetaTag')
+            },
+            {
+              name: 'twitter:image',
+              content: logo
+            }
           ]
-        });
+        })
       }
+
     },
     mounted() {
       this.getTeams();

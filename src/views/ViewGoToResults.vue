@@ -2,41 +2,49 @@
   <div :class="['container', mode === 'dark' ? 'dark-mode' : '']">
     <br />
 
-    <header :class="mode === 'dark' ? 'dark-header' : ''">
-      <h1>{{ $t('tournamentsSeccion.resultRound') }} {{ round }}</h1>
-
-    </header>
-
-    <div class="category">
-      {{ category }}
+    <!-- 🔄 LOADING -->
+    <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
+      <img :src="gifLoading">
     </div>
 
-    <div class="results">
-      <div
-        v-for="player in results"
-        :key="player.name"
-        :class="[
-          'player-card',
-          player.result,
-          mode === 'dark' ? 'dark-card' : ''
-        ]"
-      >
-        <div class="player-name">
-          {{ player.name }}
-        </div>
-
-        <div class="stats">
-          <div>{{ $t('tournamentsSeccion.resultVictorias') }}: <span>{{ player.wins }}</span></div>
-          <div>{{ $t('tournamentsSeccion.resultDerrotas') }}: <span>{{ player.losses }}</span></div>
-          <div>{{ $t('tournamentsSeccion.resultEmpates') }}: <span>{{ player.draws }}</span></div>
+    <template v-else>
+      <header :class="mode === 'dark' ? 'dark-header' : ''">
+        <h1>{{ $t('tournamentsSeccion.resultRound') }} {{ round }}</h1>
+  
+      </header>
+  
+      <div class="category">
+        {{ category }}
+      </div>
+  
+      <div class="results">
+        <div
+          v-for="player in results"
+          :key="player.name"
+          :class="[
+            'player-card',
+            player.result,
+            mode === 'dark' ? 'dark-card' : ''
+          ]"
+        >
+          <div class="player-name">
+            {{ player.name }}
+          </div>
+  
+          <div class="stats">
+            <div>{{ $t('tournamentsSeccion.resultVictorias') }}: <span>{{ player.wins }}</span></div>
+            <div>{{ $t('tournamentsSeccion.resultDerrotas') }}: <span>{{ player.losses }}</span></div>
+            <div>{{ $t('tournamentsSeccion.resultEmpates') }}: <span>{{ player.draws }}</span></div>
+          </div>
         </div>
       </div>
-    </div>
+  
+      <footer :class="mode === 'dark' ? 'dark-footer' : ''">
+        <div><strong>{{ tournamentName }}</strong></div>
+        <div>{{ date }}</div>
+      </footer>
+    </template>
 
-    <footer :class="mode === 'dark' ? 'dark-footer' : ''">
-      <div><strong>{{ tournamentName }}</strong></div>
-      <div>{{ date }}</div>
-    </footer>
     <br>
   </div>
 </template>
@@ -57,7 +65,10 @@
   const category = ref('')
   const date = ref('')
 
-  const results = ref([])
+  const results = ref([]);
+
+  const loading = ref(true);
+  const gifLoading = inject('gifLoading');
 
   const getResultStatus = (player) => {
     if (player.wins > 0) return 'win'
@@ -88,7 +99,17 @@
     }
   }
 
-  onMounted(fetchResults)
+
+  onMounted(async () => {
+    loading.value = true
+    try {
+      await Promise.all([
+        fetchResults()
+      ])
+    } finally {
+      loading.value = false
+    }
+  });
 </script>
 
 <style scoped>

@@ -6,7 +6,7 @@
       </h2>
 
       <div class="table-responsive">
-        <table class="custom-table">
+        <table v-if="isAdmin" class="custom-table">
           <thead>
             <tr>
               <th>{{ $t('profileSeccion.avatarUrl') }}</th>
@@ -118,8 +118,9 @@
 
 
 <script setup>
-  import { ref, inject, onMounted } from 'vue'
+  import { ref, inject, onMounted, computed  } from 'vue'
   import axios from 'axios'
+import Swal from 'sweetalert2'
 
   const mode = inject('mode')
   const apiUrl = inject('apiUrl')
@@ -137,14 +138,17 @@
   // Load users
   // ===============================
   const loadUsers = async () => {
-    //verificar si es admin con token o api
-    //si no lo es, redirigir al home
-
-
     try {
+      if (!isAdmin.value) {
+        Swal.fire({
+          icon: 'error',
+          title: 'No autorizado',
+          text: 'No tienes permisos para ver esta página.',
+        })
+      }
+
       const response = await axios.get(`${apiUrl}users`)
 
-      // Adaptado a tu JSON
       users.value = response.data.salida[0].data.map(user => ({
         ...user,
         editing: false
@@ -187,6 +191,10 @@
       console.error('Error al actualizar usuario', error)
     }
   }
+
+  const isAdmin = computed(() => {
+    return sessionStorage.getItem('isAdmin') === 'true';
+  })
 
   // ===============================
   // Lifecycle
