@@ -74,7 +74,7 @@
         </div>
       </div>
 
-      <h6 align="center">{{ $t('tournamentsSeccion.tournamentImgFooter') }} <a :href="currentUrl" target="_blank">{{ currentUrl }}</a> </h6>
+      <h6 align="center">{{ $t('tournamentsSeccion.tournamentImgFooter') }} <a href="https://x.com/Pokecircuit" target="_blank">@Pokecircuit</a> </h6>
 
     </div>
   </div>

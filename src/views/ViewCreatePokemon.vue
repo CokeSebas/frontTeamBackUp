@@ -1,69 +1,82 @@
 <template>
   <div :class="['form-container', { 'dark-mode': mode === 'dark' }]">
+
     <div :class="['form-card', { 'dark-card': mode === 'dark' }]">
-      <h2 :class="['form-title', { 'dark-text': mode === 'dark' }]" style="text-align: center">{{ $t('createPokemon') }}</h2>
-      <form @submit.prevent="createPokemon">
-        <div class="form-group">
-          <label for="nick_name">{{ $t('pokemonsSeccion.nickPokemon') }}:</label>
-          <input type="text" v-model="pokemon.nickPoke" required />
+
+      <h2 class="form-title">
+        {{ $t('createPokemon') }}
+      </h2>
+
+      <form @submit.prevent="createPokemon" class="form-grid">
+
+        <div class="field full">
+          <label>{{ $t('pokemonsSeccion.nickPokemon') }}</label>
+          <input v-model="pokemon.nickPoke" required />
         </div>
 
-        <div class="form-group">
-          <label for="paste_sd">{{ $t('pokemonsSeccion.dataPokemon') }}:</label>
-          <textarea v-model="pokemon.pasteSd" 
-            placeholder="Pokémon @ Item  
+        <div class="field full">
+          <label>{{ $t('pokemonsSeccion.dataPokemon') }}</label>
+          <textarea
+            v-model="pokemon.pasteSd"
+            class="paste-box"
+            placeholder="Pokémon @ Item
 Ability: Ability
 Tera Type: Normal
 EVs: 100 HP / 100 Atk / 100 Def / 100 SpA / 100 SpD / 100 Spe
 Timid Nature
 IVs: 0 Atk
-- Mov1
-- Mov2
-- Mov3
-- Mov4"
-          >
-            </textarea>
+- Move 1
+- Move 2
+- Move 3
+- Move 4"
+          />
         </div>
 
-        <div class="form-group">
-          <label for="sub_format_id">{{ $t('teamsSeccion.subFormat') }}:</label>
-            <select class="form-select" v-model="pokemon.subFormatId" required>
-              <option value="" disabled>{{ $t('teamsSeccion.selectSubFormat') }}</option>
-              <option v-for="subFormat in subFormats" :key="subFormat.id" :value="subFormat.id">
-                {{ subFormat.abrevSubFormat }}
-              </option>
-            </select>
+        <div class="field full">
+          <label>{{ $t('teamsSeccion.subFormat') }}</label>
+          <select v-model="pokemon.subFormatId" required>
+            <option disabled value="">
+              {{ $t('teamsSeccion.selectSubFormat') }}
+            </option>
+            <option v-for="s in subFormats" :key="s.id" :value="s.id">
+              {{ s.abrevSubFormat }}
+            </option>
+          </select>
         </div>
 
-        <div class="form-group">
-          <label for="spread_use">{{ $t('pokemonsSeccion.useSpread') }}:</label>
-          <textarea v-model="pokemon.spreadUse"></textarea>
+        <div class="field">
+          <label>{{ $t('pokemonsSeccion.useSpread') }}</label>
+          <textarea v-model="pokemon.spreadUse" />
         </div>
 
-        <div class="form-group">
-          <label for="team_mates">{{ $t('pokemonsSeccion.teamMates') }}:</label>
-          <textarea v-model="pokemon.teamMates"></textarea>
+        <div class="field">
+          <label>{{ $t('pokemonsSeccion.teamMates') }}</label>
+          <textarea v-model="pokemon.teamMates" />
         </div>
 
-        <div class="form-group">
-          <label for="calculos_principales">{{ $t('pokemonsSeccion.calculations') }}:</label>
-          <textarea v-model="pokemon.calculosPrincipales"></textarea>
+        <div class="field full">
+          <label>{{ $t('pokemonsSeccion.calculations') }}</label>
+          <textarea v-model="pokemon.calculosPrincipales" />
         </div>
 
-        <div class="form-group form-group-inline">
-            <label for="is_public">{{ $t('pokemonsSeccion.isPublic') }}:</label>
+        <div class="field full switch-field">
+          <span>{{ $t('pokemonsSeccion.isPublic') }}</span>
+          <label class="switch">
             <input type="checkbox" v-model="pokemon.isPublic" />
+            <span class="slider"></span>
+          </label>
         </div>
 
-        <!-- Spinner de carga -->
-        <div v-if="isLoading" class="text-center">
-          <div class="spinner-border" role="status">
-            <span class="visually-hidden">{{ $t('loading') }}</span>
-          </div>
+        <div v-if="isLoading" class="loading">
+          <div class="spinner-border"></div>
         </div>
-  
-        <button type="submit" class="submit-btn" :disabled="isLoading">{{ $t('buttons.createPokemon') }}</button>
+
+        <button class="submit-btn" :disabled="isLoading">
+          {{ $t('buttons.createPokemon') }}
+        </button>
+
       </form>
+
     </div>
   </div>
 </template>
@@ -193,93 +206,181 @@ IVs: 0 Atk
 </script>
 
 <style scoped>
-  /* Estilos para centrar el formulario y hacerlo ocupar todo el espacio central */
   .form-container {
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: #f0f2f5;
+    padding: 1.5rem;
+    background: #f4f6f9;
   }
 
   .form-card {
-    background-color: #ffffff;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 800px; /* Ajusta este valor según el ancho máximo deseado */
+    max-width: 900px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
   }
 
-  h2 {
+  .form-title {
     text-align: center;
+    font-size: 1.8rem;
     margin-bottom: 1.5rem;
+    font-weight: 600;
   }
 
-  .form-group {
-    margin-bottom: 1rem;
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field.full {
+    grid-column: 1 / -1;
   }
 
   label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 0.5rem;
+    font-size: .9rem;
+    margin-bottom: .3rem;
+    font-weight: 600;
+    color: #444;
   }
 
-  input, textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+  input,
+  select,
+  textarea {
+    padding: .7rem .8rem;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: .2s;
+    font-size: .95rem;
   }
 
-  input[type="checkbox"] {
-    width: auto;
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  .paste-box {
+    min-height: 180px;
+    font-family: monospace;
+    white-space: pre-wrap;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76,175,80,.15);
   }
 
   .submit-btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 0.75rem 1.5rem;
+    grid-column: 1 / -1;
+    padding: .9rem;
+    border-radius: 12px;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    background: linear-gradient(135deg, #4CAF50, #43a047);
+    color: white;
     font-size: 1rem;
-    width: 100%;
-    margin-top: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .15s;
   }
 
   .submit-btn:hover {
-    background-color: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(76,175,80,.3);
   }
 
-  .form-group-inline {
+  /* SWITCH */
+
+  .switch-field {
     display: flex;
+    justify-content: space-between;
     align-items: center;
   }
 
-  .form-group-inline label {
-    margin-right: 0.5rem; /* Espacio entre la etiqueta y el checkbox */
+  .switch {
+    position: relative;
+    width: 52px;
+    height: 28px;
   }
 
-  /* Estilos de modo oscuro */
+  .switch input {
+    opacity: 0;
+  }
+
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: #ccc;
+    border-radius: 30px;
+    transition: .3s;
+  }
+
+  .slider::before {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    left: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: .3s;
+  }
+
+  .switch input:checked + .slider {
+    background: #4CAF50;
+  }
+
+  .switch input:checked + .slider::before {
+    transform: translateX(24px);
+  }
+
+  /* DARK MODE */
+
   .dark-mode {
-    background-color: #121212;
+    background: #0f1115;
   }
+
   .dark-card {
-    background-color: #333;
-    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+    background: #1c1f26;
+    box-shadow: 0 10px 25px rgba(0,0,0,.6);
   }
-  .dark-text {
-    color: #ffffff;
+
+  .dark-card label {
+    color: #ddd;
   }
-  .dark-input {
-    background-color: #444;
-    color: #fff;
-    border: 1px solid #555;
+
+  .dark-card input,
+  .dark-card textarea,
+  .dark-card select {
+    background: #2a2e38;
+    border-color: #3a3f4b;
+    color: white;
   }
-  .btn-dark {
-    background-color: #444;
-    color: #fff;
+
+  .dark-card input:focus,
+  .dark-card textarea:focus,
+  .dark-card select:focus {
+    border-color: #4CAF50;
   }
+
+  /* MOBILE */
+
+  @media (max-width: 720px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
 </style>
