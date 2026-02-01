@@ -29,7 +29,6 @@
                   <div class="card mb-4 shadow-sm">
                     <div class="card-body">
                       <h5 class="card-title">{{ team.team_name }}</h5>
-                      <p class="card-text" style="margin-bottom: 0;">{{ team.desc_uso }}</p>
                       <p class="card-text" style="margin-bottom: 0;">{{ team.subFormatName }}</p>
                       <p></p>
                       <!-- Contenedor de los 6 pokémon -->
