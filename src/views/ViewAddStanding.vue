@@ -13,12 +13,12 @@
         </h2>
   
         <div
-          v-for="(player, index) in players"
-          :key="index"
+          v-for="(player, playerIndex) in players"
+          :key="playerIndex"
           class="player-card"
         >
           <h4 class="player-title">
-            {{ $t('tournamentsSeccion.position') }} {{ index + 1 }}
+            {{ $t('tournamentsSeccion.position') }} {{ playerIndex + 1 }}
           </h4>
   
           <div class="row">
@@ -70,31 +70,49 @@
             >
               <!-- Input -->
               <input
+                ref="pokemonInputs"
                 v-model="player.pokemons[i]"
                 class="input"
                 placeholder="Pokémon"
                 @input="onPokemonInput(player, i)"
+                @focus="
+                  activeAutocompleteId = `${playerIndex}-${i}`;
+                  activeSuggestionIndex = -1
+                "
+                @keydown="onKeyDown(
+                  $event,
+                  player.suggestions[i],
+                  (pokemon) => selectPokemon(player, i, pokemon)
+                )"
               />
   
               <!-- Suggestions -->
-              <ul
-                v-if="player.suggestions[i]?.length"
-                class="suggestions"
-              >
-                <li
-                  v-for="pokemon in player.suggestions[i]"
-                  :key="pokemon.id"
-                  @click="selectPokemon(player, i, pokemon)"
-                  class="suggestion-item"
+              <Teleport to="body">
+                <ul
+                  v-if="
+                    player.suggestions[i]?.length &&
+                    activeAutocompleteId === `${playerIndex}-${i}`
+                  "
+                  class="suggestions floating"
+                  :style="getDropdownStyle(
+                    playerIndex * 6 + i
+                  )"
                 >
-                  <img
-                    :src="pokemon.imageUrl"
-                    class="pokemon-thumb"
-                    alt="pokemon"
-                  />
-                  <span>{{ pokemon.name }}</span>
-                </li>
-              </ul>
+
+                  <li
+                    v-for="(pokemon, idx) in player.suggestions[i]"
+                    :key="pokemon.id"
+                    class="suggestion-item"
+                    :class="{ selected: idx === activeSuggestionIndex }"
+                    @mousedown.prevent="selectPokemon(player, i, pokemon)"
+                  >
+
+                    <img :src="pokemon.imageUrl" class="pokemon-thumb" />
+                    {{ pokemon.name }}
+                  </li>
+                </ul>
+              </Teleport>
+
             </div>
   
           </div>
@@ -122,7 +140,7 @@
 
 
 <script setup>
-  import { ref, inject, onMounted, computed } from 'vue'
+  import { ref, inject, onMounted, computed, onBeforeUnmount  } from 'vue'
   import { useRoute } from 'vue-router'
   import axios from 'axios'
   import Swal from 'sweetalert2'
@@ -140,6 +158,11 @@
 
   const loading = ref(true);
   const gifLoading = inject('gifLoading');
+
+  const pokemonInputs = ref([])
+
+  const activeSuggestionIndex = ref(-1)
+  const activeAutocompleteId = ref(null)
 
 
   // ===============================
@@ -262,11 +285,9 @@
     }
   }
 
-
   const hasStandings = computed(() => {
     return playersTop.value && playersTop.value.length > 0
   })
-
   
   const standingsOptions = computed(() => {
     if (!hasStandings.value) return []
@@ -292,6 +313,71 @@
     player.name = selected.name
     player.lastName = selected.lastName
   }
+
+  const getDropdownStyle = (index) => {
+    const input = pokemonInputs.value[index]
+    if (!input) return {}
+
+    const rect = input.getBoundingClientRect()
+
+    return {
+      position: 'fixed',
+      top: `${rect.bottom + 4}px`,
+      left: `${rect.left}px`,
+      width: `${rect.width}px`,
+      zIndex: 9999
+    }
+  }
+
+  const onKeyDown = (event, suggestions, onSelect) => {
+    if (!suggestions?.length) return
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault()
+        activeSuggestionIndex.value =
+          (activeSuggestionIndex.value + 1) % suggestions.length
+        break
+
+      case 'ArrowUp':
+        event.preventDefault()
+        activeSuggestionIndex.value =
+          (activeSuggestionIndex.value - 1 + suggestions.length) % suggestions.length
+        break
+
+      case 'Enter':
+        event.preventDefault()
+        if (activeSuggestionIndex.value >= 0) {
+          onSelect(suggestions[activeSuggestionIndex.value])
+        }
+        break
+
+      case 'Escape':
+        closeSuggestions()
+        break
+    }
+  }
+
+  const closeSuggestions = () => {
+    activeSuggestionIndex.value = -1
+    activeAutocompleteId.value = null
+  }
+
+  const handleClickOutside = (event) => {
+    if (!event.target.closest('.autocomplete')) {
+      closeSuggestions()
+    }
+  }
+
+  onMounted(() => {
+    document.addEventListener('click', handleClickOutside)
+  })
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside)
+  })
+
+
 
 
   // ===============================
@@ -433,16 +519,15 @@
   width: 100%;
   max-height: 180px;
   overflow-y: auto;
-
   background: #ffffff;
   border: 1px solid #ccc;
   border-radius: 8px;
   margin-top: 4px;
   padding: 0;
   list-style: none;
-
   z-index: 100;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
 }
 
 .suggestion-item {
@@ -533,57 +618,155 @@
 
 /* Eleva SOLO el autocomplete activo */
 .autocomplete:focus-within {
-  z-index: 200;
+  z-index: 300;
 }
 
-/* ============================
-   📱 RESPONSIVE (MOBILE)
-   ============================ */
-
-@media (max-width: 768px) {
-  .row {
-    flex-direction: column;
-  }
-
-  .player-card {
-    padding: 14px;
-  }
-
-  .player-title {
-    text-align: center;
-    font-size: 1rem;
-  }
-
-  .pokemon-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .input {
-    font-size: 0.95rem;
-    padding: 10px;
-  }
-
-  .actions {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .btn {
-    width: 100%;
-    font-size: 0.95rem;
-  }
-
-  .dark-card .player-card {
-    background: #1f1f1f;
-  }
-
-  .dark-card .input {
-    background: #262626;
-  }
-
-  .dark-card .suggestions {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  }
+.autocomplete:focus-within ~ .autocomplete,
+.autocomplete:focus-within ~ .row,
+.autocomplete:focus-within ~ input {
+  pointer-events: none;
 }
+
+.suggestions.floating {
+  position: fixed;
+  max-height: 180px;
+  overflow-y: auto;
+  background: #2c2c2c;
+  border: 1px solid #444;
+  border-radius: 8px;
+  list-style: none;
+  padding: 0;
+}
+
+
+/* ==========================
+   AUTOCOMPLETE – FIX HOVER
+   ========================== */
+
+/* Estado normal */
+.suggestions li {
+  background: transparent;
+  color: inherit;
+  outline: none;
+}
+
+/* Hover */
+.suggestions li:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Click / focus (el blanco molesto) */
+.suggestions li:active,
+.suggestions li:focus,
+.suggestions li:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+}
+
+/* 🌙 Dark mode */
+.dark-card .suggestions li:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dark-card .suggestions li:active,
+.dark-card .suggestions li:focus,
+.dark-card .suggestions li:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Evita highlight del navegador (Chrome / Edge) */
+.suggestions li {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.suggestions li.selected {
+  background: rgba(52, 152, 219, 0.25);
+}
+
+
+  /* ==========================
+    AUTOCOMPLETE UX PRO
+    ========================== */
+
+  .suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .suggestion-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .suggestion-item.selected {
+    background: rgba(52, 152, 219, 0.35);
+  }
+
+  .dark-card .suggestion-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .dark-card .suggestion-item.selected {
+    background: rgba(52, 152, 219, 0.45);
+  }
+
+  /* elimina highlight nativo */
+  .suggestions li {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ============================
+    📱 RESPONSIVE (MOBILE)
+    ============================ */
+
+  @media (max-width: 768px) {
+    .row {
+      flex-direction: column;
+    }
+
+    .player-card {
+      padding: 14px;
+    }
+
+    .player-title {
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .pokemon-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .input {
+      font-size: 0.95rem;
+      padding: 10px;
+    }
+
+    .actions {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      font-size: 0.95rem;
+    }
+
+    .dark-card .player-card {
+      background: #1f1f1f;
+    }
+
+    .dark-card .input {
+      background: #262626;
+    }
+
+    .dark-card .suggestions {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    }
+  }
 </style>
 

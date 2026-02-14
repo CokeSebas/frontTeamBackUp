@@ -43,7 +43,7 @@
                   {{ $t('tournamentsSeccion.typeTournament') }}
                 </option>
                 <option value="tcg">Trading Card Game</option>
-                <option value="vg">VideoGame</option>
+                <option value="vgc">VideoGame</option>
               </select>
             </div>
 
@@ -95,7 +95,7 @@
                 >
                   <td>{{ tournament.nombre }}</td>
                   <td>{{ tournament.tipo_torneo === 'challenge' ? 'Challenge' : 'Cup' }}</td>
-                  <td>{{ tournament.formato_torneo === 'tcg' ? 'Trading Card Game' : 'VideoGame' }}</td>
+                  <td>{{ tournament.formatoTorneo === 'tcg' ? 'Trading Card Game' : 'VideoGame' }}</td>
                   <td>{{ moment(tournament.fecha_torneo).format('DD/MM/YYYY') }}</td>
                   <td>
                     <button class="btn btn-primary btn-sm" @click="ViewOrgTorneo(tournament.id)">
@@ -128,7 +128,7 @@
 
               <p class="mb-1">
                 <strong>{{ $t('teamsSeccion.format') }}:</strong>
-                {{ tournament.formato_torneo === 'tcg' ? 'Trading Card Game' : 'VideoGame' }}
+                {{ tournament.formatoTorneo === 'tcg' ? 'Trading Card Game' : 'VideoGame' }}
               </p>
 
               <p class="mb-3">

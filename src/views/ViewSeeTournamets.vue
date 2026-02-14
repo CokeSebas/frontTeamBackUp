@@ -25,7 +25,7 @@
           <select v-model="filterFormat" class="form-select">
             <option value="">Todos</option>
             <option value="vgc">VGC</option>
-            <option value="tgc">TGC</option>
+            <option value="tcg">TCG</option>
           </select>
         </div>
       </div>

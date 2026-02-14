@@ -45,11 +45,16 @@
         v-for="player in topPlayers"
         :key="player.id"
         class="player-card"
+        :class="getCardClass(player.position)"
       >
         <div class="player-header">
-          <span class="position">
+          <span 
+            class="position"
+            :class="getPositionClass(player.position)"
+          >
             #{{ player.position }}
           </span>
+
 
           <span class="player-name">
             {{ player.firstName }} {{ player.lastName }}
@@ -185,6 +190,22 @@
     link.click()
   }
 
+  const getPositionClass = (position) => {
+    if (position === 1) return 'gold'
+    if (position === 2) return 'silver'
+    if (position === 3) return 'bronze'
+    return 'default'
+  }
+
+  const getCardClass = (position) => {
+    if (position === 1) return 'card-gold'
+    if (position === 2) return 'card-silver'
+    if (position === 3) return 'card-bronze'
+    return ''
+  }
+
+
+
   // ===============================
   // Lifecycle
   // ===============================
@@ -228,11 +249,77 @@
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 20px;
+    transition: all 0.3s ease;
   }
+
+  /* =====================
+    🥇 GOLD
+    ===================== */
+  .player-card.card-gold {
+    border: 2px solid #d4af37;
+    background: linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.08),
+      rgba(212, 175, 55, 0.02)
+    );
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.4);
+  }
+
+  /* =====================
+    🥈 SILVER
+    ===================== */
+  .player-card.card-silver {
+    border: 2px solid #c0c0c0;
+    background: linear-gradient(
+      135deg,
+      rgba(192, 192, 192, 0.08),
+      rgba(192, 192, 192, 0.02)
+    );
+    box-shadow: 0 0 14px rgba(192, 192, 192, 0.3);
+  }
+
+  /* =====================
+    🥉 BRONZE
+    ===================== */
+  .player-card.card-bronze {
+    border: 2px solid #cd7f32;
+    background: linear-gradient(
+      135deg,
+      rgba(205, 127, 50, 0.08),
+      rgba(205, 127, 50, 0.02)
+    );
+    box-shadow: 0 0 12px rgba(205, 127, 50, 0.3);
+  }
+
 
   .dark-card .player-card {
     border-color: #333;
   }
+
+  .dark-card .player-card.card-gold {
+    background: linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.15),
+      rgba(212, 175, 55, 0.05)
+    );
+  }
+
+  .dark-card .player-card.card-silver {
+    background: linear-gradient(
+      135deg,
+      rgba(192, 192, 192, 0.15),
+      rgba(192, 192, 192, 0.05)
+    );
+  }
+
+  .dark-card .player-card.card-bronze {
+    background: linear-gradient(
+      135deg,
+      rgba(205, 127, 50, 0.15),
+      rgba(205, 127, 50, 0.05)
+    );
+  }
+
 
   .player-header {
     display: flex;
@@ -242,12 +329,35 @@
   }
 
   .position {
-    background: #3498db;
-    color: white;
     padding: 6px 10px;
     border-radius: 8px;
     font-weight: bold;
+    color: white;
   }
+
+  /* 🥇 Oro */
+  .position.gold {
+    background: linear-gradient(135deg, #f7d046, #d4af37);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+  }
+
+  /* 🥈 Plata */
+  .position.silver {
+    background: linear-gradient(135deg, #e0e0e0, #b0b0b0);
+    box-shadow: 0 0 6px rgba(192, 192, 192, 0.5);
+  }
+
+  /* 🥉 Bronce */
+  .position.bronze {
+    background: linear-gradient(135deg, #cd7f32, #a97142);
+    box-shadow: 0 0 6px rgba(205, 127, 50, 0.5);
+  }
+
+  /* Otros */
+  .position.default {
+    background: #3498db;
+  }
+
 
   .player-name {
     font-size: 1.1rem;
