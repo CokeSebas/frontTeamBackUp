@@ -3,7 +3,10 @@
     <br>
 
     <!-- 🔄 LOADING -->
-    <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
+    <div
+      v-if="loading"
+      style="align-items: center; display: flex; justify-content: center;"
+    >
       <img :src="gifLoading">
     </div>
 
@@ -14,102 +17,111 @@
           {{ currentRound }}/{{ totalRounds }}
         </h1>
       </header>
-  
-      <h2>{{ category }}</h2>
-  
-      <!-- =======================
-           🖥️ DESKTOP TABLE
-           ======================= -->
-      <table class="standing-table" :class="mode === 'dark' ? 'dark-table' : ''">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>{{ $t('tournamentsSeccion.name') }}</th>
-            <th>{{ $t('tournamentsSeccion.standingSeccion') }}</th>
-            <th>{{ $t('tournamentsSeccion.standingRoundDrop') }}</th>
-            <th>{{ $t('tournamentsSeccion.standingHistorial') }}</th>
-            <th>{{ $t('tournamentsSeccion.standingPuntos') }}</th>
-            <th>{{ $t('tournamentsSeccion.standingVictory1') }}</th>
-            <th>{{ $t('tournamentsSeccion.standingVictory2') }}</th>
-          </tr>
-        </thead>
-  
-        <tbody>
-          <tr
+
+      <!-- 🔁 UNA SECCIÓN POR CATEGORÍA -->
+      <section
+        v-for="(standings, category) in standingsByCategory"
+        :key="category"
+        class="mb-5"
+      >
+        <h2>{{ category }}</h2>
+
+        <!-- =======================
+             🖥️ DESKTOP TABLE
+             ======================= -->
+        <table
+          class="standing-table"
+          :class="mode === 'dark' ? 'dark-table' : ''"
+        >
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>{{ $t('tournamentsSeccion.name') }}</th>
+              <th>{{ $t('tournamentsSeccion.standingSeccion') }}</th>
+              <th>{{ $t('tournamentsSeccion.standingRoundDrop') }}</th>
+              <th>{{ $t('tournamentsSeccion.standingHistorial') }}</th>
+              <th>{{ $t('tournamentsSeccion.standingPuntos') }}</th>
+              <th>{{ $t('tournamentsSeccion.standingVictory1') }}</th>
+              <th>{{ $t('tournamentsSeccion.standingVictory2') }}</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr
+              v-for="player in standings"
+              :key="player.rank"
+              :class="{ 'top-cut': player.isTopCut }"
+            >
+              <td class="rank">{{ player.rank }}</td>
+              <td>
+                {{ player.name }}
+                <span v-if="player.isTopCut" class="top-badge">
+                  TOP {{ getTopByCategory(standings.length) }}
+                </span>
+              </td>
+              <td>{{ player.section }}</td>
+              <td>{{ player.withdrawRound || '-' }}</td>
+              <td>{{ player.record }}</td>
+              <td>{{ player.points }}</td>
+              <td>{{ player.opponentWinRate }}</td>
+              <td>{{ player.opponentOpponentWinRate }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- =======================
+             📱 MOBILE CARDS
+             ======================= -->
+        <div class="standing-cards">
+          <div
             v-for="player in standings"
             :key="player.rank"
-            :class="{ 'top-cut': player.isTopCut }"
+            :class="['standing-card', { 'top-cut': player.isTopCut }]"
           >
-            <td class="rank">{{ player.rank }}</td>
-            <td>
-              {{ player.name }}
+            <div class="card-header">
+              <strong>#{{ player.rank }} – {{ player.name }}</strong>
               <span v-if="player.isTopCut" class="top-badge">
-                TOP {{ top }}
+                TOP {{ getTopByCategory(standings.length) }}
               </span>
-            </td>
-            <td>{{ player.section }}</td>
-            <td>{{ player.withdrawRound || '-' }}</td>
-            <td>{{ player.record }}</td>
-            <td>{{ player.points }}</td>
-            <td>{{ player.opponentWinRate }}</td>
-            <td>{{ player.opponentOpponentWinRate }}</td>
-          </tr>
-        </tbody>
-      </table>
-  
-      <!-- =======================
-           📱 MOBILE CARDS
-           ======================= -->
-      <div class="standing-cards">
-        <div
-          v-for="player in standings"
-          :key="player.rank"
-          :class="['standing-card', { 'top-cut': player.isTopCut }]"
-        >
-          <div class="card-header">
-            <strong>#{{ player.rank }} – {{ player.name }}</strong>
-            <span v-if="player.isTopCut" class="top-badge">
-              TOP {{ top }}
-            </span>
-          </div>
-  
-          <div class="card-row">
-            <span>{{ $t('tournamentsSeccion.standingSeccion') }}</span>
-            <span>{{ player.section }}</span>
-          </div>
-  
-          <div class="card-row">
-            <span>{{ $t('tournamentsSeccion.standingHistorial') }}</span>
-            <span>{{ player.record }}</span>
-          </div>
-  
-          <div class="card-row">
-            <span>{{ $t('tournamentsSeccion.standingPuntos') }}</span>
-            <span>{{ player.points }}</span>
-          </div>
-  
-          <div class="card-row">
-            <span>{{ $t('tournamentsSeccion.standingVictory1') }}</span>
-            <span>{{ player.opponentWinRate }}</span>
-          </div>
-  
-          <div class="card-row">
-            <span>{{ $t('tournamentsSeccion.standingVictory2') }}</span>
-            <span>{{ player.opponentOpponentWinRate }}</span>
-          </div>
-  
-          <div class="card-row">
-            <span>{{ $t('tournamentsSeccion.standingRoundDrop') }}</span>
-            <span>{{ player.withdrawRound || '-' }}</span>
+            </div>
+
+            <div class="card-row">
+              <span>{{ $t('tournamentsSeccion.standingSeccion') }}</span>
+              <span>{{ player.section }}</span>
+            </div>
+
+            <div class="card-row">
+              <span>{{ $t('tournamentsSeccion.standingHistorial') }}</span>
+              <span>{{ player.record }}</span>
+            </div>
+
+            <div class="card-row">
+              <span>{{ $t('tournamentsSeccion.standingPuntos') }}</span>
+              <span>{{ player.points }}</span>
+            </div>
+
+            <div class="card-row">
+              <span>{{ $t('tournamentsSeccion.standingVictory1') }}</span>
+              <span>{{ player.opponentWinRate }}</span>
+            </div>
+
+            <div class="card-row">
+              <span>{{ $t('tournamentsSeccion.standingVictory2') }}</span>
+              <span>{{ player.opponentOpponentWinRate }}</span>
+            </div>
+
+            <div class="card-row">
+              <span>{{ $t('tournamentsSeccion.standingRoundDrop') }}</span>
+              <span>{{ player.withdrawRound || '-' }}</span>
+            </div>
           </div>
         </div>
-      </div>
-  
+      </section>
+
       <footer>
         <div>{{ lastUpdate }}</div>
       </footer>
     </template>
-
 
     <br>
   </div>
@@ -124,8 +136,6 @@
   export default {
     name: 'ClasificacionRonda',
 
-    loading: true,
-
     setup() {
       const mode = inject('mode')
       const route = useRoute()
@@ -135,25 +145,24 @@
     data() {
       return {
         tournamentName: '',
-        category: '',
         organizer: '',
         currentRound: 0,
         totalRounds: 0,
         lastUpdate: '',
-        top: '',
-        standings: [],
+        top: 0,
+
+        // 👇 ahora agrupado
+        standingsByCategory: {},
+
         loading: false,
         gifLoading: inject('gifLoading')
       }
     },
 
     async mounted() {
-      
       this.loading = true
       try {
-        await Promise.all([
-          this.loadStandings()
-        ])
+        await this.loadStandings()
       } finally {
         this.loading = false
       }
@@ -161,71 +170,81 @@
 
     methods: {
       async loadStandings() {
-        const apiUrl = inject('apiUrl'); // Ahora tienes acceso a apiUrl
-        
-        try {
-          const tournamentId = this.route.params.id_torneo
+        const apiUrl = inject('apiUrl')
+        const tournamentId = this.route.params.id_torneo
 
+        try {
           const { data } = await axios.get(
             `${apiUrl}tournament-standing/${tournamentId}`
           )
 
           if (!data.length) return
 
-          /* ======= Datos generales desde el primer registro ======= */
+          /* ======= Datos generales ======= */
           const first = data[0]
-
-          this.category = first.category
           this.lastUpdate = new Date(first.createdAt).toLocaleString('es-CL')
 
-          // Ej: "Clasificación - Ronda 1/4 (6)"
           const match = first.roundLabel.match(/Ronda (\d+)\/(\d+)/)
           if (match) {
             this.currentRound = Number(match[1])
             this.totalRounds = Number(match[2])
           }
 
-          let totalJugadores = data.length;
-          console.log("Total jugadores:", totalJugadores);
-          switch (true) {
-            case totalJugadores <= 7:
-              this.top = 2;
-              break;
+          /* ======= Agrupar por categoría ======= */
+          const grouped = {}
 
-            case totalJugadores >= 8 && totalJugadores <= 16:
-              this.top = 4;
-              break;
+          data.forEach(player => {
+            if (!grouped[player.category]) {
+              grouped[player.category] = []
+            }
 
-            case totalJugadores > 16:
-              this.top = 8;
-              break;
+            grouped[player.category].push({
+              rank: player.position,
+              name: player.playerName,
+              section: player.section,
+              withdrawRound: player.withdrawalRound,
+              record: `${player.wins}/${player.losses}/${player.draws} (${player.points})`,
+              points: player.points,
+              opponentWinRate: `${player.opponentWinPercentage}%`,
+              opponentOpponentWinRate: `${player.opponentOpponentWinPercentage}%`,
+              isTopCut: false
+            })
+          })
 
-            default:
-              this.top = 0;
-          }
+          /* ======= Calcular top y ordenar por categoría ======= */
+          Object.keys(grouped).forEach(category => {
+            const list = grouped[category]
 
-          /* ======= Adaptar jugadores ======= */
-          this.standings = data.map(player => ({
-            rank: player.position,
-            name: player.playerName,
-            section: player.section,
-            withdrawRound: player.withdrawalRound,
-            record: `${player.wins}/${player.losses}/${player.draws} (${player.points})`,
-            points: player.points,
-            opponentWinRate: `${player.opponentWinPercentage}%`,
-            opponentOpponentWinRate: `${player.opponentOpponentWinPercentage}%`,
-            isTopCut: player.position <= Number(this.top)
-          }))
+            // ordenar por ranking
+            list.sort((a, b) => a.rank - b.rank)
 
-          
+            const totalJugadores = list.length
+
+            let top = 0
+            if (totalJugadores <= 7) top = 2
+            else if (totalJugadores <= 16) top = 4
+            else top = 8
+
+            // marcar top cut
+            list.forEach(player => {
+              player.isTopCut = player.rank <= top
+            })
+          })
+
+          this.standingsByCategory = grouped
 
         } catch (error) {
           console.error('Error cargando standings', error)
         }
+      },
+      getTopByCategory(total) {
+        if (total <= 7) return 2
+        if (total <= 16) return 4
+        return 8
       }
     }
   }
-</script>
+  </script>
 
 
 
