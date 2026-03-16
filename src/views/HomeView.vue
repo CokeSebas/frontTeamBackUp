@@ -37,8 +37,8 @@
                         <img :src="team.poke2" />
                         <img :src="team.poke3" />
                         <img :src="team.poke4" />
-                        <img :src="team.poke5" />
-                        <img :src="team.poke6" />
+                        <img v-if="team.poke5" :src="team.poke5" />
+                        <img v-if="team.poke6" :src="team.poke6" />
                       </div>
                       <p></p>
                       <router-link class="btn btn-outline-success btn-sm" :to="'/vgc/team/' + team.id">{{ $t('buttons.seeTeam') }}</router-link>

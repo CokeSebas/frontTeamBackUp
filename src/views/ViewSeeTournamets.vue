@@ -17,6 +17,7 @@
             <option value="">Todos</option>
             <option value="challenge">Challenge</option>
             <option value="cup">Cup</option>
+            <option value="liga">Liga Casual</option>
           </select>
         </div>
 
@@ -49,8 +50,8 @@
           <tbody>
             <tr v-for="tournament in currentItems" :key="tournament.id">
               <td class="text-center">{{ tournament.nombre }}</td>
-              <td class="text-center">{{ tournament.tipo_torneo === "challenge" ? 'Challenge' : 'Cup' }}</td>
-              <td class="text-center">{{ tournament.formatoTorneo === "vgc" ? 'VGC' : 'TGC' }}</td>
+              <td class="text-center">{{ tipoTorneoLabel[tournament.tipo_torneo] }}</td>
+              <td class="text-center">{{ tournament.formato_torneo === "vgc" ? 'VGC' : 'TGC' }}</td>
               <td class="text-center">{{ formatDate(tournament.fecha_torneo) }}</td>
 
               <td class="text-center">
@@ -91,12 +92,12 @@
 
             <div class="info-row">
               <span>{{ $t('tournamentsSeccion.type') }}</span>
-              <strong>{{ tournament.tipo_torneo === "challenge" ? 'Challenge' : 'Cup' }}</strong>
+              <strong>{{ tipoTorneoLabel[tournament.tipo_torneo] }}</strong>
             </div>
 
             <div class="info-row">
               <span>{{ $t('teamsSeccion.format') }}</span>
-              <strong>{{ tournament.formatoTorneo === "vgc" ? 'VGC' : 'TGC' }}</strong>
+              <strong>{{ tournament.formato_torneo === "vgc" ? 'VGC' : 'TGC' }}</strong>
             </div>
 
             <div class="info-row">
@@ -157,7 +158,13 @@
         filterFormat: '',
 
         // paginador
-        currentItems: []
+        currentItems: [],
+        
+        tipoTorneoLabel: {
+          liga: 'Liga',
+          challenge: 'Challenge',
+          cup: 'Cup'
+        }
       }
     },
 
@@ -169,7 +176,7 @@
             : true
 
           const matchFormat = this.filterFormat
-            ? tournament.formatoTorneo === this.filterFormat
+            ? tournament.formato_torneo === this.filterFormat
             : true
 
           return matchType && matchFormat
@@ -231,7 +238,7 @@
       }
     }
   }
-  </script>
+</script>
 
 
 

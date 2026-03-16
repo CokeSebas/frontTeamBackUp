@@ -22,7 +22,7 @@
                     <div class="pokemon-info">
                       <h4>{{ pokes.species }} <span v-if="pokes.item"> @ {{ pokes.item }}</span></h4>
                       <p style="margin-bottom: 0;"><strong>{{ $t('teamsSeccion.ability') }}:</strong> {{ pokes.ability }}</p>
-                      <p style="margin-bottom: 0;"><strong>{{ $t('teamsSeccion.level') }}:</strong> {{ pokes.level }}</p>
+                      <p style="margin-bottom: 0;"><strong>{{ $t('teamsSeccion.level') }}:</strong> {{ pokes.level ?? '100' }}</p>
                       <p style="margin-bottom: 0;"><strong>{{ $t('teamsSeccion.teraType') }}:</strong> {{ pokes.teraType }}</p>
                       <p style="margin-bottom: 0;"><strong>EVs:</strong> {{ pokes.evs }}</p>
                       <p style="margin-bottom: 0;"><strong>{{ pokes.nature }} Nature</strong></p>

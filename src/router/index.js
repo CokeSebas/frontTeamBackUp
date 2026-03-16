@@ -33,7 +33,10 @@ import ViewTournaments from '@/views/ViewSeeTournamets.vue';
 import ViewAddStanding from '@/views/ViewAddStanding.vue';
 import ViewTopsTournament from '@/views/ViewTopsTournament.vue';
 
-import i18n from '@/i18n'
+import i18n from '@/i18n';
+
+import { analytics } from "../firebase.ts";
+import { logEvent } from "firebase/analytics";
 
 // Define las rutas
 const routes = [
@@ -419,5 +422,13 @@ router.beforeEach((to, from, next) => {
   }
   next()
 })
+
+router.afterEach((to) => {
+  if (analytics) {
+    logEvent(analytics, "page_view", {
+      page_path: to.fullPath,
+    });
+  }
+});
 
 export default router;

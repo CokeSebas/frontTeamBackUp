@@ -6,7 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { createPinia } from 'pinia';
 import { createHead } from '@vueuse/head';
-
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import "./firebase.ts";
 
 import i18n from '@/i18n' // 👈 ahora sí
 

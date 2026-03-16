@@ -20,16 +20,27 @@
               </div>
               <div class="form-group mb-3">
                 <label for="password">{{ $t('profileSeccion.password') }}</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  id="password"
-                  v-model="password"
-                  placeholder="Ingresa tu contraseña"
-                  required
-                  :disabled="isLoading"
-                />
+
+                <div class="position-relative">
+                  <input
+                    :type="showPassword ? 'text' : 'password'"
+                    class="form-control pe-5"
+                    id="password"
+                    v-model="password"
+                    placeholder="Ingresa tu contraseña"
+                    required
+                    :disabled="isLoading"
+                  />
+
+                  <i
+                    :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"
+                    class="position-absolute top-50 end-0 translate-middle-y me-3"
+                    style="cursor: pointer;"
+                    @click="togglePassword"
+                  ></i>
+                </div>
               </div>
+
               <div class="text-center mt-4">
                 <button 
                   type="submit" 
@@ -76,6 +87,7 @@
 
       const email = ref('');
       const password = ref('');
+      const showPassword = ref(false)
       const isLoading = ref(false);
 
       const login = () => {
@@ -123,9 +135,15 @@
           });
       };
 
+      const togglePassword = () => {
+        showPassword.value = !showPassword.value
+      }
+
       return {
         email, 
         password,
+        showPassword,
+        togglePassword,
         login,
         isLoading,
       };

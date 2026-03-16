@@ -33,6 +33,7 @@
                 </option>
                 <option value="challenge">Challenge</option>
                 <option value="cup">Cup</option>
+                <option value="liga">Liga Casual</option>
               </select>
             </div>
 
@@ -94,8 +95,8 @@
                   :key="tournament.id"
                 >
                   <td>{{ tournament.nombre }}</td>
-                  <td>{{ tournament.tipo_torneo === 'challenge' ? 'Challenge' : 'Cup' }}</td>
-                  <td>{{ tournament.formatoTorneo === 'tcg' ? 'Trading Card Game' : 'VideoGame' }}</td>
+                  <td>{{ tipoTorneoLabel[tournament.tipo_torneo] }}</td>
+                  <td>{{ tournament.formato_torneo === 'tcg' ? 'Trading Card Game' : 'VideoGame' }}</td>
                   <td>{{ moment(tournament.fecha_torneo).format('DD/MM/YYYY') }}</td>
                   <td>
                     <button class="btn btn-primary btn-sm" @click="ViewOrgTorneo(tournament.id)">
@@ -123,12 +124,12 @@
 
               <p class="mb-1">
                 <strong>{{ $t('tournamentsSeccion.type') }}:</strong>
-                {{ tournament.tipo_torneo === 'challenge' ? 'Challenge' : 'Cup' }}
+                {{ tipoTorneoLabel[tournament.tipo_torneo] }}
               </p>
 
               <p class="mb-1">
                 <strong>{{ $t('teamsSeccion.format') }}:</strong>
-                {{ tournament.formatoTorneo === 'tcg' ? 'Trading Card Game' : 'VideoGame' }}
+                {{ tournament.formato_torneo === 'tcg' ? 'Trading Card Game' : 'VideoGame' }}
               </p>
 
               <p class="mb-3">
@@ -201,6 +202,12 @@
     return sessionStorage.getItem('isOrganizer') === 'true';
   })
 
+  const tipoTorneoLabel = {
+    liga: 'Liga',
+    challenge: 'Challenge',
+    cup: 'Cup'
+  }
+
   const loadTournaments = async () => {
     try {
 
@@ -223,7 +230,12 @@
     loading.value = true
 
     let params = { 
-      nombre: form.value.name, tipo_torneo: form.value.type, formato_torneo: form.value.format, fecha_torneo: form.value.date, userId: userId };
+      nombre: form.value.name, 
+      tipo_torneo: form.value.type, 
+      formato_torneo: form.value.format, 
+      fecha_torneo: form.value.date, 
+      userId: userId 
+    };
 
     try {
       await axios.post(`${apiUrl}tournaments`, params)
