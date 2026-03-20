@@ -42,16 +42,19 @@
             <router-link class="nav-link" to="/vgc/pokemons">{{ $t('pokemons') }}</router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/perfil">{{ $t('profile') }}</router-link>
+            <router-link class="nav-link" to="/tournament/ver-torneos">{{ $t('seeTournaments') }}</router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/tournament/ver-torneos">{{ $t('seeTournaments') }}</router-link>
+            <router-link class="nav-link" :to="`/vgc/print-team-sheet`">{{ $t('teamSheetSection.printTeamSheet') }}</router-link>
           </li>
           <li v-if="isAuthenticated" class="nav-item">
             <router-link class="nav-link" :to="`/vgc/my-teams/${userId}`">{{ $t('myTeams') }}</router-link>
           </li>
           <li v-if="isAuthenticated" class="nav-item">
             <router-link class="nav-link" :to="`/vgc/my-pokemons/${userId}`">{{ $t('myPokemons') }}</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/perfil">{{ $t('profile') }}</router-link>
           </li>
         </ul>
 

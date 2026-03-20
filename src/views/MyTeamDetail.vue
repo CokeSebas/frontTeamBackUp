@@ -55,6 +55,7 @@
             <p v-if="team.mus_fav"><strong>{{ $t('teamsSeccion.musFav') }}: </strong> {{ team.mus_fav }}</p>
             <p v-if="team.counters"><strong>{{ $t('teamsSeccion.teamsCounter') }}: </strong> {{ team.counters }}</p>
             <p v-if="team.damage_calcs"><strong>{{ $t('teamsSeccion.damageCalcs') }}: </strong> {{ team.damage_calcs }}</p>
+            <p><button class="btn btn-primary" @click="goToTeamsheet">{{ $t('buttons.goToTeamsheet') }}</button></p>
           </div>
 
           <div v-else class="d-flex align-items-stretch"> <!-- Columna Pokémon flexible para el estiramiento -->
@@ -233,6 +234,12 @@
 
         toggleEditMode() {
           this.isEditing = !this.isEditing;
+        },
+        goToTeamsheet() {
+          this.$router.push({
+            name: 'ViewTeamSheet',
+            params: { id_team: this.id, type: 'private' }
+          })
         },
       },
       mounted() {

@@ -1,0 +1,22 @@
+var typesKor = {
+    "0": "\ub178\ub9d0",
+    "1": "\uaca9\ud22c",
+    "2": "\ube44\ud589",
+    "3": "\ub3c5",
+    "4": "\ub545",
+    "5": "\ubc14\uc704",
+    "6": "\ubc8c\ub808",
+    "7": "\uace0\uc2a4\ud2b8",
+    "8": "\uac15\ucca0",
+    "9": "\ubd88\uaf43",
+    "10": "\ubb3c",
+    "11": "\ud480",
+    "12": "\uc804\uae30",
+    "13": "\uc5d0\uc2a4\ud37c",
+    "14": "\uc5bc\uc74c",
+    "15": "\ub4dc\ub798\uace4",
+    "16": "\uc545",
+    "17": "\ud398\uc5b4\ub9ac",
+    "99": "\uc2a4\ud154\ub77c"
+}
+export default typesKor;

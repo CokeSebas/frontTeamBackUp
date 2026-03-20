@@ -1,0 +1,22 @@
+var typesEs = {
+    "0": "Normal",
+    "1": "Lucha",
+    "2": "Volador",
+    "3": "Veneno",
+    "4": "Tierra",
+    "5": "Roca",
+    "6": "Bicho",
+    "7": "Fantasma",
+    "8": "Acero",
+    "9": "Fuego",
+    "10": "Agua",
+    "11": "Planta",
+    "12": "El\u00e9ctrico",
+    "13": "Ps\u00edquico",
+    "14": "Hielo",
+    "15": "Drag\u00f3n",
+    "16": "Siniestro",
+    "17": "Hada",
+    "99": "Astral"
+}
+export default typesEs;

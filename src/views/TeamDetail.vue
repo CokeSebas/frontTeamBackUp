@@ -53,6 +53,7 @@
           <p v-if="team.mus_fav"><strong>{{ $t('teamsSeccion.musFav') }}: </strong> {{ team.mus_fav }}</p>
           <p v-if="team.counters"><strong>{{ $t('teamsSeccion.teamsCounter') }}: </strong> {{ team.counters }}</p>
           <p v-if="team.damage_calcs"><strong>{{ $t('teamsSeccion.damageCalcs') }}: </strong> {{ team.damage_calcs }}</p>
+          <p><button class="btn btn-primary" @click="goToTeamsheet">{{ $t('buttons.goToTeamsheet') }}</button></p>
         
           <div>
             <h3>{{ $t('share') }}</h3>
@@ -142,7 +143,14 @@
               // Manejar cualquier error si ocurre
               console.error('Error al copiar el texto: ', err);
             });
-        }
+        },
+
+        goToTeamsheet() {
+          this.$router.push({
+            name: 'ViewTeamSheetPublic',
+            params: { id_team: this.id, type: 'public' }
+          })
+        },
 
 
       },

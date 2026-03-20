@@ -30,6 +30,8 @@
   "organizerTournament": "Organize Tournament",
   "addTournament": "Add Tournament",
   "listUsers": "List Users",
+  "language": "Language",
+  "teamsheetGenerator": "Teamsheet Generator",
   "home": {
     "title": "Register your Pokémon Teams or Pokémon individually.",
     "subtitle": "Create and organize your teams to be ready for competition.",
@@ -63,7 +65,8 @@
     "goToStanding": "Go to Standing",
     "goToResults": "Go to Results",
     "goToListUsers": "Go to User List",
-    "addTeam": "Add Team"
+    "addTeam": "Add Team",
+    "goToTeamsheet": "Go to Teamsheet"
   },
 
   "teamsSeccion": {
@@ -260,7 +263,21 @@
     "fileUploaded": "File uploaded successfully!"
   },
 
-  
+  "teamSheetSection": {
+    "title": "Team List",
+    "playerName": "Player Name",
+    "trainerName": "Trainer Name",
+    "teamName": "Team Name",
+    "switchName": "Switch Profile Name",
+    "playerId": "Player ID",
+    "birth": "Date of Birth",
+    "ageDivision": "Division",
+    "selectAgeDivision": "Select a Division",
+    "selectTypeSheet": "Select type of team list",
+    "printTeamSheet": "Print Team List",
+    "pasteTeamSheet": "Paste Team List"
+  },
 
+  
   "": ""
 }

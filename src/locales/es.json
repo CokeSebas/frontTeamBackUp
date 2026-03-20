@@ -30,6 +30,8 @@
   "organizerTournament": "Organizar Torneo",
   "addTournament": "Agregar Torneo",
   "listUsers": "Lista de Usuarios",
+  "language": "Idioma",
+  "teamsheetGenerator": "Generador de Hoja de Equipos",
   "home":{
     "title": "Registra tus Equipos de Pokémon o Pokémon de manera individual.",
     "subtitle": "Crea y organiza tus equipos para estar listo en la competición.",
@@ -63,7 +65,8 @@
     "goToStanding": "Ir a Clasificación",
     "goToResults": "Ir a Resultados",
     "goToListUsers": "Ir a Lista de Usuarios",
-    "addTeam": "Agregar Equipo"
+    "addTeam": "Agregar Equipo",
+    "goToTeamsheet": "Ir a Hoja de Equipo"
   },
 
   "teamsSeccion":{
@@ -258,6 +261,21 @@
     "selectFile": "Seleccione un archivo",
     "uploadFile": "Subir archivo",
     "fileUploaded": "Archivo subido con exito!"
+  },
+
+  "teamSheetSection": {
+    "title": "Hoja de Equipo",
+    "playerName": "Nombre del Jugador",
+    "trainerName": "Nombre del Entrenador",
+    "teamName": "Nombre del Equipo",
+    "switchName": "Perfil de Nintendo Switch",
+    "playerId": "ID de Jugador",
+    "birth": "Fecha de Nacimiento",
+    "ageDivision": "División",
+    "selectAgeDivision": "Selecciona una División",
+    "selectTypeSheet": "Selecciona un Tipo de Hoja",
+    "printTeamSheet": "Imprimir Hoja de Equipo",
+    "pasteTeamSheet": "Pegar Hoja de Equipo"
   },
 
   

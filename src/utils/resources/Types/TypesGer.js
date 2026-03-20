@@ -1,0 +1,22 @@
+var typesGer = {
+    "0": "Normal",
+    "1": "Kampf",
+    "2": "Flug",
+    "3": "Gift",
+    "4": "Boden",
+    "5": "Gestein",
+    "6": "K\u00e4fer",
+    "7": "Geist",
+    "8": "Stahl",
+    "9": "Feuer",
+    "10": "Wasser",
+    "11": "Pflanze",
+    "12": "Elektro",
+    "13": "Psycho",
+    "14": "Eis",
+    "15": "Drache",
+    "16": "Unlicht",
+    "17": "Fee",
+    "99": "Stellar"
+}
+export default typesGer;

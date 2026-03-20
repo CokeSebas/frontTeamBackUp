@@ -32,6 +32,9 @@ import ViewGoToResults from '@/views/ViewGoToResults.vue';
 import ViewTournaments from '@/views/ViewSeeTournamets.vue';
 import ViewAddStanding from '@/views/ViewAddStanding.vue';
 import ViewTopsTournament from '@/views/ViewTopsTournament.vue';
+import ViewTeamSheet from '@/views/ViewTeamSheet.vue';
+import ViewTeamSheetPublic from '@/views/ViewTeamSheet.vue';
+import ViewPrintTeamSheet from '@/views/ViewTeamSheet.vue';
 
 import i18n from '@/i18n';
 
@@ -210,7 +213,7 @@ const routes = [
     name: 'ViewMyTeams',
     component: ViewMyTeams,
     props: true,
-    beforeEnter: (to, from, next) => {
+    beforeEnter: (to, from, next) => { // activar login
       const authStore = useAuthStore(); // Usa el authStore de Pinia
       if (!authStore.isAuthenticated) {
         next({ path: '/login', query: { redirect: to.fullPath } });
@@ -244,6 +247,53 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('profile'),
         link: '/perfil',
+      }
+    }
+  },
+  {
+    path: '/vgc/my-team-sheet/:id/:type',
+    name: 'ViewTeamSheet',
+    component: ViewTeamSheet,
+    props: true,
+    beforeEnter: (to, from, next) => { // activar
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
+        next({ path: '/login', query: { redirect: to.fullPath } });
+      } else {
+        next();
+      }
+    },
+    meta: {
+      title: i18n.global.t('myTeams'),
+      breadcrumb: {
+        text: i18n.global.t('myTeams'),
+        link: 'back',
+      }
+    }
+  },
+  {
+    path: '/vgc/team-sheet/:id/:type',
+    name: 'ViewTeamSheetPublic',
+    component: ViewTeamSheetPublic,
+    props: true,
+    meta: {
+      title: i18n.global.t('teamSheetSection.title'),
+      breadcrumb: {
+        text: i18n.global.t('teams'),
+        link: 'back',
+      }
+    }
+  },
+  {
+    path: '/vgc/print-team-sheet',
+    name: 'ViewPrintTeamSheet',
+    component: ViewPrintTeamSheet,
+    props: true,
+    meta: {
+      title: i18n.global.t('teamSheetSection.title'),
+      breadcrumb: {
+        text: i18n.global.t('teams'),
+        link: 'back',
       }
     }
   },
