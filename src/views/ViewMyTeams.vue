@@ -78,6 +78,7 @@
   import axios from 'axios';
   import { jwtDecode } from 'jwt-decode';
   import Paginator from '@/components/AppPaginator.vue';
+  import { createEvent } from "@/services/eventService";
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -126,10 +127,18 @@
                 'Authorization': `Bearer ${token}`
             }
         })
-        .then(response => {
+        .then(async response => {
             this.listTeams = response.data.data;
             this.currentItems = this.filteredTeams.slice(0, 10); 
             this.isLoading = false; // Desactivar el estado de carga cuando termina
+          
+          await createEvent({
+            userAgent: navigator.userAgent,
+            date: new Date().toISOString(),
+            type: "list_teams_user",
+            description: "userName: "+ localStorage.getItem('userName') + " listado de equipos",
+          });
+            
         })
         .catch(error => {
             console.error('Error:', error);

@@ -18,7 +18,11 @@
         <!-- Paste -->
         <div class="field full">
           <label>{{ $t('teamsSeccion.urlPaste') }}</label>
-          <input v-model="team.urlPaste" placeholder="https://pokepaste.es/..." />
+          <input 
+            v-model="team.urlPaste" 
+            placeholder="https://pokepaste.es/..." 
+            required 
+          />
         </div>
 
         <!-- Format -->
@@ -68,7 +72,7 @@
           <textarea v-model="team.damageCalcs"></textarea>
         </div>
 
-        <!-- Switch moderno -->
+        <!-- Switch -->
         <div class="field full switch-field">
           <span>{{ $t('teamsSeccion.isPublic') }}</span>
           <label class="switch">
@@ -99,20 +103,15 @@
   import Swal from 'sweetalert2';
   import { jwtDecode } from 'jwt-decode';
   import { useHead } from '@vueuse/head';
-  
-  // Importar el store de autenticación de Pinia
   import { useAuthStore } from '@/stores/authStore';
-  import { useI18n } from 'vue-i18n'; // Importa useI18n
+  import { useI18n } from 'vue-i18n';
 
   const router = useRouter();
   const isLoading = ref(false);
-  const authStore = useAuthStore(); // Instancia del store
-
-  const apiUrl = inject('apiUrl'); // Ahora tienes acceso a apiUrl
-
+  const authStore = useAuthStore();
+  const apiUrl = inject('apiUrl');
   const mode = inject('mode');
-
-  const { t } = useI18n(); // Usa `useI18n` para obtener `t`
+  const { t } = useI18n();
 
   const team = reactive({
     teamName: '',
@@ -150,16 +149,52 @@
     }
   }
 
-  async function saveTeam() {
-    if (!authStore.isAuthenticated) {
-      localStorage.setItem('formTeam', JSON.stringify(team)); // Almacena el equipo en localStorage
-      const currentUrl = router.currentRoute.value.fullPath; // Obtiene la URL actual
+  /* 🔥 VALIDACIÓN */
+  function validateForm() {
+    if (!team.teamName.trim()) {
+      return t('teamsSeccion.name') + ' es obligatorio';
+    }
 
+    if (!team.urlPaste.trim()) {
+      return t('teamsSeccion.urlPaste') + ' es obligatorio';
+    }
+
+    // Validar que sea pokepaste
+    if (!team.urlPaste.includes('pokepast.es')) {
+      return 'La URL debe ser de pokepaste';
+    }
+
+    if (!team.formatId) {
+      return t('teamsSeccion.format') + ' es obligatorio';
+    }
+
+    if (!team.subFormatId) {
+      return t('teamsSeccion.subFormat') + ' es obligatorio';
+    }
+
+    return null;
+  }
+
+  async function saveTeam() {
+
+    const validationError = validateForm();
+    if (validationError) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Formulario incompleto',
+        text: validationError,
+      });
+      return;
+    }
+
+    if (!authStore.isAuthenticated) {
+      localStorage.setItem('formTeam', JSON.stringify(team));
+      const currentUrl = router.currentRoute.value.fullPath;
       router.push({ path: '/login', query: { redirect: currentUrl } });
       return;
     }
 
-    const token = authStore.token; // Obtener el token desde el store
+    const token = authStore.token;
     if (!token) {
       throw new Error('El usuario no está autenticado');
     }
@@ -168,7 +203,7 @@
     team.userId = decodedToken.userId;
 
     isLoading.value = true;
-    
+
     try {
       const response = await axios.post(apiUrl+'teams', team, {
         headers: {
@@ -182,18 +217,15 @@
           text: t('responseApisSeccion.addTeamSuccess'),
           icon: 'success',
         });
-        
+
         setTimeout(() => {
           localStorage.removeItem('formTeam');
           const redirectTo = router.currentRoute.value.query.redirect || '/';
           router.push(redirectTo);
         }, 1500);
-      }else{
-        Swal.fire({
-          title: t('responseApisSeccion.addTeamTitle'),
-          text: t('responseApisSeccion.addTeamError'),
-          icon: 'error',
-        });
+
+      } else {
+        throw new Error();
       }
 
     } catch (error) {
@@ -214,7 +246,7 @@
       title: t('createTeam'),
       meta: [
         { name: 'description', content: t('createTeam') },
-        { name: 'keywords', content: `VGC, Pokémon, Team, Tournament, Regiona, International Championship, Global Challenge, Regulation H` },
+        { name: 'keywords', content: `VGC, Pokémon, Team, Tournament, Regional, International Championship, Global Challenge, Pokémon Champions` },
       ]
     });
   }
@@ -226,7 +258,7 @@
 
     const storedData = JSON.parse(localStorage.getItem('formTeam'));
     if (storedData) {
-      Object.assign(team, storedData); // Rellena los datos del formulario si están guardados
+      Object.assign(team, storedData);
     }
   });
 </script>

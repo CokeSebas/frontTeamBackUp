@@ -67,7 +67,7 @@
                     <div class="card-body">
                       <h5 class="card-title" align="center">{{ pokemon.name }}</h5>
                       <img :src="pokemon.imgPokemon" style="width: 30%;" class="card-img-top d-block mx-auto" alt="Pokemon">
-                      <p class="card-text">
+                      <p v-if="pokemon.subFormat < 6" class="card-text">
                         <strong>{{ $t('pokemonsSeccion.teraType') }}: </strong> {{ pokemon.teraType }}
                       </p>
                       <p class="card-text">

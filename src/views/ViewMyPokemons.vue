@@ -76,7 +76,7 @@
                       <p v-if="pokemon.subFormatName" class="card-text">
                         <strong>{{ $t('teamsSeccion.subFormat') }}:</strong> {{ pokemon.subFormatName }}
                       </p>
-                      <p class="card-text">
+                      <p v-if="pokemon.subFormatId < 6" class="card-text">
                         <strong>{{ $t('pokemonsSeccion.teraType') }}:</strong> {{ pokemon.teraType }}
                       </p>
                       <p class="card-text">
@@ -148,6 +148,7 @@
   import { jwtDecode } from 'jwt-decode';
   import Swal from 'sweetalert2';
   import Paginator from '@/components/AppPaginator.vue';
+  import { createEvent } from "@/services/eventService";
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -201,10 +202,18 @@
           headers: {
             Authorization: `Bearer ${token}`
           }
-        }).then(response => {
+        }).then(async response => {
           this.listPokes = response.data.data;
           this.currentItems = this.filteredPokes.slice(0, 9); 
           this.isLoading = false;
+
+          await createEvent({
+            userAgent: navigator.userAgent,
+            date: new Date().toISOString(),
+            type: "list_pokemons_user",
+            description: "userName: "+ localStorage.getItem('userName') + " listado de pokemons",
+          });
+
         }).catch(error => {
           console.error('Error:', error);
           this.isLoading = false;

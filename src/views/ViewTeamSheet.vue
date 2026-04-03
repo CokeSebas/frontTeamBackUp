@@ -119,11 +119,43 @@
             </div>
 
             <!-- PRINT -->
-            <div class="print-section">
-              <button class="btn btn-success w-100" @click="printSelected">
-                {{ $t('teamSheetSection.printTeamSheet') }}
-              </button>
+           <div class="print-section">
+            <div class="row">
+
+              <div class="col-6">
+                <button 
+                  class="btn btn-success w-100"
+                  @click="printSelected"
+                  :disabled="loadingPrint"
+                >
+                  <span v-if="loadingPrint">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Generando...
+                  </span>
+                  <span v-else>
+                    {{ $t('teamSheetSection.printTeamSheet') }}
+                  </span>
+                </button>
+              </div>
+
+              <div class="col-6">
+                <button 
+                  class="btn btn-info w-100"
+                  @click="printSelectedST"
+                  :disabled="loadingPrintST"
+                >
+                  <span v-if="loadingPrintST">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Generando...
+                  </span>
+                  <span v-else>
+                    {{ $t('teamSheetSection.printEmptyTeamSheet') }}
+                  </span>
+                </button>
+              </div>
+
             </div>
+          </div>
 
             <!-- SAVE IN BROWSER -->
             <div class="form-group mt-3 text-center">
@@ -133,7 +165,7 @@
                 v-model="saveInBrowser"
               />
               <label for="saveData" class="ml-2">
-                Guardar datos en este navegador
+                {{ $t('saveInBrowser') }}
               </label>
             </div>
 
@@ -151,8 +183,10 @@
 <script>
   import axios from 'axios';
   import Swal from 'sweetalert2';
+  import { useHead } from '@vueuse/head';
 
-  import { generateTeamPDF } from '../utils/imprimirTeamSheet'; // tu función
+  import { generateTeamPDF } from '../utils/imprimirTeamSheet';
+  import { createEvent } from "@/services/eventService";
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -212,6 +246,8 @@
         isLoading: true, // Controla el estado de carga
 
         saveInBrowser: false,
+        loadingPrint: false,
+        loadingPrintST: false
       }
     },
     computed: {
@@ -310,6 +346,19 @@
             this.teamJson = this.formatTeamPaste(this.teamJson); // Formatear el texto del equipo
 
             this.teamPaste = this.teamJson; // Asignar el texto formateado a teamPaste
+          
+            useHead({
+              title: 'Print Team Sheet, team: ' + this.team.team_name, // Usa el nombre del Equipo en el título
+              meta: [
+                { name: 'description', content: `Detalles sobre ${this.team.team_name}` },
+                { name: 'keywords', content: `${this.team.team_name}, Team, Tournament, VGC, Print Team Sheet ` },
+                { name: 'og:title', content: 'Print Team Sheet, team: ' + this.team.team_name },
+                { name: 'og:description', content: `Detalles sobre ${this.team.team_name}` },
+                { name: 'og:regulation', content: `Regulation ${this.team.subFormatName}` },
+                { name: 'og:format', content: `format VGC` },
+              ]
+            });
+          
           }else{
             Swal.fire({
               icon: 'error',
@@ -327,16 +376,68 @@
       },
 
       async printSelected() {
-        if (!this.selectedLanguage) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Idioma requerido',
-            text: 'Debes seleccionar un idioma antes de imprimir'
-          });
-          return;
-        }
+        if (this.loadingPrint) return; // evita doble click
+        this.loadingPrint = true;
 
-        if(this.teamPaste.length != 0){
+        try {
+          if (!this.selectedLanguage) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Idioma requerido',
+              text: 'Debes seleccionar un idioma antes de imprimir'
+            });
+            return;
+          }
+
+          await createEvent({
+            userAgent: navigator.userAgent,
+            date: new Date().toISOString(),
+            type: "print_team_sheet",
+            description: "Usuario: " + this.form.playerName + " imprimió team sheet, tipo: " + this.selectedAction + ", idioma: " + this.selectedLanguage,
+          });
+
+          if (this.teamPaste.length != 0) {
+            await generateTeamPDF({
+              playerName: this.form.playerName,
+              trainerName: this.form.trainerName,
+              teamName: this.form.teamName,
+              switchName: this.form.switchName,
+              playerId: this.form.playerId,
+              birth: this.form.birth,
+              ageDivision: this.selectedCategory,
+              sheet: this.selectedAction,
+              lang: this.selectedLanguage,
+              paste: this.teamPaste,
+              onlyPdf: false
+            });
+          } else {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Equipo requerido',
+              text: 'Debes pegar un paste antes de imprimir'
+            });
+          }
+
+        } catch (error) {
+          console.error(error);
+        } finally {
+          this.loadingPrint = false; // 🔥 SIEMPRE se apaga
+        }
+      },
+
+      async printSelectedST() {
+        if (this.loadingPrintST) return;
+        this.loadingPrintST = true;
+
+        try {
+          await createEvent({
+            userAgent: navigator.userAgent,
+            date: new Date().toISOString(),
+            type: "print_team_sheet_blank",
+            description: "Usuario: " + this.form.playerName + " imprimió team sheet blanco, tipo: " + this.selectedAction+", idioma: " + this.selectedLanguage,
+            teamName: this.form.teamName || null
+          });
+
           await generateTeamPDF({
             playerName: this.form.playerName,
             trainerName: this.form.trainerName,
@@ -347,16 +448,15 @@
             ageDivision: this.selectedCategory,
             sheet: this.selectedAction,
             lang: this.selectedLanguage,
-            paste: this.teamPaste
-          })
-        }else{
-          Swal.fire({
-            icon: 'warning',
-            title: 'Equipo requerido',
-            text: 'Debes pegar un paste antes de imprimir'
-          })
-        }
+            paste: this.teamPaste,
+            onlyPdf: true
+          });
 
+        } catch (error) {
+          console.error(error);
+        } finally {
+          this.loadingPrintST = false;
+        }
       },
 
       loadFromLocalStorage() {
@@ -380,7 +480,18 @@
         this.getTeamDetail();
       }else{
         this.isLoading = false;
+        useHead({
+          title: 'Print Team Sheet', // Usa el nombre del Equipo en el título
+          meta: [
+            { name: 'description', content: `Print Team Sheet for Tournaments` },
+            { name: 'keywords', content: `Team, Tournament, VGC, Team Sheet ` },
+            { name: 'og:title', content: 'Team Sheet' },
+            { name: 'og:description', content: `Print Team Sheet for Tournaments` },
+            { name: 'og:format', content: `VGC` },
+          ]
+        });
       }
+
     },
   }
 </script>

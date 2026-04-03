@@ -23,7 +23,7 @@
                       <h4>{{ pokes.species }} <span v-if="pokes.item"> @ {{ pokes.item }}</span></h4>
                       <p style="margin-bottom: 0;"><strong>{{ $t('teamsSeccion.ability') }}:</strong> {{ pokes.ability }}</p>
                       <p style="margin-bottom: 0;"><strong>{{ $t('teamsSeccion.level') }}:</strong> {{ pokes.level ?? '100' }}</p>
-                      <p style="margin-bottom: 0;"><strong>{{ $t('teamsSeccion.teraType') }}:</strong> {{ pokes.teraType }}</p>
+                      <p v-if="subFormat < 6" style="margin-bottom: 0;"><strong>{{ $t('teamsSeccion.teraType') }}:</strong> {{ pokes.teraType }}</p>
                       <p style="margin-bottom: 0;"><strong>EVs:</strong> {{ pokes.evs }}</p>
                       <p style="margin-bottom: 0;"><strong>{{ pokes.nature }} Nature</strong></p>
                       <p style="margin-bottom: 0;" v-if="pokes.ivs"><strong>IVs:</strong> {{ pokes.ivs }}</p>
@@ -119,6 +119,7 @@
   import axios from 'axios';
   import Swal from 'sweetalert2';
   import { useHead } from '@vueuse/head';
+  import { createEvent } from "@/services/eventService";
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -135,7 +136,8 @@
               error: null, // Para manejar errores opcionalmente
               copySuccess: '', // Mensaje de éxito
               isEditing: false,
-              formats: []
+              formats: [],
+              subFormat: 0,
           }
       },
       methods: {
@@ -152,6 +154,8 @@
             if(response.data.status == "success"){
               this.team = response.data.data; // Almacenar los datos recibidos
 
+              this.subFormat = this.team.subFormatId;
+
               useHead({
                 title: 'Equipo ' + this.team.team_name, // Usa el nombre del Equipo en el título
                 meta: [
@@ -162,6 +166,13 @@
                   { name: 'og:regulation', content: `Regulation ${this.team.subFormatName}` },
                   { name: 'og:format', content: `format VGC` },
                 ]
+              });
+
+              await createEvent({
+                userAgent: navigator.userAgent,
+                date: new Date().toISOString(),
+                type: "team_detail_user",
+                description: "userName: "+ localStorage.getItem('userName') + " detalle del team " + this.team.team_name+', teamId: '+this.id,
               });
               
             }else{

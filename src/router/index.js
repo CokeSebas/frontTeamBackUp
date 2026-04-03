@@ -203,8 +203,8 @@ const routes = [
     meta: {
       title: i18n.global.t('myPokemons'),
       breadcrumb: {
-        text: i18n.global.t('profile'),
-        link: '/perfil',
+        text: i18n.global.t('myPokemons'),
+        link: 'back',
       }
     }
   },
@@ -245,8 +245,8 @@ const routes = [
     meta: {
       title: i18n.global.t('myTeams'),
       breadcrumb: {
-        text: i18n.global.t('profile'),
-        link: '/perfil',
+        text: i18n.global.t('myTeams'),
+        link: 'back',
       }
     }
   },

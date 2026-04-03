@@ -32,6 +32,7 @@
   "listUsers": "Lista de Usuarios",
   "language": "Idioma",
   "teamsheetGenerator": "Generador de Hoja de Equipos",
+  "saveInBrowser": "Guardar datos en este navegador",
   "home":{
     "title": "Registra tus Equipos de Pokémon o Pokémon de manera individual.",
     "subtitle": "Crea y organiza tus equipos para estar listo en la competición.",
@@ -275,7 +276,8 @@
     "selectAgeDivision": "Selecciona una División",
     "selectTypeSheet": "Selecciona un Tipo de Hoja",
     "printTeamSheet": "Imprimir Hoja de Equipo",
-    "pasteTeamSheet": "Pegar Hoja de Equipo"
+    "pasteTeamSheet": "Pegar Hoja de Equipo",
+    "printEmptyTeamSheet": "Imprimir Hoja de Equipo en Blanco"
   },
 
   

@@ -76,7 +76,7 @@
                       <p v-if="pokemon.subFormatName" class="card-text">
                         <strong>{{ $t('teamsSeccion.subFormat') }}:</strong> {{ pokemon.subFormatName }}
                       </p>
-                      <p class="card-text">
+                      <p v-if="pokemon.subFormatId < 6" class="card-text">
                         <strong>{{ $t('pokemonsSeccion.teraType') }}:</strong> {{ pokemon.teraType }}
                       </p>
                       <p class="card-text">
@@ -148,6 +148,7 @@
   import axios from 'axios';
   import Swal from 'sweetalert2';
   import Paginator from '@/components/AppPaginator.vue';
+  import { createEvent } from "@/services/eventService";
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -192,6 +193,14 @@
           const response = await axios.get(this.apiUrl + 'pokemon');
           this.listPokes = response.data.data;
           this.currentItems = this.filteredPokes.slice(0, 9); 
+
+          await createEvent({
+            userAgent: navigator.userAgent,
+            date: new Date().toISOString(),
+            type: "list_pokemons_public",
+            description: "listado de pokemons publicos",
+          });
+
         } catch (error) {
           console.error('Error:', error);
         } finally {

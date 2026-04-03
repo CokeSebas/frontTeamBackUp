@@ -23,7 +23,7 @@
                   <h4>{{ pokemon.namePoke }} <span v-if="pokemon.item"> @ {{ pokemon.item }}</span></h4>
                   <p style="margin-bottom: 0;"><strong>{{ $t('pokemonsSeccion.ability') }}:</strong> {{ pokemon.ability }}</p>
                   <!--<p style="margin-bottom: 0;"><strong>{{ $t('pokemonsSeccion.level') }}:</strong> {{ pokemon.level }}</p> -->
-                  <p style="margin-bottom: 0;"><strong>{{ $t('pokemonsSeccion.teraType') }}:</strong> {{ pokemon.teraType }}</p>
+                  <p v-if="pokemon.subFormatId < 6" style="margin-bottom: 0;"><strong>{{ $t('pokemonsSeccion.teraType') }}:</strong> {{ pokemon.teraType }}</p>
                   <p style="margin-bottom: 0;"><strong>EVs:</strong> {{ pokemon.evs }}</p>
                   <p style="margin-bottom: 0;"><strong>{{ pokemon.nature }} Nature</strong></p>
                   <p style="margin-bottom: 0;" v-if="pokemon.ivs"><strong>IVs:</strong> {{ pokemon.ivs }}</p>
@@ -106,6 +106,7 @@
   import axios from 'axios';
   import Swal from 'sweetalert2';
   import { useHead } from '@vueuse/head';
+  import { createEvent } from "@/services/eventService";
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -148,6 +149,14 @@
                 { name: 'og:format', content: 'VGC' },
               ]
             });
+
+            await createEvent({
+              userAgent: navigator.userAgent,
+              date: new Date().toISOString(),
+              type: "pokemon_detail_user",
+              description: "userName: "+ localStorage.getItem('userName') + " detalle del pokemon " + this.pokemon.name+', pokeId: '+this.id,
+            });
+            
           }else{
             Swal.fire({
               icon: 'error',

@@ -36,7 +36,8 @@ export async function generateTeamPDF(data) {
     ageDivision,
     sheet,
     lang,
-    paste
+    paste,
+    onlyPdf
   } = data;
 
   const fontMap = {
@@ -48,9 +49,16 @@ export async function generateTeamPDF(data) {
 
   //const selectedFont = fontMap[lang] || fontLatin
 
-  if (!sheet || !paste || !lang) {
-    throw new Error('Missing required data')
+  if(onlyPdf === true){
+    if (!sheet || !lang) {
+      throw new Error('Missing required data')
+    }
+  }else{
+    if (!sheet || !paste || !lang) {
+      throw new Error('Missing required data')
+    }
   }
+
 
   let msg, x, y, mygap;
 
@@ -63,6 +71,10 @@ export async function generateTeamPDF(data) {
   let chosenLang = '';
 
   let pokes = parsedTeam.teams[0].pokemon;
+
+  if(onlyPdf === true){
+    pokes = []
+  }
 
   let ivs = {'hp': 31, 'atk': 31, 'def': 31, 'spa': 31, 'spd': 31, 'spe': 31};
   let evs = {'hp': 0, 'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0};
@@ -160,7 +172,6 @@ export async function generateTeamPDF(data) {
     }
 
     if (ageDivision !== undefined && ageDivision !== null){
-        //ageDivision = ageDivision.value;
         doc.setLineWidth(1);
         let posX = 154 + 21 * ageDivision;
         doc.line(posX, 29, posX+6, 35);

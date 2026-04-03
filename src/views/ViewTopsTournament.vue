@@ -90,6 +90,7 @@
   import { useRoute } from 'vue-router'
   import axios from 'axios'
   import ShareButtons from "../components/ShareButtons.vue";
+  import { createEvent } from "@/services/eventService";
 
 
   import html2canvas from 'html2canvas'
@@ -137,6 +138,14 @@
       }else{
         topPlayers.value = response.data;
         tournamentTop.value = response.data[0].tournament;
+
+        await createEvent({
+          userAgent: navigator.userAgent,
+          date: new Date().toISOString(),
+          type: "top_tournament, id_tournament: "+idTorneo,
+          description: "imagem del top del torneo "+tournamentTop.value.name,
+        });
+        
       }
 
 
@@ -183,6 +192,13 @@
     } else {
       card.classList.remove('dark-card')
     }
+
+    await createEvent({
+      userAgent: navigator.userAgent,
+      date: new Date().toISOString(),
+      type: "top_tournament, id_tournament: "+idTorneo,
+      description: "Descargan imagen del torneoId "+idTorneo,
+    });
 
     const link = document.createElement('a')
     link.download = `top-torneo-${idTorneo}-${theme}.png`

@@ -75,6 +75,7 @@
   import Swal from 'sweetalert2';
   import { useAuthStore } from '@/stores/authStore';
   import { useI18n } from 'vue-i18n'; // Importa useI18n
+  import { createEvent } from "@/services/eventService";
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -98,7 +99,7 @@
         };
 
         axios.post(apiUrl + "users/login", datos)
-          .then(response => {
+          .then(async response => {
             if (response.data.code == 200) {
               Swal.fire({
                 title: t('responseApisSeccion.loginTitle'),
@@ -106,9 +107,17 @@
                 icon: 'success'
               });
 
+              await createEvent({
+                userAgent: navigator.userAgent,
+                date: new Date().toISOString(),
+                type: "login_user",
+                description: "login user:"+email.value,
+              });
+
               setTimeout(() => {
                 authStore.login(response.data.data.user, response.data.data.token, response.data.data.id);
                 localStorage.setItem("token", response.data.data.token);
+                localStorage.setItem("userName", response.data.data.name +" "+ response.data.data.lastName);
                 const redirectTo = router.currentRoute.value.query.redirect || '/';
                 router.push(redirectTo);
               }, 1500);

@@ -32,6 +32,7 @@
   "listUsers": "List Users",
   "language": "Language",
   "teamsheetGenerator": "Teamsheet Generator",
+  "saveInBrowser": "Save data in this browser",
   "home": {
     "title": "Register your Pokémon Teams or Pokémon individually.",
     "subtitle": "Create and organize your teams to be ready for competition.",
@@ -275,7 +276,8 @@
     "selectAgeDivision": "Select a Division",
     "selectTypeSheet": "Select type of team list",
     "printTeamSheet": "Print Team List",
-    "pasteTeamSheet": "Paste Team List"
+    "pasteTeamSheet": "Paste Team List",
+    "printEmptyTeamSheet": "Print Empty Team List"
   },
 
   

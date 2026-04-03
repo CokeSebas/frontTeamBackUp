@@ -68,6 +68,7 @@
 <script>
   import axios from 'axios';
   import Paginator from '@/components/AppPaginator.vue';
+  import { createEvent } from "@/services/eventService";
 
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
@@ -106,6 +107,13 @@
           const response = await axios.get(this.apiUrl + 'teams/');
           this.listTeams = response.data.data;
           this.currentItems = this.filteredTeams.slice(0, 10); 
+
+          await createEvent({
+            userAgent: navigator.userAgent,
+            date: new Date().toISOString(),
+            type: "list_teams_public",
+            description: "listado de equipos publicos",
+          });
         } catch (error) {
           console.error('Error:', error);
         } finally {
