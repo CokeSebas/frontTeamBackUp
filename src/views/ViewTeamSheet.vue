@@ -4,6 +4,7 @@
 
     <div class="paste-header text-center">
       <h4>{{ $t('teamsheetGenerator') }}</h4>
+      <h5>{{ $t('teamSheetSection.subtittle') }}</h5>
     </div>
 
     <div class="container">
@@ -22,11 +23,242 @@
               <h4>{{ $t('teamSheetSection.pasteTeamSheet') }}</h4>
             </div>
 
+
+            <!-- SWITCH -->
+            <div class="mode-switch">
+              <button
+                :class="{ active: inputMode === 'paste' }"
+                @click="inputMode = 'paste'"
+              >Paste
+              </button>
+              <button
+                :class="{ active: inputMode === 'manual' }"
+                @click="inputMode = 'manual'"
+              >
+                Manual
+              </button>
+            </div>
+            <!-- PASTE MODE -->
             <textarea
+              v-if="inputMode === 'paste'"
               v-model="teamPaste"
               class="custom-textarea"
               placeholder="Showdown team paste here"
             ></textarea>
+
+            <!-- MANUAL MODE -->
+            <div 
+              v-if="inputMode === 'manual'"
+              class="pokemon-inputs"
+            >
+              <div
+                v-for="(pokemon, index) in pokemonList"
+                :key="index"
+                class="pokemon-row autocomplete"
+              >
+                <input
+                  v-model="pokemon.name"
+                  class="pokemon-input"
+                  :placeholder="`Pokemon ${index + 1}`"
+                  @input="onPokemonInput(index)"
+                  @focus="
+                    activeAutocompleteId = index;
+                    activeSuggestionIndex = -1
+                  "
+                  @keydown="
+                    onKeyDown(
+                      $event,
+                      suggestions[index],
+                      (selected) => selectPokemon(index, selected)
+                    )
+                  "
+                />
+                <!-- Suggestions -->
+                <ul
+                  v-if="
+                    suggestions[index]?.length &&
+                    activeAutocompleteId === index
+                  "
+                  class="suggestions"
+                >
+                  <li
+                    v-for="(pokemonSuggestion, idx) in suggestions[index]"
+                    :key="pokemonSuggestion.id"
+                    class="suggestion-item"
+                    :class="{ active: idx === activeSuggestionIndex }"
+                    @mousedown.prevent="selectPokemon(index, pokemonSuggestion)"
+                  >
+                    <img
+                      :src="pokemonSuggestion.imageUrl"
+                      class="pokemon-thumb"
+                    />
+                    {{ pokemonSuggestion.name }}
+                  </li>
+                </ul>
+
+                <!-- Botón desplegable -->
+                <button
+                  class="expand-button"
+                  @click="pokemon.open = !pokemon.open"
+                >
+                  {{ pokemon.open ? '▲' : '▼' }}
+                </button>
+                <!-- Datos extra -->
+                <div 
+                  v-if="pokemon.open"
+                  class="pokemon-details"
+                >
+                  <!-- Nature independiente -->
+                  <div class="autocomplete">
+                    <input
+                      v-model="pokemon.nature"
+                      placeholder="Nature"
+                      class="pokemon-input nature-input"
+                      @input="onNatureInput(index)"
+                      @focus="activeNatureAutocomplete=index"
+                    />
+                    <ul
+                      v-if="
+                        natureSuggestions[index]?.length &&
+                        activeNatureAutocomplete === index
+                      "
+                      class="suggestions"
+                    >
+                      <li
+                        v-for="nature in natureSuggestions[index]"
+                        :key="nature.id"
+                        class="suggestion-item"
+                        @mousedown.prevent="selectNature(index,nature)"
+                      >
+                      {{ nature.name }}
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="pokemon-info-container">
+                    <!-- Datos -->
+                    <div class="pokemon-data">
+                      
+                      <!-- Ability con autocomplete -->
+                      <div class="autocomplete">
+                        <input
+                          v-model="pokemon.ability"
+                          placeholder="Ability"
+                          class="pokemon-input ability-input"
+                          @input="onAbilityInput(index)"
+                          @focus="activeAbilityAutocomplete=index"
+                        />
+                        <ul
+                          v-if="
+                            abilitySuggestions[index]?.length &&
+                            activeAbilityAutocomplete === index
+                          "
+                          class="suggestions"
+                        >
+                          <li
+                            v-for="ability in abilitySuggestions[index]"
+                            :key="ability.id"
+                            class="suggestion-item"
+                            @mousedown.prevent="selectAbility(index,ability)"
+                          >
+                          {{ ability.name }}
+                          </li>
+                        </ul>
+                      </div>
+                      
+                      <!-- Item con autocomplete -->
+                      <div class="autocomplete">
+                        <input
+                          v-model="pokemon.item"
+                          placeholder="Item"
+                          class="pokemon-input item-input"
+                          @input="onItemInput(index)"
+                          @focus="activeItemAutocomplete=index"
+                        />
+                        <ul
+                          v-if="
+                            itemSuggestions[index]?.length &&
+                            activeItemAutocomplete === index
+                          "
+                          class="suggestions"
+                        >
+                          <li
+                            v-for="item in itemSuggestions[index]"
+                            :key="item.id"
+                            class="suggestion-item"
+                            @mousedown.prevent="selectItem(index,item)"
+                          >
+                          {{ item.name }}
+                          </li>
+                        </ul>
+                      </div>
+
+
+                      <div
+                        v-for="move in 4"
+                        :key="move"
+                        class="autocomplete"
+                      >
+                        <input
+                          v-model="pokemon.moves[move-1]"
+                          :placeholder="`Move ${move}`"
+                          class="pokemon-input"
+                          @input="onMoveInput(index, move-1)"
+                          @focus="
+                            activeMoveAutocomplete={
+                              pokemon:index,
+                              move:move-1
+                            }
+                          "
+                        />
+
+                        <ul
+                          v-if="
+                          moveSuggestions[index] &&
+                          moveSuggestions[index][move-1]?.length &&
+                          activeMoveAutocomplete.pokemon === index &&
+                          activeMoveAutocomplete.move === move-1
+                          "
+                          class="suggestions"
+                        >
+                          <li
+                            v-for="suggestion in moveSuggestions[index][move-1]"
+                            :key="suggestion.id"
+                            class="suggestion-item"
+                            @mousedown.prevent="
+                            selectMove(index,move-1,suggestion)
+                            "
+                          >
+                            {{ suggestion.name }}
+                          </li>
+                        </ul>
+                      </div>
+
+                    </div>
+                    
+                    <!-- IVs -->
+                    <div class="ivs-container">
+                      <div
+                        v-for="stat in stats"
+                        :key="stat.key"
+                        class="stat-row"
+                      >
+                        <label>
+                          {{ stat.name }}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="400"
+                          v-model.number="pokemon.ivs[stat.key]"
+                          class="pokemon-input iv-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
           </div>
         </div>
@@ -188,6 +420,35 @@
   import { generateTeamPDF } from '../utils/imprimirTeamSheet';
   import { createEvent } from "@/services/eventService";
 
+  //Natures
+  //import NaturesTranslator from '../utils/resources/Natures/TranslatorNatures';
+  import NaturesEs from '../utils/resources/Natures/NaturesEs';
+  import NaturesEn from '../utils/resources/Natures/NaturesEn';
+  import NaturesFre from '../utils/resources/Natures/NaturesFre';
+  import NaturesGer from '../utils/resources/Natures/NaturesGer';
+  import NaturesIta from '../utils/resources/Natures/NaturesIta';
+
+  //habilities
+  import AbilitiesEs from '../utils/resources/Abilities/AbilitiesEs';
+  import AbilitiesEn from '../utils/resources/Abilities/AbilitiesEn';
+  import AbilitiesFre from '../utils/resources/Abilities/AbilitiesFre';
+  import AbilitiesGer from '../utils/resources/Abilities/AbilitiesGer';
+  import AbilitiesIta from '../utils/resources/Abilities/AbilitiesIta';
+
+  //Items
+  import ItemsEs from '../utils/resources/Items/ItemsEs';
+  import ItemsEn from '../utils/resources/Items/ItemsEn';
+  import ItemsFre from '../utils/resources/Items/ItemsFre';
+  import ItemsGer from '../utils/resources/Items/ItemsGer';
+  import ItemsIta from '../utils/resources/Items/ItemsIta';
+
+  //movs
+  import MovesEs from '../utils/resources/Moves/MovesEs';
+  import MovesEn from '../utils/resources/Moves/MovesEn';
+  import MovesFre from '../utils/resources/Moves/MovesFre';
+  import MovesGer from '../utils/resources/Moves/MovesGer';
+  import MovesIta from '../utils/resources/Moves/MovesIta';
+
   export default {
     inject: ['apiUrl', 'gifLoading', 'mode'],
     name: 'TeamsheetGenerator',
@@ -216,7 +477,7 @@
         
         teamPaste: '',
 
-        selectedLanguage: 'En',
+        selectedLanguage: 'Es',
 
         categories: [
           { label: 'Junior', value: 0 },
@@ -228,16 +489,61 @@
         selectedAction: 'open',
 
         languages: [
-          { label: 'Traditional Chinese', value: 'Cht' },
-          { label: 'Simplified Chinese', value: 'Chs' },
+          //{ label: 'Traditional Chinese', value: 'Cht' },
+          //{ label: 'Simplified Chinese', value: 'Chs' },
           { label: 'English', value: 'En' },
           { label: 'Spanish', value: 'Es' },
           { label: 'French', value: 'Fre' },
           { label: 'German', value: 'Ger' },
           { label: 'Italian', value: 'Ita' },
-          { label: 'Japanese', value: 'Jpn' },
-          { label: 'Korean', value: 'Kor' }
+          //{ label: 'Japanese', value: 'Jpn' },
+          //{ label: 'Korean', value: 'Kor' }
         ],
+
+        natureLanguages: {
+          Es: NaturesEs,
+          En: NaturesEn,
+          Fre: NaturesFre,
+          Ger: NaturesGer,
+          Ita: NaturesIta
+        },
+
+        natureSuggestions: [],
+        activeNatureAutocomplete:null,
+
+        abilityLanguages: {
+          Es: AbilitiesEs,
+          En: AbilitiesEn,
+          Fre: AbilitiesFre,
+          Ger: AbilitiesGer,
+          Ita: AbilitiesIta
+        },
+        abilitySuggestions: [],
+        activeAbilityAutocomplete:null,
+
+        itemLanguages: {
+          Es: ItemsEs,
+          En: ItemsEn,
+          Fre: ItemsFre,
+          Ger: ItemsGer,
+          Ita: ItemsIta
+        },
+        itemSuggestions: [],
+        activeItemAutocomplete:null,
+
+        moveLanguages:{
+          Es: MovesEs,
+          En: MovesEn,
+          Fre: MovesFre,
+          Ger: MovesGer,
+          Ita: MovesIta
+        },
+
+        moveSuggestions: [],
+        activeMoveAutocomplete:{
+          pokemon:null,
+          move:null
+        },
 
         team: {},
         user: {},
@@ -247,7 +553,142 @@
 
         saveInBrowser: false,
         loadingPrint: false,
-        loadingPrintST: false
+        loadingPrintST: false,
+
+        inputMode: 'paste',
+
+        stats:[
+          {
+            key:'hp',
+            name:'HP'
+          },
+          {
+            key:'atk',
+            name:'Atk'
+          },
+          {
+            key:'def',
+            name:'Def'
+          },
+          {
+            key:'spatk',
+            name:'SpA'
+          },
+          {
+            key:'spdef',
+            name:'SpD'
+          },
+          {
+            key:'speed',
+            name:'Speed'
+          }
+        ],
+
+        listPokemons: [],
+
+        pokemonList: [
+          {
+            name:'',
+            open:false,
+            nature:'',
+            ability:'',
+            item:'',
+            moves:['','','',''],
+            ivs:{
+              hp:0,
+              atk:0,
+              def:0,
+              spatk:0,
+              spdef:0,
+              speed:0
+            }
+          },
+          {
+            name:'',
+            open:false,
+            nature:'',
+            ability:'',
+            item:'',
+            moves:['','','',''],
+            ivs:{
+              hp:0,
+              atk:0,
+              def:0,
+              spatk:0,
+              spdef:0,
+              speed:0
+            }
+          },
+          {
+            name:'',
+            open:false,
+            nature:'',
+            ability:'',
+            item:'',
+            moves:['','','',''],
+            ivs:{
+              hp:0,
+              atk:0,
+              def:0,
+              spatk:0,
+              spdef:0,
+              speed:0
+            }
+          },
+          {
+            name:'',
+            open:false,
+            nature:'',
+            ability:'',
+            item:'',
+            moves:['','','',''],
+            ivs:{
+              hp:0,
+              atk:0,
+              def:0,
+              spatk:0,
+              spdef:0,
+              speed:0
+            }
+          },
+          {
+            name:'',
+            open:false,
+            nature:'',
+            ability:'',
+            item:'',
+            moves:['','','',''],
+            ivs:{
+              hp:0,
+              atk:0,
+              def:0,
+              spatk:0,
+              spdef:0,
+              speed:0
+            }
+          },
+          {
+            name:'',
+            open:false,
+            nature:'',
+            ability:'',
+            item:'',
+            moves:['','','',''],
+            ivs:{
+              hp:0,
+              atk:0,
+              def:0,
+              spatk:0,
+              spdef:0,
+              speed:0
+            }
+          }
+        ],
+
+        // Autocomplete
+        suggestions: [],
+        activeAutocompleteId: null,
+        activeSuggestionIndex: -1,
       }
     },
     computed: {
@@ -260,7 +701,51 @@
           { labelKey: 'teamSheetSection.playerId', key: 'playerId', type: 'text' },
           { labelKey: 'teamSheetSection.birth', key: 'birth', type: 'date' },
         ]
-      }
+      },
+      
+      allNatureList() {
+        const langFile = this.natureLanguages[this.selectedLanguage];
+        if(!langFile)
+          return [];
+        return Object.entries(langFile).map(([id,name]) => ({
+          id,
+          name
+        }));
+      },
+
+      allItemList(){
+        const langFile = this.itemLanguages[this.selectedLanguage];
+        if(!langFile)
+          return [];
+        return Object.entries(langFile).map(([id,name]) => ({
+            id,
+            name
+          }));
+      },
+
+      allAbilityList(){
+        const langFile = this.abilityLanguages[this.selectedLanguage];
+        if(!langFile)
+          return [];
+        return Object.entries(langFile).map(([id,name]) => ({
+            id,
+            name
+          }));
+      },
+
+      allMoveList(){
+        const langFile =
+          this.moveLanguages[this.selectedLanguage];
+
+        if(!langFile)
+          return [];
+
+        return Object.entries(langFile)
+          .map(([id,name])=>({
+            id,
+            name
+          }));
+      },
     },
     watch: {
       form: {
@@ -396,6 +881,15 @@
             description: "Usuario: " + this.form.playerName + " imprimió team sheet, tipo: " + this.selectedAction + ", idioma: " + this.selectedLanguage,
           });
 
+          if(this.inputMode == 'manual'){
+            let pasteTeam = this.convertToShowdown(this.pokemonList);
+            console.log(pasteTeam);
+            console.log('inputMode', this.inputMode);
+            this.teamPaste = pasteTeam;
+          }
+
+
+          
           if (this.teamPaste.length != 0) {
             await generateTeamPDF({
               playerName: this.form.playerName,
@@ -408,7 +902,8 @@
               sheet: this.selectedAction,
               lang: this.selectedLanguage,
               paste: this.teamPaste,
-              onlyPdf: false
+              onlyPdf: false,
+              inputMode: this.inputMode,
             });
           } else {
             Swal.fire({
@@ -449,7 +944,8 @@
             sheet: this.selectedAction,
             lang: this.selectedLanguage,
             paste: this.teamPaste,
-            onlyPdf: true
+            onlyPdf: true,
+            inputMode: this.inputMode
           });
 
         } catch (error) {
@@ -472,10 +968,224 @@
           this.form.birth = data.birth || '';
           this.saveInBrowser = true; // marcar checkbox automáticamente
         }
+      },
+      async loadPokemons() {
+        const res = await axios.get(
+          this.apiUrl+'pokemon-seeder'
+        );
+        this.listPokemons = res.data;
+      },
+
+      // ===============================
+      // AUTOCOMPLETE POKEMON
+      // ===============================
+
+      onPokemonInput(index) {
+        const query = this.pokemonList[index].name;
+        if (!query || query.length < 2) {
+          this.suggestions[index] = [];
+          return;
+        }
+
+        this.suggestions[index] = this.listPokemons
+          .filter(p =>
+            p.name
+              .toLowerCase()
+              .includes(query.toLowerCase())
+          )
+          .slice(0,8);
+      },
+
+      selectPokemon(index, pokemon) {
+        this.pokemonList[index] = {
+          ...this.pokemonList[index],
+          name: pokemon.name,
+          id: pokemon.id
+        };
+
+        this.suggestions[index] = [];
+        this.activeAutocompleteId = null;
+        this.activeSuggestionIndex = -1;
+      },
+
+      onKeyDown(event, suggestionList, callback) {
+        if(!suggestionList?.length)
+          return;
+        switch(event.key){
+          case 'ArrowDown':
+            event.preventDefault();
+            this.activeSuggestionIndex =
+              (this.activeSuggestionIndex + 1)
+              % suggestionList.length;
+          break;
+          case 'ArrowUp':
+            event.preventDefault();
+            this.activeSuggestionIndex =
+              (this.activeSuggestionIndex - 1 + suggestionList.length)
+              % suggestionList.length;
+          break;
+          case 'Enter':
+            event.preventDefault();
+            if(this.activeSuggestionIndex >= 0){
+              callback(
+                suggestionList[this.activeSuggestionIndex]
+              );
+            }
+          break;
+          case 'Escape':
+            this.closeSuggestions();
+          break;
+        }
+      },
+
+      closeSuggestions(){
+        this.activeSuggestionIndex = -1;
+        this.activeAutocompleteId = null;
+      },
+
+      handleClickOutside(event){
+        if(!event.target.closest('.autocomplete')){
+          this.closeSuggestions();
+        }
+      },
+
+
+      // Automplete Nature
+      onNatureInput(index){
+        const value = this.pokemonList[index].nature.toLowerCase();
+        if(!value){
+          this.natureSuggestions[index] = [];
+          return;
+        }
+        this.natureSuggestions[index] =
+          this.allNatureList
+          .filter(n =>
+            n.name
+            .toLowerCase()
+            .includes(value)
+          )
+          .slice(0,8);
+      },
+
+      selectNature(index,nature){
+        this.pokemonList[index].nature = nature.name;
+        this.natureSuggestions[index]=[];
+        this.activeNatureAutocomplete=null;
+      },
+
+      //autocomplete Ability
+      onAbilityInput(index){
+        const value = this.pokemonList[index].ability.toLowerCase();
+        if(!value){
+          this.abilitySuggestions[index] = [];
+          return;
+        }
+        this.abilitySuggestions[index] =
+          this.allAbilityList
+          .filter(a =>
+            a.name
+            .toLowerCase()
+            .includes(value)
+          )
+          .slice(0,8);
+      },
+
+      selectAbility(index,ability){
+        this.pokemonList[index].ability = ability.name;
+        this.abilitySuggestions[index]=[];
+        this.activeAbilityAutocomplete=null;
+      },
+
+      // Automplete Item
+      onItemInput(index){
+        const value = this.pokemonList[index].item.toLowerCase();
+        if(!value){
+          this.itemSuggestions[index] = [];
+          return;
+        }
+        this.itemSuggestions[index] =
+          this.allItemList
+          .filter(i =>
+            i.name
+            .toLowerCase()
+            .includes(value)
+          )
+          .slice(0,8);
+      },
+
+      selectItem(index,item){
+        this.pokemonList[index].item = item.name;
+        this.itemSuggestions[index]=[];
+        this.activeItemAutocomplete=null;
+      },
+
+      // Automplete Move
+      onMoveInput(pokemonIndex, moveIndex){
+        const value =
+        this.pokemonList[pokemonIndex]
+        .moves[moveIndex]
+        .toLowerCase();
+        if(!value){
+          if(!this.moveSuggestions[pokemonIndex])
+            this.moveSuggestions[pokemonIndex]=[];
+
+          this.moveSuggestions[pokemonIndex][moveIndex]=[];
+          return;
+        }
+
+        if(!this.moveSuggestions[pokemonIndex]) {
+          this.moveSuggestions[pokemonIndex]=[];
+        }
+
+        this.moveSuggestions[pokemonIndex][moveIndex] =
+        this.allMoveList .filter(move =>
+            move.name
+            .toLowerCase()
+            .includes(value)
+          ).slice(0,8);
+      },
+
+      selectMove(pokemonIndex,moveIndex,move){
+        this.pokemonList[pokemonIndex].moves[moveIndex]=move.name;
+
+        this.moveSuggestions[pokemonIndex][moveIndex]=[];
+
+        this.activeMoveAutocomplete={
+          pokemon:null,
+          move:null
+        };
+      },
+      convertToShowdown(team) {
+        return team.map(pokemon => {
+          const evs = Object.entries(pokemon.ivs)
+            .filter((entry) => entry[1] > 0)
+            .map(([stat, value]) => {
+              const stats = {
+                hp: "HP",
+                atk: "Atk",
+                def: "Def",
+                spatk: "SpA",
+                spdef: "SpD",
+                speed: "Spe"
+              };
+
+              return `${value} ${stats[stat]}`;
+            })
+            .join(" / ");
+
+          return `${pokemon.name} (M) @ ${pokemon.item}
+      Ability: ${pokemon.ability}
+      Level: 50
+      EVs: ${evs}
+      ${pokemon.nature} Nature
+      ${pokemon.moves.map(move => `- ${move}`).join("\n")}
+      `;
+        }).join("\n");
       }
     },
     mounted() {
       this.loadFromLocalStorage();
+      this.loadPokemons();
       if(this.id){
         this.getTeamDetail();
       }else{
@@ -611,6 +1321,253 @@
 
   .dark-input[type="date"] {
     color-scheme: dark;
+  }
+
+  .mode-switch {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 15px 0;
+  }
+
+
+  .mode-switch button {
+    padding: 8px 25px;
+    border-radius: 20px;
+    border: 1px solid #777;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+  }
+
+
+  .mode-switch button.active {
+    background: #ffffff;
+    color: #333;
+  }
+
+
+  .pokemon-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+  }
+
+
+  .pokemon-input {
+    width: 100%;
+    padding: 12px;
+
+    background: #444;
+    border: 1px solid #666;
+    border-radius: 8px;
+
+    color: white;
+    font-size: 16px;
+  }
+
+
+  .pokemon-input::placeholder {
+    color: #aaa;
+  }
+
+  .pokemon-row {
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+
+  .pokemon-input {
+    flex:1;
+    padding:12px;
+
+    background:#444;
+    border:1px solid #666;
+    border-radius:8px;
+
+    color:white;
+  }
+
+
+  .expand-button {
+
+    width:42px;
+    height:42px;
+
+    border-radius:50%;
+    border:1px solid #777;
+
+    background:#333;
+    color:white;
+
+    cursor:pointer;
+  }
+
+
+
+  .pokemon-details {
+    width:100%;
+    padding-top:15px;
+  }
+
+
+
+  .nature-input {
+    margin-bottom:15px;
+  }
+
+
+
+  .pokemon-info-container {
+    display:flex;
+    gap:15px;
+  }
+
+
+
+  /* IVs */
+  .ivs-container {
+    width:120px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+
+  .stat-row {
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+
+  .stat-row label {
+    width:35px;
+    font-size:12px;
+    color:#ccc;
+  }
+
+
+  .iv-input {
+    width:100%;
+    padding:12px;
+    background:#444;
+    border:1px solid #666;
+    border-radius:8px;
+    color:white;
+    font-size:16px;
+    box-sizing:border-box;
+  }
+
+  /* Datos */
+  .pokemon-data {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  
+  /* ===== Grid ===== */
+  .pokemon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+
+  /* ===== Autocomplete ===== */
+  .autocomplete {
+    position: relative;
+    width: 100%;
+  }
+
+
+  /* Input */
+  .autocomplete .input,
+  .autocomplete .pokemon-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+
+  /* ===== Suggestions ===== */
+  .suggestions {
+
+    position: absolute;
+
+    top: calc(100% + 4px);
+    left: 0;
+
+    width: 100%;
+
+    max-height: 220px;
+    overflow-y: auto;
+
+
+    background: #2c2c2c;
+
+    border: 1px solid #444;
+
+    border-radius: 8px;
+
+
+    list-style: none;
+
+    padding: 4px 0;
+
+    margin: 0;
+
+
+    z-index: 999;
+
+
+    box-sizing: border-box;
+
+  }
+
+
+  /* Items */
+  .suggestion-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+
+    padding: 8px 10px;
+
+
+    cursor: pointer;
+
+
+    box-sizing: border-box;
+
+  }
+
+
+  .suggestion-item:hover,
+  .suggestion-item.active {
+
+    background: rgba(52,152,219,.25);
+
+  }
+
+
+  /* Imagen */
+  .pokemon-thumb {
+
+    width: 32px;
+
+    height: 32px;
+
+    object-fit: contain;
+
   }
 
 </style>

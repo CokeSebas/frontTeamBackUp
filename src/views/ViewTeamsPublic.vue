@@ -33,7 +33,7 @@
                     <div class="card mb-4 shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title">{{ team.team_name }}</h5>
-                            <p v-if="team.desc_uso" class="card-text" style="margin-bottom: 0;">{{ team.desc_uso }}</p>
+                            <!-- <p v-if="team.desc_uso" class="card-text" style="margin-bottom: 0;">{{ team.desc_uso }}</p>-->
                             <p v-if="team.subFormatName" class="card-text" style="margin-bottom: 0;">{{ team.subFormatName }}</p>
                             <p></p>
                             <p></p>
@@ -92,11 +92,29 @@
       },
       filteredTeams() {
         return this.listTeams.filter(team => {
-          const matchesName = team.team_name.toLowerCase().includes(this.searchName.toLowerCase());
+          const search = this.searchName.toLowerCase();
+
+          // 🔍 Buscar por nombre del team
+          const matchesName = team.team_name.toLowerCase().includes(search);
+
+          // 🔍 Buscar por subformato
           const matchesSubFormat = this.searchSubFormat
             ? team.subFormatName === this.searchSubFormat
             : true;
-          return matchesName && matchesSubFormat;
+
+          // 🔍 Buscar por Pokémon (poke1 a poke6)
+          const pokemonFields = ['poke1', 'poke2', 'poke3', 'poke4', 'poke5', 'poke6'];
+
+          const matchesPokemon = pokemonFields.some(field => {
+            const url = team[field];
+            if (!url) return false;
+
+            // Extrae el nombre del Pokémon desde la URL
+            const fileName = url.split('/').pop().replace('.png', '');
+            return fileName.toLowerCase().includes(search);
+          });
+
+          return (matchesName || matchesPokemon) && matchesSubFormat;
         });
       }
     },

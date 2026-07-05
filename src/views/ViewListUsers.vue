@@ -15,6 +15,7 @@
               <th>{{ $t('profileSeccion.nickName') }}</th>
               <th>{{ $t('profileSeccion.email') }}</th>
               <th>{{ $t('profileSeccion.isOrganizer') }}</th>
+              <th>{{ $t('profileSeccion.isActive') }}</th>
               <th>{{ $t('profileSeccion.actions') }}</th>
             </tr>
           </thead>
@@ -79,6 +80,18 @@
                 />
                 <span v-else>
                   {{ user.isOrganizer ? 'Sí' : 'No' }}
+                </span>
+              </td>
+              
+              <!-- Activo -->
+              <td class="center">
+                <input
+                  v-if="user.editing"
+                  type="checkbox"
+                  v-model="user.isActive"
+                />
+                <span v-else>
+                  {{ user.isActive ? 'Sí' : 'No' }}
                 </span>
               </td>
 

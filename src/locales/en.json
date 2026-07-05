@@ -67,7 +67,8 @@
     "goToResults": "Go to Results",
     "goToListUsers": "Go to User List",
     "addTeam": "Add Team",
-    "goToTeamsheet": "Go to Teamsheet"
+    "goToTeamsheet": "Go to Teamsheet",
+    "goToMyStats": "Go to My Stats"
   },
 
   "teamsSeccion": {
@@ -76,7 +77,7 @@
     "myTitle": "My Registered Teams",
     "detailMyTeam": "My Team Detail",
     "name": "Team Name",
-    "urlPaste": "Paste URL",
+    "urlPaste": "URL Paste or Import from Showdown",
     "description": "Team Description",
     "tournament": "Tournament Used",
     "musFav": "Favorable MatchUps",
@@ -92,7 +93,8 @@
     "selectFormat": "Select a format",
     "subFormat": "Regulation",
     "selectSubFormat": "Select a regulation",
-    "searchTeam": "Search Team by name"
+    "searchTeam": "Search Team by name",
+    "codeRental": "Rental Code"
   },
 
   "pokemonsSeccion": {
@@ -150,7 +152,8 @@
     "ingAvatarUrl": "Enter your profile image URL",
     "ingNickName": "Enter your username",
     "isOrganizer": "Is Organizer",
-    "isAdmin": "Is Admin"
+    "isAdmin": "Is Admin",
+    "isActive": "Is Active"
   },
 
 
@@ -277,7 +280,35 @@
     "selectTypeSheet": "Select type of team list",
     "printTeamSheet": "Print Team List",
     "pasteTeamSheet": "Paste Team List",
-    "printEmptyTeamSheet": "Print Empty Team List"
+    "printEmptyTeamSheet": "Print Empty Team List",
+    "subtittle": "Work is underway to implement the Latin American Spanish language."
+  },
+
+   "matchRecordSection": {
+    "title": "Match Record",
+    "selectTeam": "Select a Team",
+    "opponentTeam": "Opponent Team",
+    "result": "Result",
+    "selectResult": "Select a Result",
+    "victory": "Victory",
+    "defeat": "Defeat",
+    "draw": "Draw",
+    "saveRecord": "Save Record",
+    "round": "Round",
+    "addOpponent": "Add Opponent",
+    "saveRecordSuccess": "Record saved successfully",
+    "saveRecordText": "The following matches have been recorded.",
+    "tournamentList": "Tournament List",
+    "tournament": "Tournament",
+    "victorys": "Victories",
+    "defeats": "Defeats",
+    "draws": "Draws",
+    "winRate": "Win Rate",
+    "seeDetails": "See Details",
+    "ocultarDetails": "Hide Details",
+    "shareCard": "Share Run",
+    "myTournaments": "My Tournaments",
+    "noTournaments": "You haven't registered any tournaments yet!"
   },
 
   

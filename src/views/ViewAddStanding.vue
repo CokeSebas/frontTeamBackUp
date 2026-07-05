@@ -211,7 +211,7 @@
 
       tournamentTop.value = response.data;
       playersTop.value = response.data.standings;
-      formatoTorneo.value = response.data.formatoTorneo;
+      formatoTorneo.value = response.data.formato_torneo;
       //console.log('jugadores del top del torneo:', playersTop.value);
 
 
@@ -251,6 +251,12 @@
     if (saving.value) return
 
     saving.value = true
+
+    //console.log('Guardando top con datos:', {
+    //  tournamentId: idTorneo,
+    //  formatoTorneo: formatoTorneo.value,
+    //  players: players.value
+    //})
 
     try {
       const payload = {

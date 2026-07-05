@@ -67,7 +67,8 @@
     "goToResults": "Ir a Resultados",
     "goToListUsers": "Ir a Lista de Usuarios",
     "addTeam": "Agregar Equipo",
-    "goToTeamsheet": "Ir a Hoja de Equipo"
+    "goToTeamsheet": "Ir a Hoja de Equipo",
+    "goToMyStats": "Ir a Mis Estadísticas"
   },
 
   "teamsSeccion":{
@@ -76,7 +77,7 @@
     "myTitle": "Mis Equipos Registrados",
     "detailMyTeam": "Detalle de mi Equipo",
     "name": "Nombre Equipo",
-    "urlPaste": "URL Paste",
+    "urlPaste": "URL Paste o Importar desde Showdown",
     "description": "Descripción Equipo",
     "tournament": "Torneo donde se usó",
     "musFav": "MatchUp Favorables",
@@ -92,7 +93,8 @@
     "selectFormat": "Seleccione un formato",
     "subFormat": "Regulación",
     "selectSubFormat": "Seleccione una regulación",
-    "searchTeam": "Buscar Equipo por nombre"
+    "searchTeam": "Buscar Equipo por nombre",
+    "codeRental": "Código de alquiler"
   },
 
   "pokemonsSeccion":{
@@ -150,7 +152,8 @@
     "ingAvatarUrl": "Ingrese la URL de su imagen de perfil",
     "ingNickName": "Ingrese su nombre de usuario",
     "isOrganizer": "Es Organizador",
-    "isAdmin": "Es Administrador"
+    "isAdmin": "Es Administrador",
+    "isActive": "Está Activo"
   },
 
 
@@ -277,7 +280,35 @@
     "selectTypeSheet": "Selecciona un Tipo de Hoja",
     "printTeamSheet": "Imprimir Hoja de Equipo",
     "pasteTeamSheet": "Pegar Hoja de Equipo",
-    "printEmptyTeamSheet": "Imprimir Hoja de Equipo en Blanco"
+    "printEmptyTeamSheet": "Imprimir Hoja de Equipo en Blanco",
+    "subtittle": "Se esta trabajando para implementar el Idioma Español Latino"
+  },
+
+  "matchRecordSection": {
+    "title": "Registro de Partidos",
+    "selectTeam": "Selecciona un Equipo",
+    "opponentTeam": "Equipo Oponente",
+    "result": "Resultado",
+    "selectResult": "Selecciona un Resultado",
+    "victory": "Victoria",
+    "defeat": "Derrota",
+    "draw": "Empate",
+    "saveRecord": "Guardar Registro",
+    "round": "Ronda",
+    "addOpponent": "Agregar Oponente",
+    "saveRecordSuccess": "Registro guardado con éxito",
+    "saveRecordText": "Se registraron los siguientes partidos.",
+    "tournamentList": "Lista de Torneos",
+    "tournament": "Torneo",
+    "victorys": "Victorias",
+    "defeats": "Derrotas",
+    "draws": "Empates",
+    "winRate": "Tasa de Victoria",
+    "seeDetails": "Ver Detalles",
+    "ocultarDetails": "Ocultar Detalles",
+    "shareCard": "Compartir Run",
+    "myTournaments": "Mis Torneos",
+    "noTournaments": "¡Aún no has registrado ningún torneo!"
   },
 
   

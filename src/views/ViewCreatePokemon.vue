@@ -189,7 +189,7 @@ IVs: 0 Atk
       title: t('createPokemon'),
       meta: [
         { name: 'description', content: t('createPokemon') },
-        { name: 'keywords', content: `VGC, Pokémon, Team, Tournament, Regiona, International Championship, Global Challenge, Regulation H` },
+        { name: 'keywords', content: `VGC, Pokémon, Team, Tournament, Regiona, International Championship, Global Challenge` },
       ],
     });
   }

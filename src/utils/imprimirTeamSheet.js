@@ -20,6 +20,7 @@ import AbilityTranslator from './resources/Abilities/TranslatorAbilities.js';
 import TypeTranslator from './resources/Types/TranslatorTypes.js';
 import ItemTranslator from './resources/Items/TranslatorItems.js';
 import MoveTranslator from './resources/Moves/TranslatorMoves.js';
+import NaturesTranslator from './resources/Natures/TranslatorNatures.js';
 
 import { jsPDF } from 'jspdf';
 import { Koffing } from './koff.mjs';
@@ -37,7 +38,8 @@ export async function generateTeamPDF(data) {
     sheet,
     lang,
     paste,
-    onlyPdf
+    onlyPdf,
+    inputMode
   } = data;
 
   const fontMap = {
@@ -180,6 +182,65 @@ export async function generateTeamPDF(data) {
 
     const t = await loadTranslations(lang);
 
+    if(onlyPdf === true){
+      for (let i = 0; i < 6; i++) {
+  
+        let textX = 35;
+        statX = 100;
+        let gapX = 100;
+        let textXX = 27.5;
+  
+        pokeY = 67;
+        let teraY = pokeY + 9.5;
+        levelY = pokeY + 9.5;
+        let abilityY = pokeY + 18;
+        let itemY = pokeY + 26;
+        let gapY = 70;
+  
+        let moveY = pokeY + 34;
+        let moveGapY = 8;
+  
+        let itemId = 'NOITEM';
+     
+        let item = 'NO ITEM';
+        if (itemId != 'NOITEM'){
+            item = t.items[itemId];
+        }
+        let movs = [];
+
+  
+        //Nombre
+        doc.setFontSize(13);
+        doc.setFont("text1", 'normal');
+        doc.text("Pokémon", textXX + (i%2) * gapX, pokeY + (Math.floor(i/2)) * gapY, "right");
+
+  
+        //TeraType
+        doc.setFontSize(11);
+        doc.setFont("text1", 'normal');
+        doc.text("Stat Alignment", (textXX + 5) + (i%2) * gapX, teraY + (Math.floor(i/2)) * gapY, "right");
+
+  
+        //Ability
+        doc.setFontSize(13);
+        doc.setFont("text1", 'normal');
+        doc.text("Ability", textXX + (i%2) * gapX, abilityY + (Math.floor(i/2)) * gapY, "right");
+
+  
+        //Item
+        doc.setFontSize(13);
+        doc.setFont("text1", 'normal');
+        doc.text("Held Item", textXX + (i%2) * gapX, itemY + (Math.floor(i/2)) * gapY, "right");
+
+  
+        for (let j = 0; j < 4; j++) {
+          doc.setFontSize(13);
+          doc.setFont("text1", 'normal');
+          doc.text("Move " + (j+1), textXX + (i%2) * gapX, moveY + (Math.floor(i/2)) * gapY + j * moveGapY, "right");
+        }
+      }
+    }
+
     for (let i = 0; i < pokes.length; i++) {
 
       let textX = 35;
@@ -199,7 +260,8 @@ export async function generateTeamPDF(data) {
 
       let nameId = PokeTranslator[pokes[i].name];
       let abilityId = AbilityTranslator[pokes[i].ability];
-      let teraTypeId = TypeTranslator[pokes[i].teraType];
+      //let teraTypeId = TypeTranslator[pokes[i].teraType];
+      let natureId = NaturesTranslator[pokes[i].nature];
 
       let itemId = 'NOITEM';
       if (pokes[i].item){
@@ -207,7 +269,10 @@ export async function generateTeamPDF(data) {
       }
 
       if (pokes[i].nature){
-          nature = pokes[i].nature;
+        nature = t.natures[natureId];
+      }
+      if(nature === undefined){
+        nature = pokes[i].nature;
       }
 
       if (pokes[i].level){
@@ -226,22 +291,35 @@ export async function generateTeamPDF(data) {
         }
       }
 
-      if (!pokedex[pokes[i].name]){
-        throw new Error('ERROR IN PASTE')
-      }      
+      if(inputMode === 'paste'){
+        if (!pokedex[pokes[i].name]){
+          throw new Error('ERROR IN PASTE')
+        }      
+      }
 
       let name = t.pokes[nameId];
-      let teraType = t.types[teraTypeId];
       let ability = t.abilities[abilityId];
+
+      if(ability === undefined){
+        ability = pokes[i].ability;
+      }
 
       let item = 'NO ITEM';
       if (itemId != 'NOITEM'){
           item = t.items[itemId];
       }
+      if(item === undefined){
+        item = pokes[i].item;
+      }
+
       let movs = [];
       for (let x = 0; x < pokes[i].moves.length; x++){
           let moveId = MoveTranslator[pokes[i].moves[x]];
-          movs.push(t.moves[moveId]);
+          if (moveId === undefined) {
+            movs.push(pokes[i].moves[x]);
+          }else{
+            movs.push(t.moves[moveId]);
+          }
       }
 
       //Nombre
@@ -252,13 +330,13 @@ export async function generateTeamPDF(data) {
       doc.setFont("customFont", 'normal');
       doc.text(name, textX + (i%2) * gapX, pokeY + (Math.floor(i/2)) * gapY);
 
-      //TeraType
-      doc.setFontSize(13);
+      //nature
+      doc.setFontSize(11);
       doc.setFont("text1", 'normal');
-      doc.text("Tera Type", textXX + (i%2) * gapX, teraY + (Math.floor(i/2)) * gapY, "right");
+      doc.text("Stat Alignment", (textXX + 5) + (i%2) * gapX, teraY + (Math.floor(i/2)) * gapY, "right");
       doc.setFontSize(11);
       doc.setFont("customFont", 'normal');
-      doc.text(teraType, textX + (i%2) * gapX, teraY + (Math.floor(i/2)) * gapY);
+      doc.text(nature, textX  + (i%2) * gapX, teraY + (Math.floor(i/2)) * gapY);
 
       //Ability
       doc.setFontSize(13);
@@ -364,7 +442,14 @@ export async function generateTeamPDF(data) {
 
       for (let i = 0; i < pokes.length; i++) {
 
-        let stats = getStats(pokes[i].name, pokes[i].ivs, pokes[i].evs, pokes[i].level, pokes[i].nature);
+        let stats = getStats(
+          pokes[i].name,
+          pokes[i].ivs,
+          pokes[i].evs,
+          pokes[i].level,
+          pokes[i].nature,
+          inputMode
+        );
 
         let gapX = 100, gapY = 70;
 
@@ -389,25 +474,53 @@ export async function generateTeamPDF(data) {
 }
 
 
-function getStats( poke, ivs = {}, evs = {}, level = 100, nat) {
+function getStats(poke, ivs = {}, evs = {}, level = 100, nat, inputMode) {
+  // MANUAL: tomar valores tal cual llegan
+  if (inputMode === 'manual') {
+    return {
+      hp: evs.hp ?? 0,
+      atk: evs.atk ?? 0,
+      def: evs.def ?? 0,
+      spa: evs.spa ?? 0,
+      spd: evs.spd ?? 0,
+      spe: evs.spe ?? 0
+    };
+  }
+
+
+  // PASTE: mantener cálculo actual
   ivs = validateIVs(normalizeIVs(ivs));
   evs = validateEVs(normalizeEVs(evs));
 
-  let ret = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-  let baseStats = pokedex[poke];
-  let nature = natures[nat];
-  let stat = 0;
+  const ret = {
+    hp: 0,
+    atk: 0,
+    def: 0,
+    spa: 0,
+    spd: 0,
+    spe: 0
+  };
 
-  for (const [key, value] of Object.entries(baseStats)) {
-    if (key == 'hp') {
-      stat = Math.floor(((((2 * baseStats.hp) + (evs.hp / 4) + ivs.hp) * level) / 100) + level + 10);
-      ret['hp'] = stat;
-    } else {
-      stat = Math.floor(
-        Math.floor(((((2 * baseStats[key]) + (evs[key] / 4) + ivs[key]) * level) / 100) + 5)
-        * nature[key]
+  const baseStats = pokedex[poke];
+  const nature = natures[nat];
+
+  for (const [key] of Object.entries(baseStats)) {
+
+    const effectiveEV = evs[key] * 8;
+
+    if (key === 'hp') {
+      ret.hp = Math.floor(
+        (((2 * baseStats.hp + ivs.hp + effectiveEV / 4) * level) / 100)
+        + level
+        + 10
       );
-      ret[key] = stat;
+    } else {
+      ret[key] = Math.floor(
+        Math.floor(
+          (((2 * baseStats[key] + ivs[key] + effectiveEV / 4) * level) / 100)
+          + 5
+        ) * nature[key]
+      );
     }
   }
 
@@ -453,13 +566,13 @@ function validateEVs(evs) {
   let total = 0;
 
   for (const key in evs) {
-    if (evs[key] > 252) evs[key] = 252;
+    if (evs[key] > 32) evs[key] = 32;
     if (evs[key] < 0) evs[key] = 0;
     total += evs[key];
   }
 
-  if (total > 510) {
-    console.warn('Total EVs excede 510');
+  if (total > 66) {
+    console.warn('Total EVs excede 66');
   }
 
   return evs;
@@ -467,12 +580,13 @@ function validateEVs(evs) {
 
 
 async function loadTranslations(lang) {
-  const [types, abilities, items, moves, pokes] = await Promise.all([
+  const [types, abilities, items, moves, pokes, natures] = await Promise.all([
     import(`./resources/Types/Types${lang}.js`),
     import(`./resources/Abilities/Abilities${lang}.js`),
     import(`./resources/Items/Items${lang}.js`),
     import(`./resources/Moves/Moves${lang}.js`),
-    import(`./resources/Pokes/Pokes${lang}.js`)
+    import(`./resources/Pokes/Pokes${lang}.js`),
+    import(`./resources/Natures/Natures${lang}.js`)
   ])
 
   return {
@@ -480,7 +594,8 @@ async function loadTranslations(lang) {
     abilities: abilities.default,
     items: items.default,
     moves: moves.default,
-    pokes: pokes.default
+    pokes: pokes.default,
+    natures: natures.default
   }
 }
 

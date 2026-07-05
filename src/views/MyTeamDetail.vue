@@ -46,11 +46,24 @@
             <p v-if="team.team_name"><strong>{{ $t('teamsSeccion.name') }}: </strong> {{ team.team_name }}</p> <!-- Texto centrado -->
             <p v-if="team.url_paste">
                 <strong>{{ $t('teamsSeccion.urlPaste') }}: </strong>: <a :href="team.url_paste" target="_blank">{{ team.url_paste }}</a>
+                <br>
                 <button class="btn btn-success" @click="copyText">{{ $t('buttons.copyPaste') }}</button>
             </p>
-            <p></p>
+            <p v-if="team.codeRental"><strong>{{ $t('teamsSeccion.codeRental') }}: </strong> {{ team.codeRental }} </p>
             <p v-if="team.subFormatName"><strong>{{ $t('teamsSeccion.subFormat') }}: </strong> {{ team.subFormatName }}</p>
-            <p v-if="team.desc_uso"><strong>{{ $t('teamsSeccion.description') }}: </strong> {{ team.desc_uso }}</p>
+            <p v-if="team.desc_uso">
+              <strong>{{ $t('teamsSeccion.description') }}: </strong>
+
+              <template v-if="isLink(team.desc_uso)">
+                <a :href="team.desc_uso" target="_blank" rel="noopener noreferrer">
+                  {{ team.desc_uso }}
+                </a>
+              </template>
+
+              <template v-else>
+                {{ team.desc_uso }}
+              </template>
+            </p>
             <p v-if="team.tournament_using"><strong>{{ $t('teamsSeccion.tournament') }}: </strong> {{ team.tournament_using }}</p>
             <p v-if="team.mus_fav"><strong>{{ $t('teamsSeccion.musFav') }}: </strong> {{ team.mus_fav }}</p>
             <p v-if="team.counters"><strong>{{ $t('teamsSeccion.teamsCounter') }}: </strong> {{ team.counters }}</p>
@@ -73,6 +86,11 @@
               <div class="form-group">
                 <label for="desc_uso">{{ $t('teamsSeccion.description') }}:</label>
                 <textarea v-model="team.desc_uso"></textarea>
+              </div>
+
+              <div class="field full">
+                <label>{{ $t('teamsSeccion.codeRental') }}</label>
+                <input v-model="team.codeRental" />
               </div>
 
               <div class="form-group">
@@ -209,6 +227,7 @@
             teamName: this.team.team_name,
             descUso: this.team.desc_uso,
             tournamentUsing: this.team.tournament_using,
+            codeRental: this.team.codeRental,
             musFav: this.team.mus_fav,
             counters: this.team.counters,
             damageCalcs: this.team.damage_calcs,
@@ -251,6 +270,11 @@
             name: 'ViewTeamSheet',
             params: { id_team: this.id, type: 'private' }
           })
+        },
+        
+        isLink(text) {
+          const urlPattern = /^(https?:\/\/[^\s]+)$/i;
+          return urlPattern.test(text);
         },
       },
       mounted() {

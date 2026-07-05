@@ -160,7 +160,7 @@
   // Helpers
   // ===============================
   const orderedPokemons = (pokemons) => {
-    return [...pokemons].sort((a, b) => a.slot - b.slot)
+    return [...pokemons].sort((b, a) => a.slot - b.slot)
   }
 
   const downloadImage = async (theme) => {

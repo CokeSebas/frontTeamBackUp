@@ -1,0 +1,28 @@
+var naturesEn = {
+    "100": "Hardy",
+    "101": "Lonely",
+    "102": "Brave",
+    "103": "Adamant",
+    "104": "Naughty",
+    "105": "Bold",
+    "106": "Docile",
+    "107": "Relaxed",
+    "108": "Impish",
+    "109": "Lax",
+    "110": "Timid",
+    "111": "Hasty",
+    "112": "Serious",
+    "113": "Jolly",
+    "114": "Naive",
+    "115": "Modest",
+    "116": "Mild",
+    "117": "Quiet",
+    "118": "Bashful",
+    "119": "Rash",
+    "120": "Calm",
+    "121": "Gentle",
+    "122": "Sassy",
+    "123": "Careful",
+    "124": "Quirky"
+};
+export default naturesEn;

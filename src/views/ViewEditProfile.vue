@@ -173,6 +173,9 @@
           <button class="btn btn-success w-100 mb-2" @click="goToPokemons">
             {{ $t('buttons.goToMyPokemons') }}
           </button>
+          <button class="btn btn-success w-100 mb-2" @click="goToMyStats">
+            {{ $t('buttons.goToMyStats') }}
+          </button>
           <button
             v-if="isOrganizer"
             class="btn btn-success w-100 mb-2"
@@ -199,6 +202,7 @@
         </div>
       </div>
     </div>
+    <br>
   </div>
 </template>
 
@@ -389,6 +393,7 @@
       const goToPokemons = () => router.push('/vgc/my-pokemons/' + userId);
       const goToOrgTorneo = () => router.push('/tournament/add-tournament/' + userId);
       const goToListUsers = () => router.push('/list-users');
+      const goToMyStats = () => router.push('/vgc/match-record/tournament/' + userId);
 
       return {
         user,
@@ -412,6 +417,7 @@
         goToPokemons,
         goToOrgTorneo,
         goToListUsers,
+        goToMyStats,
         mode
       };
     }

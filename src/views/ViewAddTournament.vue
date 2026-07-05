@@ -34,6 +34,7 @@
                 <option value="challenge">Challenge</option>
                 <option value="cup">Cup</option>
                 <option value="liga">Liga Casual</option>
+                <option value="vg_online">VG Online</option>
               </select>
             </div>
 
@@ -205,7 +206,8 @@
   const tipoTorneoLabel = {
     liga: 'Liga',
     challenge: 'Challenge',
-    cup: 'Cup'
+    cup: 'Cup',
+    vg_online: 'VG Online'
   }
 
   const loadTournaments = async () => {

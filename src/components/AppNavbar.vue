@@ -47,6 +47,9 @@
           <li class="nav-item">
             <router-link class="nav-link" :to="`/vgc/print-team-sheet`">{{ $t('teamSheetSection.printTeamSheet') }}</router-link>
           </li>
+          <li class="nav-item">
+            <router-link class="nav-link" :to="`/vgc/match-record`">{{ $t('matchRecordSection.title') }}</router-link>
+          </li>
           <li v-if="isAuthenticated" class="nav-item">
             <router-link class="nav-link" :to="`/vgc/my-teams/${userId}`">{{ $t('myTeams') }}</router-link>
           </li>
@@ -69,7 +72,6 @@
               data-bs-toggle="dropdown"
             >
               <img :src="currentFlag" width="24" height="16" />
-              {{ currentLanguage }}
             </button>
 
             <ul class="dropdown-menu">

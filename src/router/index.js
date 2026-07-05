@@ -35,6 +35,8 @@ import ViewTopsTournament from '@/views/ViewTopsTournament.vue';
 import ViewTeamSheet from '@/views/ViewTeamSheet.vue';
 import ViewTeamSheetPublic from '@/views/ViewTeamSheet.vue';
 import ViewPrintTeamSheet from '@/views/ViewTeamSheet.vue';
+import ViewAddMatchRecord from '@/views/ViewAddMatchRecord.vue';
+import ViewMyStatsMatch from '@/views/ViewMyStatsMatch.vue';
 
 import i18n from '@/i18n';
 
@@ -298,6 +300,19 @@ const routes = [
     }
   },
   {
+    path: '/vgc/match-record',
+    name: 'ViewAddMatchRecord',
+    component: ViewAddMatchRecord,
+    props: true,
+    meta: {
+      title: i18n.global.t('matchRecordSection.title'),
+      breadcrumb: {
+        text: 'Home',
+        link: 'back',
+      }
+    }
+  },
+  {
     path: '/verify-account',
     name: 'VerifyAccount',
     component: ViewVerifyAccount,
@@ -319,6 +334,26 @@ const routes = [
     component: ViewResetPassword,
     meta: {
       title: i18n.global.t('resetPassword'),
+    }
+  },
+  {
+    path: '/vgc/match-record/tournament/:id_user',
+    name: 'ViewMyStatsMatch',
+    component: ViewMyStatsMatch,
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore(); // Usa el authStore de Pinia
+      if (!authStore.isAuthenticated) {
+        next({ path: '/login', query: { redirect: to.fullPath } });
+      } else {
+        next();
+      }
+    },
+    meta: {
+      title: i18n.global.t('matchRecordSection.tournamentList'),
+      breadcrumb: {
+        text: i18n.global.t('profile'),
+        link: 'back',
+      }
     }
   },
   {

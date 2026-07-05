@@ -1,0 +1,28 @@
+var NatureTranslator = {
+    "Hardy": "100",
+    "Lonely": "101",
+    "Brave": "102",
+    "Adamant": "103",
+    "Naughty": "104",
+    "Bold": "105",
+    "Docile": "106",
+    "Relaxed": "107",
+    "Impish": "108",
+    "Lax": "109",
+    "Timid": "110",
+    "Hasty": "111",
+    "Serious": "112",
+    "Jolly": "113",
+    "Naive": "114",
+    "Modest": "115",
+    "Mild": "116",
+    "Quiet": "117",
+    "Bashful": "118",
+    "Rash": "119",
+    "Calm": "120",
+    "Gentle": "121",
+    "Sassy": "122",
+    "Careful": "123",
+    "Quirky": "124"
+};
+export default NatureTranslator;

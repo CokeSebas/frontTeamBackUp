@@ -7,88 +7,96 @@
         {{ $t('createTeam') }}
       </h2>
 
-      <form @submit.prevent="saveTeam" class="form-grid">
+      <form @submit.prevent="saveTeam" class="form-layout">
 
-        <!-- Team name -->
-        <div class="field full">
-          <label>{{ $t('teamsSeccion.name') }}</label>
-          <input v-model="team.teamName" required />
-        </div>
-
-        <!-- Paste -->
-        <div class="field full">
+        <!-- IZQUIERDA -->
+        <div class="left-panel">
           <label>{{ $t('teamsSeccion.urlPaste') }}</label>
-          <input 
-            v-model="team.urlPaste" 
-            placeholder="https://pokepaste.es/..." 
-            required 
-          />
+
+          <textarea
+            v-model="team.rawInput"
+            placeholder="https://pokepast.es/... 
+            
+      o pega aquí el team completo de Pokémon Showdown..."
+            class="big-textarea"
+          ></textarea>
         </div>
 
-        <!-- Format -->
-        <div class="field">
-          <label>{{ $t('teamsSeccion.format') }}</label>
-          <select v-model="team.formatId" required>
-            <option disabled value="">{{ $t('teamsSeccion.selectFormat') }}</option>
-            <option v-for="f in formats" :key="f.id" :value="f.id">
-              {{ f.formatName }}
-            </option>
-          </select>
-        </div>
+        <!-- DERECHA -->
+        <div class="right-panel">
 
-        <!-- Subformat -->
-        <div class="field">
-          <label>{{ $t('teamsSeccion.subFormat') }}</label>
-          <select v-model="team.subFormatId" required>
-            <option disabled value="">{{ $t('teamsSeccion.selectSubFormat') }}</option>
-            <option v-for="s in subFormats" :key="s.id" :value="s.id">
-              {{ s.abrevSubFormat }}
-            </option>
-          </select>
-        </div>
+          <div class="form-grid">
 
-        <div class="field full">
-          <label>{{ $t('teamsSeccion.description') }}</label>
-          <textarea v-model="team.descUso"></textarea>
-        </div>
+            <div class="field full">
+              <label>{{ $t('teamsSeccion.name') }}</label>
+              <input v-model="team.teamName" required />
+            </div>
 
-        <div class="field full">
-          <label>{{ $t('teamsSeccion.tournament') }}</label>
-          <input v-model="team.tournamentUsing" />
-        </div>
+            <div class="field">
+              <label>{{ $t('teamsSeccion.format') }}</label>
+              <select v-model="team.formatId" required>
+                <option disabled value="">{{ $t('teamsSeccion.selectFormat') }}</option>
+                <option v-for="f in formats" :key="f.id" :value="f.id">
+                  {{ f.formatName }}
+                </option>
+              </select>
+            </div>
 
-        <div class="field">
-          <label>{{ $t('teamsSeccion.musFav') }}</label>
-          <textarea v-model="team.musFav"></textarea>
-        </div>
+            <div class="field">
+              <label>{{ $t('teamsSeccion.subFormat') }}</label>
+              <select v-model="team.subFormatId" required>
+                <option disabled value="">{{ $t('teamsSeccion.selectSubFormat') }}</option>
+                <option v-for="s in subFormats" :key="s.id" :value="s.id">
+                  {{ s.abrevSubFormat }}
+                </option>
+              </select>
+            </div>
 
-        <div class="field">
-          <label>{{ $t('teamsSeccion.teamsCounter') }}</label>
-          <textarea v-model="team.counters"></textarea>
-        </div>
+            <div class="field full">
+              <label>{{ $t('teamsSeccion.codeRental') }}</label>
+              <input v-model="team.codeRental" />
+            </div>
 
-        <div class="field full">
-          <label>{{ $t('teamsSeccion.damageCalcs') }}</label>
-          <textarea v-model="team.damageCalcs"></textarea>
-        </div>
+            <div class="field full">
+              <label>{{ $t('teamsSeccion.description') }}</label>
+              <textarea v-model="team.descUso"></textarea>
+            </div>
 
-        <!-- Switch -->
-        <div class="field full switch-field">
-          <span>{{ $t('teamsSeccion.isPublic') }}</span>
-          <label class="switch">
-            <input type="checkbox" v-model="team.isPublic" />
-            <span class="slider"></span>
-          </label>
-        </div>
+            <div class="field full">
+              <label>{{ $t('teamsSeccion.tournament') }}</label>
+              <input v-model="team.tournamentUsing" />
+            </div>
 
-        <!-- Loader -->
-        <div v-if="isLoading" class="loading">
-          <div class="spinner-border"></div>
-        </div>
+            <div class="field">
+              <label>{{ $t('teamsSeccion.musFav') }}</label>
+              <textarea v-model="team.musFav"></textarea>
+            </div>
 
-        <button class="submit-btn" :disabled="isLoading">
-          {{ $t('buttons.createTeam') }}
-        </button>
+            <div class="field">
+              <label>{{ $t('teamsSeccion.teamsCounter') }}</label>
+              <textarea v-model="team.counters"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>{{ $t('teamsSeccion.damageCalcs') }}</label>
+              <textarea v-model="team.damageCalcs"></textarea>
+            </div>
+
+            <div class="field full switch-field">
+              <span>{{ $t('teamsSeccion.isPublic') }}</span>
+              <label class="switch">
+                <input type="checkbox" v-model="team.isPublic" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <button class="submit-btn" :disabled="isLoading">
+              {{ $t('buttons.createTeam') }}
+            </button>
+
+          </div>
+
+        </div>
 
       </form>
 
@@ -115,11 +123,13 @@
 
   const team = reactive({
     teamName: '',
+    rawInput: '', // 🔥 NUEVO
     urlPaste: '',
     formatId: null,
     dateCreated: new Date(),
     userId: null,
     descUso: '',
+    codeRental: '',
     tournamentUsing: '',
     musFav: '',
     counters: '',
@@ -155,13 +165,8 @@
       return t('teamsSeccion.name') + ' es obligatorio';
     }
 
-    if (!team.urlPaste.trim()) {
-      return t('teamsSeccion.urlPaste') + ' es obligatorio';
-    }
-
-    // Validar que sea pokepaste
-    if (!team.urlPaste.includes('pokepast.es')) {
-      return 'La URL debe ser de pokepaste';
+    if (!team.rawInput.trim()) {
+      return 'Debes pegar un Pokepaste o un team de Showdown';
     }
 
     if (!team.formatId) {
@@ -203,6 +208,15 @@
     team.userId = decodedToken.userId;
 
     isLoading.value = true;
+
+    // Detectar si es URL o texto
+    if (team.rawInput.includes('pokepast.es')) {
+      team.urlPaste = team.rawInput.trim();
+    } else {
+      // asumir que es formato showdown
+      team.urlPaste = null;
+      team.showdownText = team.rawInput.trim();
+    }
 
     try {
       const response = await axios.post(apiUrl+'teams', team, {
@@ -275,7 +289,7 @@
 
   .form-card {
     width: 100%;
-    max-width: 900px;
+    max-width: 85%;
     background: #fff;
     border-radius: 16px;
     padding: 2rem;
@@ -428,10 +442,39 @@
   }
 
   /* Mobile */
-  @media (max-width: 720px) {
-    .form-grid {
+  @media (max-width: 900px) {
+    .form-layout {
       grid-template-columns: 1fr;
     }
+
+    .big-textarea {
+      min-height: 200px;
+    }
+  }
+
+  .form-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Panel izquierdo */
+  .left-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .big-textarea {
+    flex: 1;
+    min-height: 400px;
+    resize: vertical;
+    font-family: monospace;
+  }
+
+  /* Panel derecho */
+  .right-panel {
+    display: flex;
+    flex-direction: column;
   }
 
 </style>

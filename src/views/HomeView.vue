@@ -14,7 +14,7 @@
     <!-- Sección de equipos registrados -->
     <div class="mt-5">
       <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
           <h2 class="text-center mb-4">{{ $t('home.teamSeccion') }}</h2>
 
           <!-- Indicador de carga para equipos -->
@@ -24,7 +24,7 @@
           <div v-else>
             <div class="row">
               <template v-for="team in listTeams" :key="team.id">
-                <div class="col-md-6" :class="mode === 'dark' ? 'dark-mode' : ''">
+                <div class="col-md-4" :class="mode === 'dark' ? 'dark-mode' : ''">
                   <!-- Tarjeta de equipo registrado -->
                   <div class="card mb-4 shadow-sm">
                     <div class="card-body">
@@ -51,10 +51,9 @@
         </div>
 
         <!-- Sección de Pokémon registrados -->
+        <!--
         <div class="col-md-6">
           <h2 class="text-center mb-4">{{ $t('home.pokemonSeccion') }}</h2>
-
-          <!-- Indicador de carga para Pokémon -->
           <div v-if="loadingPokes" class="text-center">
             <img :src="gifLoading">
           </div>
@@ -62,7 +61,6 @@
             <div class="row">
               <template v-for="pokemon in listPokes" :key="pokemon.id">
                 <div class="col-md-4 " :class="mode === 'dark' ? 'dark-mode' : ''">
-                  <!-- Tarjeta de Pokémon registrada -->
                   <div class="card mb-4 shadow-sm">
                     <div class="card-body">
                       <h5 class="card-title" align="center">{{ pokemon.name }}</h5>
@@ -81,6 +79,7 @@
             </div>
           </div>
         </div>
+        -->
       </div>
     </div>
   </div>
@@ -190,7 +189,7 @@
     },
     mounted() {
       this.getTeams();
-      this.getPokes();
+      //this.getPokes();
       this.setHead();
     }
   };
