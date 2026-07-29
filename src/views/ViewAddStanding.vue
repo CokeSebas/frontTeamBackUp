@@ -1,619 +1,1736 @@
 <template>
-  <div :class="['container', { 'dark-mode': mode === 'dark' }]">
-    <div :class="['card', { 'dark-card': mode === 'dark' }]">
+  <main
+    class="tournament-page"
+    :class="{ 'theme-dark': isDark }"
+    :data-bs-theme="isDark ? 'dark' : 'light'"
+  >
+    <div class="tournament-shell">
+      <header class="hero-card">
+        <div class="hero-copy">
+          <span class="hero-eyebrow">CLASIFICACIÓN</span>
 
-      <!-- 🔄 LOADING -->
-      <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
-        <img :src="gifLoading">
-      </div>
+          <h1 class="hero-title">
+            {{ $t('tournamentsSeccion.topPlayer') }}
+          </h1>
 
-      <template v-else>
-        <h2 class="title">
-          {{ $t('tournamentsSeccion.topPlayer') }} – {{ tournamentTop.nombre }}
-        </h2>
-  
+          <p class="hero-description">
+            {{
+              tournamentName
+                ? `Configura las posiciones y los equipos del top en el torneo ${tournamentName}.`
+                : 'Configura las posiciones y los equipos del top del torneo.'
+            }}
+          </p>
+
+          <div class="hero-meta">
+            <span v-if="formatName" class="hero-chip">
+              {{ formatName }}
+            </span>
+
+            <span v-if="hasStandings" class="hero-chip">
+              {{ standingsOptions.length }} jugadores disponibles
+            </span>
+          </div>
+        </div>
+
+        <div class="hero-counter" aria-live="polite">
+          <strong>{{ players.length }}</strong>
+          <span>
+            {{ players.length === 1 ? 'posición' : 'posiciones' }}
+          </span>
+        </div>
+      </header>
+
+      <section
+        class="content-card standing-card"
+        :aria-busy="loading"
+      >
         <div
-          v-for="(player, playerIndex) in players"
-          :key="playerIndex"
-          class="player-card"
+          v-if="loading"
+          class="state-panel"
+          aria-live="polite"
+          aria-busy="true"
         >
-          <h4 class="player-title">
-            {{ $t('tournamentsSeccion.position') }} {{ playerIndex + 1 }}
-          </h4>
-  
-          <div class="row">
-  
-            <!-- 🟢 NO HAY STANDINGS → INPUTS -->
-            <template v-if="!hasStandings">
-              <input
-                v-model="player.name"
-                class="input"
-                placeholder="Nombre"
-                :disabled="hasStandings"
-              />
-  
-              <input
-                v-model="player.lastName"
-                class="input"
-                placeholder="Apellido"
-              />
-            </template>
-  
-            <!-- 🔵 HAY STANDINGS → COMBOBOX -->
-            <template v-else>
-              <select
-                class="input"
-                @change="onSelectPlayer(player, $event.target.value)"
-              >
-                <option value="" disabled selected>
-                  {{ $t('tournamentsSeccion.selectPlayer') }}
-                </option>
-  
-                <option
-                  v-for="option in standingsOptions"
-                  :key="option.id"
-                  :value="option.id"
-                >
-                  {{ option.label }}
-                </option>
-              </select>
-            </template>
-  
-          </div>
-  
-  
-          <div class="pokemon-grid">
-            <div
-              v-for="(poke, i) in player.pokemons"
-              :key="i"
-              class="autocomplete"
-            >
-              <!-- Input -->
-              <input
-                ref="pokemonInputs"
-                v-model="player.pokemons[i]"
-                class="input"
-                placeholder="Pokémon"
-                @input="onPokemonInput(player, i)"
-                @focus="
-                  activeAutocompleteId = `${playerIndex}-${i}`;
-                  activeSuggestionIndex = -1
-                "
-                @keydown="onKeyDown(
-                  $event,
-                  player.suggestions[i],
-                  (pokemon) => selectPokemon(player, i, pokemon)
-                )"
-              />
-  
-              <!-- Suggestions -->
-              <Teleport to="body">
-                <ul
-                  v-if="
-                    player.suggestions[i]?.length &&
-                    activeAutocompleteId === `${playerIndex}-${i}`
-                  "
-                  class="suggestions floating"
-                  :style="getDropdownStyle(
-                    playerIndex * 6 + i
-                  )"
-                >
-
-                  <li
-                    v-for="(pokemon, idx) in player.suggestions[i]"
-                    :key="pokemon.id"
-                    class="suggestion-item"
-                    :class="{ selected: idx === activeSuggestionIndex }"
-                    @mousedown.prevent="selectPokemon(player, i, pokemon)"
-                  >
-
-                    <img :src="pokemon.imageUrl" class="pokemon-thumb" />
-                    {{ pokemon.name }}
-                  </li>
-                </ul>
-              </Teleport>
-
-            </div>
-  
-          </div>
-        </div>
-  
-        <div class="actions">
-          <button class="btn btn-add" @click="addPlayer">
-            + {{ $t('tournamentsSeccion.addPlayer') }}
-          </button>
-  
-          <button
-            class="btn btn-save"
-            :disabled="saving"
-            @click="saveTop"
+          <img
+            v-if="gifLoadingValue"
+            :src="gifLoadingValue"
+            class="loading-image"
+            alt="Cargando información del torneo"
           >
-            <span v-if="saving" class="spinner"></span>
-            {{ saving ? 'Guardando...' : 'Guardar Top' }}
+
+          <span
+            v-else
+            class="loading-spinner"
+            aria-hidden="true"
+          />
+        </div>
+
+        <div
+          v-else-if="loadingError"
+          class="state-panel error-state"
+          role="alert"
+        >
+          <span class="state-icon" aria-hidden="true">!</span>
+          <h2>{{ $t('responseApisSeccion.oops') }}</h2>
+          <p>{{ loadingError }}</p>
+
+          <button
+            type="button"
+            class="btn-electric"
+            @click="initializeView"
+          >
+            Reintentar
           </button>
         </div>
-      </template>
 
+        <form
+          v-else
+          class="standing-form"
+          novalidate
+          @submit.prevent="saveTop"
+        >
+          <div class="section-heading">
+            <div>
+              <span class="section-kicker">TOP DEL TORNEO</span>
+              <h2>
+                {{ tournamentName || 'Posiciones del torneo' }}
+              </h2>
+              <p>
+                Agrega cada jugador y completa sus seis Pokémon.
+              </p>
+            </div>
+
+            <span class="section-badge">
+              {{ completedPlayers }}/{{ players.length }} completos
+            </span>
+          </div>
+
+          <p
+            v-if="validationError"
+            class="form-message error-message"
+            role="alert"
+            aria-live="assertive"
+          >
+            {{ validationError }}
+          </p>
+
+          <div class="players-list">
+            <article
+              v-for="(player, playerIndex) in players"
+              :key="player.clientId"
+              class="player-card"
+              :class="{ 'player-card-complete': isPlayerComplete(player) }"
+            >
+              <header class="player-header">
+                <div class="player-heading">
+                  <span class="position-marker">
+                    {{ playerIndex + 1 }}
+                  </span>
+
+                  <div>
+                    <span class="player-kicker">
+                      {{ $t('tournamentsSeccion.position') }}
+                      {{ playerIndex + 1 }}
+                    </span>
+
+                    <h3>
+                      {{
+                        getPlayerFullName(player) ||
+                        `Jugador ${playerIndex + 1}`
+                      }}
+                    </h3>
+                  </div>
+                </div>
+
+                <div class="player-header-actions">
+                  <span
+                    class="completion-badge"
+                    :class="{
+                      complete: isPlayerComplete(player)
+                    }"
+                  >
+                    {{ getPokemonProgress(player) }}/6 Pokémon
+                  </span>
+
+                  <button
+                    v-if="players.length > 1"
+                    type="button"
+                    class="button-remove"
+                    :aria-label="`Eliminar posición ${playerIndex + 1}`"
+                    title="Eliminar posición"
+                    @click="removePlayer(playerIndex)"
+                  >
+                    <span aria-hidden="true">✕</span>
+                  </button>
+                </div>
+              </header>
+
+              <div
+                v-if="!hasStandings"
+                class="player-fields"
+              >
+                <div class="field-group">
+                  <label :for="`player-name-${player.clientId}`">
+                    Nombre
+                  </label>
+
+                  <input
+                    :id="`player-name-${player.clientId}`"
+                    v-model.trim="player.name"
+                    class="form-control"
+                    type="text"
+                    autocomplete="given-name"
+                    maxlength="80"
+                    placeholder="Nombre"
+                    @input="clearValidation"
+                  >
+                </div>
+
+                <div class="field-group">
+                  <label :for="`player-lastname-${player.clientId}`">
+                    Apellido
+                  </label>
+
+                  <input
+                    :id="`player-lastname-${player.clientId}`"
+                    v-model.trim="player.lastName"
+                    class="form-control"
+                    type="text"
+                    autocomplete="family-name"
+                    maxlength="100"
+                    placeholder="Apellido"
+                    @input="clearValidation"
+                  >
+                </div>
+              </div>
+
+              <div
+                v-else
+                class="field-group standing-selector"
+              >
+                <label :for="`standing-player-${player.clientId}`">
+                  {{ $t('tournamentsSeccion.selectPlayer') }}
+                </label>
+
+                <select
+                  :id="`standing-player-${player.clientId}`"
+                  v-model="player.selectedStandingId"
+                  class="form-control"
+                  @change="onSelectPlayer(player)"
+                >
+                  <option value="">
+                    {{ $t('tournamentsSeccion.selectPlayer') }}
+                  </option>
+
+                  <option
+                    v-for="option in standingsOptions"
+                    :key="option.id"
+                    :value="String(option.id)"
+                    :disabled="
+                      isStandingOptionDisabled(option.id, player)
+                    "
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <fieldset class="pokemon-section">
+                <legend>
+                  <span>Equipo Pokémon</span>
+                  <span class="pokemon-count">
+                    {{ getPokemonProgress(player) }}/6
+                  </span>
+                </legend>
+
+                <div class="pokemon-grid">
+                  <div
+                    v-for="(_, pokemonIndex) in player.pokemons"
+                    :key="`${player.clientId}-${pokemonIndex}`"
+                    class="field-group"
+                  >
+                    <label :for="getPokemonInputId(player, pokemonIndex)">
+                      Pokémon {{ pokemonIndex + 1 }}
+                    </label>
+
+                    <div class="autocomplete">
+                      <input
+                        :id="getPokemonInputId(player, pokemonIndex)"
+                        v-model.trim="player.pokemons[pokemonIndex]"
+                        class="form-control"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Buscar Pokémon"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        :aria-expanded="
+                          isAutocompleteOpen(player, pokemonIndex)
+                        "
+                        :aria-controls="
+                          getSuggestionListId(player, pokemonIndex)
+                        "
+                        @input="onPokemonInput(player, pokemonIndex)"
+                        @focus="openAutocomplete(player, pokemonIndex)"
+                        @keydown="
+                          onPokemonKeyDown(
+                            $event,
+                            player,
+                            pokemonIndex
+                          )
+                        "
+                      >
+
+                      <ul
+                        v-if="
+                          getSuggestions(player, pokemonIndex).length &&
+                          isAutocompleteOpen(player, pokemonIndex)
+                        "
+                        :id="getSuggestionListId(player, pokemonIndex)"
+                        class="suggestions"
+                        role="listbox"
+                      >
+                        <li
+                          v-for="(pokemon, suggestionIndex) in
+                            getSuggestions(player, pokemonIndex)"
+                          :key="pokemon.id"
+                          class="suggestion-item"
+                          :class="{
+                            active:
+                              suggestionIndex === activeSuggestionIndex
+                          }"
+                          role="option"
+                          :aria-selected="
+                            suggestionIndex === activeSuggestionIndex
+                          "
+                          @mousedown.prevent="
+                            selectPokemon(
+                              player,
+                              pokemonIndex,
+                              pokemon
+                            )
+                          "
+                        >
+                          <img
+                            v-if="pokemon.imageUrl"
+                            :src="pokemon.imageUrl"
+                            class="pokemon-thumb"
+                            :alt="`Imagen de ${pokemon.name}`"
+                            width="36"
+                            height="36"
+                            loading="lazy"
+                            @error="hideBrokenImage"
+                          >
+                          <span>{{ pokemon.name }}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </article>
+          </div>
+
+          <div class="secondary-actions">
+            <button
+              type="button"
+              class="btn-electric-soft"
+              :disabled="!canAddPlayer || saving"
+              @click="addPlayer"
+            >
+              <span aria-hidden="true">＋</span>
+              {{ $t('tournamentsSeccion.addPlayer') }}
+            </button>
+
+            <p
+              v-if="hasStandings && !canAddPlayer"
+              class="action-hint"
+            >
+              Todos los jugadores disponibles ya fueron agregados.
+            </p>
+          </div>
+
+          <footer class="save-actions">
+            <div class="save-summary">
+              <strong>{{ completedPlayers }} posiciones completas</strong>
+              <span>
+                Revisa los datos antes de guardar el top.
+              </span>
+            </div>
+
+            <button
+              type="submit"
+              class="btn-electric button-save"
+              :disabled="saving"
+              :aria-busy="saving"
+            >
+              <span
+                v-if="saving"
+                class="button-spinner"
+                aria-hidden="true"
+              />
+              {{ saving ? 'Guardando...' : 'Guardar Top' }}
+            </button>
+          </footer>
+        </form>
+      </section>
     </div>
-  </div>
+  </main>
 </template>
 
-
 <script setup>
-  import { ref, inject, onMounted, computed, onBeforeUnmount  } from 'vue'
-  import { useRoute } from 'vue-router'
-  import axios from 'axios'
-  import Swal from 'sweetalert2'
+import {
+  computed,
+  inject,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  unref,
+  watch
+} from 'vue';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useRoute, useRouter } from 'vue-router';
 
-  import { useRouter } from 'vue-router';
+const POKEMON_SLOTS = 6;
+const MAX_SUGGESTIONS = 8;
 
-  const mode = inject('mode')
-  const apiUrl = inject('apiUrl')
+let playerSequence = 0;
+let requestController = null;
+let themeObserver = null;
 
-  const route = useRoute()
-  const idTorneo = route.params.id_torneo
+const mode = inject('mode', ref('light'));
+const apiUrl = inject('apiUrl', '');
+const gifLoading = inject('gifLoading', '');
 
-  const saving = ref(false)
-  const router = useRouter();
+const route = useRoute();
+const router = useRouter();
 
-  const loading = ref(true);
-  const gifLoading = inject('gifLoading');
+const loading = ref(true);
+const saving = ref(false);
+const loadingError = ref('');
+const validationError = ref('');
+const detectedDarkTheme = ref(false);
 
-  const pokemonInputs = ref([])
+const pokemonList = ref([]);
+const tournamentTop = ref(null);
+const playersTop = ref([]);
+const formatoTorneo = ref('');
 
-  const activeSuggestionIndex = ref(-1)
-  const activeAutocompleteId = ref(null)
+const activeSuggestionIndex = ref(-1);
+const activeAutocompleteId = ref(null);
 
+const tournamentId = computed(() =>
+  String(route.params.id_torneo || '').trim()
+);
 
-  // ===============================
-  // State
-  // ===============================
-  const players = ref([
-    createPlayer()
-  ])
+const gifLoadingValue = computed(() =>
+  String(unref(gifLoading) || '').trim()
+);
 
-  const pokemonList = ref([])
-  const tournamentTop = ref([])
-  const playersTop = ref([])
+const modeValue = computed(() =>
+  String(unref(mode) || '').trim().toLowerCase()
+);
 
-  const formatoTorneo = ref('')
+const isDark = computed(
+  () =>
+    modeValue.value === 'dark' ||
+    modeValue.value === 'oscuro' ||
+    detectedDarkTheme.value
+);
 
-  // ===============================
-  // Helpers
-  // ===============================
-  function createPlayer() {
-    return {
-      name: '',
-      lastName: '',
-      pokemons: ['', '', '', '', '', ''],
-      suggestions: [[], [], [], [], [], []]
-    }
-  }
+const createPlayerId = () => {
+  playerSequence += 1;
+  return `player-${Date.now()}-${playerSequence}`;
+};
 
-  // ===============================
-  // Load Pokémon
-  // ===============================
-  const loadPokemons = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}pokemon-seeder`)
-      pokemonList.value = response.data
-    } catch (error) {
-      console.error('Error cargando pokemons', error)
-    }
-  }
+const createSuggestionsRow = () =>
+  Array.from({ length: POKEMON_SLOTS }, () => []);
 
+const createPlayer = () => ({
+  clientId: createPlayerId(),
+  selectedStandingId: '',
+  name: '',
+  lastName: '',
+  pokemons: Array.from({ length: POKEMON_SLOTS }, () => ''),
+  suggestions: createSuggestionsRow()
+});
 
-  const loadDataTorneo = async () => {
-    try {
-      const response = await axios.get(
-        `${apiUrl}tournaments/with-standing/${idTorneo}`
-      )
+const players = ref([createPlayer()]);
 
-      tournamentTop.value = response.data;
-      playersTop.value = response.data.standings;
-      formatoTorneo.value = response.data.formato_torneo;
-      //console.log('jugadores del top del torneo:', playersTop.value);
+const tournamentName = computed(() =>
+  String(
+    tournamentTop.value?.nombre ||
+    tournamentTop.value?.name ||
+    ''
+  ).trim()
+);
 
+const formatName = computed(() =>
+  String(formatoTorneo.value || '').trim()
+);
 
-    } catch (error) {
-      console.error('Error cargando datos del torneo', error)
-    }
-  }
+const hasStandings = computed(() => playersTop.value.length > 0);
 
-  const onPokemonInput = (player, index) => {
-    const query = player.pokemons[index]
+const standingsOptions = computed(() =>
+  playersTop.value
+    .map((standing) => {
+      const label = String(
+        standing?.playerName ||
+        standing?.player_name ||
+        standing?.name ||
+        ''
+      ).trim();
 
-    if (!query || query.length < 3) {
-      player.suggestions[index] = []
-      return
-    }
+      const [name = '', ...lastNameParts] = label.split(/\s+/);
 
-    player.suggestions[index] = pokemonList.value
-      .filter(p =>
-        p.name.toLowerCase().includes(query.toLowerCase())
-      )
-      .slice(0, 8) // máximo 8 sugeridos
-  }
-
-  const selectPokemon = (player, index, pokemon) => {
-    player.pokemons[index] = pokemon.name
-    player.suggestions[index] = []
-  }
-
-  // ===============================
-  // Actions
-  // ===============================
-  const addPlayer = () => {
-    players.value.push(createPlayer())
-  }
-
-  const saveTop = async () => {
-    if (saving.value) return
-
-    saving.value = true
-
-    //console.log('Guardando top con datos:', {
-    //  tournamentId: idTorneo,
-    //  formatoTorneo: formatoTorneo.value,
-    //  players: players.value
-    //})
-
-    try {
-      const payload = {
-        tournamentId: idTorneo,
-        formatoTorneo: formatoTorneo.value,
-        players: players.value
-      }
-
-      await axios.post(`${apiUrl}tournament-top-players/bulk`, payload)
-
-      await Swal.fire({
-        icon: 'success',
-        title: 'Top guardado',
-        showConfirmButton: false,
-        timer: 1500
-      })
-
-      // 👉 SOLO SI TODO SALIÓ BIEN
-      router.push('/tournament/goToTops/' + idTorneo)
-
-    } catch (error) {
-      console.error('Error guardando top', error)
-
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: error.response?.data?.message || 'No se pudo guardar el top'
-      })
-
-    } finally {
-      saving.value = false
-    }
-  }
-
-  const hasStandings = computed(() => {
-    return playersTop.value && playersTop.value.length > 0
-  })
-  
-  const standingsOptions = computed(() => {
-    if (!hasStandings.value) return []
-
-    return playersTop.value.map(s => {
-      const [name, ...lastName] = s.playerName.split(' ')
       return {
-        id: s.id,
+        id:
+          standing?.id ??
+          standing?.standing_id ??
+          standing?.player_id,
         name,
-        lastName: lastName.join(' '),
-        label: s.playerName
-      }
+        lastName: lastNameParts.join(' '),
+        label
+      };
     })
-  })
-
-  const onSelectPlayer = (player, selectedId) => {
-    const selected = standingsOptions.value.find(
-      p => p.id === Number(selectedId)
+    .filter(
+      (option) =>
+        option.id != null &&
+        option.label
     )
+);
 
-    if (!selected) return
+const selectedStandingIds = computed(() =>
+  new Set(
+    players.value
+      .map((player) =>
+        String(player.selectedStandingId || '')
+      )
+      .filter(Boolean)
+  )
+);
 
-    player.name = selected.name
-    player.lastName = selected.lastName
+const canAddPlayer = computed(() => {
+  if (!hasStandings.value) {
+    return true;
   }
 
-  const getDropdownStyle = (index) => {
-    const input = pokemonInputs.value[index]
-    if (!input) return {}
+  return players.value.length < standingsOptions.value.length;
+});
 
-    const rect = input.getBoundingClientRect()
+const completedPlayers = computed(() =>
+  players.value.filter(isPlayerComplete).length
+);
 
-    return {
-      position: 'fixed',
-      top: `${rect.bottom + 4}px`,
-      left: `${rect.left}px`,
-      width: `${rect.width}px`,
-      zIndex: 9999
+const normalizeText = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[♀]/g, ' female ')
+    .replace(/[♂]/g, ' male ')
+    .trim()
+    .toLocaleLowerCase();
+
+const buildApiUrl = (path) => {
+  const baseUrl = String(unref(apiUrl) || '').replace(/\/+$/, '');
+  const cleanPath = String(path || '').replace(/^\/+/, '');
+
+  return baseUrl ? `${baseUrl}/${cleanPath}` : `/${cleanPath}`;
+};
+
+const normalizePokemonList = (data) => {
+  const source = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.data)
+      ? data.data
+      : [];
+
+  return source
+    .filter(
+      (pokemon) =>
+        pokemon &&
+        pokemon.id != null &&
+        typeof pokemon.name === 'string'
+    )
+    .map((pokemon) => ({
+      ...pokemon,
+      name: pokemon.name.trim(),
+      searchName: normalizeText(pokemon.name)
+    }))
+    .filter((pokemon) => pokemon.name);
+};
+
+const normalizeStandings = (data) =>
+  Array.isArray(data) ? data.filter(Boolean) : [];
+
+const getPokemonProgress = (player) =>
+  player.pokemons.filter((pokemon) =>
+    String(pokemon || '').trim()
+  ).length;
+
+function isPlayerComplete(player) {
+  return Boolean(
+    String(player.name || '').trim() &&
+    String(player.lastName || '').trim() &&
+    getPokemonProgress(player) === POKEMON_SLOTS
+  );
+}
+
+const loadPokemons = async (signal) => {
+  const response = await axios.get(
+    buildApiUrl('pokemon-seeder'),
+    { signal }
+  );
+
+  const normalizedList = normalizePokemonList(response?.data);
+
+  if (!normalizedList.length) {
+    throw new Error('EMPTY_POKEMON_LIST');
+  }
+
+  pokemonList.value = normalizedList;
+};
+
+const loadTournamentData = async (signal) => {
+  if (!tournamentId.value) {
+    throw new Error('INVALID_TOURNAMENT_ID');
+  }
+
+  const response = await axios.get(
+    buildApiUrl(
+      `tournaments/with-standing/${encodeURIComponent(
+        tournamentId.value
+      )}`
+    ),
+    { signal }
+  );
+
+  const responseData = response?.data?.data || response?.data;
+
+  if (!responseData || typeof responseData !== 'object') {
+    throw new Error('INVALID_TOURNAMENT_RESPONSE');
+  }
+
+  tournamentTop.value = responseData;
+  playersTop.value = normalizeStandings(responseData.standings);
+  formatoTorneo.value =
+    responseData.formato_torneo ||
+    responseData.formatoTorneo ||
+    responseData.format ||
+    '';
+};
+
+const resetForm = () => {
+  players.value = [createPlayer()];
+  validationError.value = '';
+  closeSuggestions();
+};
+
+const initializeView = async () => {
+  requestController?.abort();
+  requestController = new AbortController();
+
+  loading.value = true;
+  loadingError.value = '';
+  resetForm();
+
+  const currentController = requestController;
+
+  try {
+    await Promise.all([
+      loadPokemons(currentController.signal),
+      loadTournamentData(currentController.signal)
+    ]);
+  } catch (error) {
+    if (
+      error?.name === 'CanceledError' ||
+      error?.name === 'AbortError' ||
+      axios.isCancel?.(error)
+    ) {
+      return;
+    }
+
+    console.error(
+      'Error al cargar la información del torneo:',
+      error
+    );
+
+    loadingError.value =
+      error?.response?.data?.message ||
+      'No se pudo cargar la información necesaria.';
+  } finally {
+    if (requestController === currentController) {
+      loading.value = false;
+    }
+  }
+};
+
+const clearValidation = () => {
+  validationError.value = '';
+};
+
+const addPlayer = () => {
+  if (!canAddPlayer.value || saving.value) {
+    return;
+  }
+
+  players.value.push(createPlayer());
+  clearValidation();
+  closeSuggestions();
+};
+
+const removePlayer = (playerIndex) => {
+  if (players.value.length <= 1 || saving.value) {
+    return;
+  }
+
+  players.value.splice(playerIndex, 1);
+  clearValidation();
+  closeSuggestions();
+};
+
+const getPlayerFullName = (player) =>
+  [player.name, player.lastName]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join(' ');
+
+const onSelectPlayer = (player) => {
+  const selected = standingsOptions.value.find(
+    (option) =>
+      String(option.id) ===
+      String(player.selectedStandingId)
+  );
+
+  if (!selected) {
+    player.name = '';
+    player.lastName = '';
+    clearValidation();
+    return;
+  }
+
+  player.name = selected.name;
+  player.lastName = selected.lastName;
+  clearValidation();
+};
+
+const isStandingOptionDisabled = (optionId, currentPlayer) => {
+  const normalizedOptionId = String(optionId);
+
+  return (
+    normalizedOptionId !==
+      String(currentPlayer.selectedStandingId || '') &&
+    selectedStandingIds.value.has(normalizedOptionId)
+  );
+};
+
+const getPokemonInputId = (player, pokemonIndex) =>
+  `pokemon-${player.clientId}-${pokemonIndex}`;
+
+const getSuggestionListId = (player, pokemonIndex) =>
+  `pokemon-suggestions-${player.clientId}-${pokemonIndex}`;
+
+const getAutocompleteId = (player, pokemonIndex) =>
+  `${player.clientId}-${pokemonIndex}`;
+
+const isAutocompleteOpen = (player, pokemonIndex) =>
+  activeAutocompleteId.value ===
+  getAutocompleteId(player, pokemonIndex);
+
+const getSuggestions = (player, pokemonIndex) =>
+  player.suggestions?.[pokemonIndex] || [];
+
+const openAutocomplete = (player, pokemonIndex) => {
+  activeAutocompleteId.value =
+    getAutocompleteId(player, pokemonIndex);
+  activeSuggestionIndex.value = -1;
+  updatePokemonSuggestions(player, pokemonIndex);
+};
+
+const onPokemonInput = (player, pokemonIndex) => {
+  clearValidation();
+  activeAutocompleteId.value =
+    getAutocompleteId(player, pokemonIndex);
+  activeSuggestionIndex.value = -1;
+  updatePokemonSuggestions(player, pokemonIndex);
+};
+
+const updatePokemonSuggestions = (player, pokemonIndex) => {
+  const query = normalizeText(player.pokemons[pokemonIndex]);
+
+  if (query.length < 2) {
+    player.suggestions[pokemonIndex] = [];
+    return;
+  }
+
+  player.suggestions[pokemonIndex] = pokemonList.value
+    .filter((pokemon) =>
+      pokemon.searchName.includes(query)
+    )
+    .sort((firstPokemon, secondPokemon) => {
+      const firstStartsWith =
+        firstPokemon.searchName.startsWith(query);
+      const secondStartsWith =
+        secondPokemon.searchName.startsWith(query);
+
+      if (firstStartsWith !== secondStartsWith) {
+        return firstStartsWith ? -1 : 1;
+      }
+
+      return firstPokemon.name.localeCompare(secondPokemon.name);
+    })
+    .slice(0, MAX_SUGGESTIONS);
+};
+
+const selectPokemon = (
+  player,
+  pokemonIndex,
+  pokemon
+) => {
+  player.pokemons[pokemonIndex] = pokemon.name;
+  player.suggestions[pokemonIndex] = [];
+  clearValidation();
+  closeSuggestions();
+};
+
+const onPokemonKeyDown = (
+  event,
+  player,
+  pokemonIndex
+) => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeSuggestions();
+    return;
+  }
+
+  if (event.key === 'Tab') {
+    closeSuggestions();
+    return;
+  }
+
+  const suggestionList = getSuggestions(player, pokemonIndex);
+
+  if (event.key === 'Enter') {
+    event.preventDefault();
+
+    if (
+      activeSuggestionIndex.value >= 0 &&
+      suggestionList[activeSuggestionIndex.value]
+    ) {
+      selectPokemon(
+        player,
+        pokemonIndex,
+        suggestionList[activeSuggestionIndex.value]
+      );
+    }
+
+    return;
+  }
+
+  if (!suggestionList.length) {
+    return;
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    activeSuggestionIndex.value =
+      (activeSuggestionIndex.value + 1) %
+      suggestionList.length;
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    activeSuggestionIndex.value =
+      (
+        activeSuggestionIndex.value -
+        1 +
+        suggestionList.length
+      ) % suggestionList.length;
+  }
+};
+
+const closeSuggestions = () => {
+  activeSuggestionIndex.value = -1;
+  activeAutocompleteId.value = null;
+};
+
+const handleClickOutside = (event) => {
+  if (
+    event.target instanceof Element &&
+    !event.target.closest('.autocomplete')
+  ) {
+    closeSuggestions();
+  }
+};
+
+const hideBrokenImage = (event) => {
+  event.currentTarget.style.display = 'none';
+};
+
+const validatePlayers = () => {
+  for (
+    let playerIndex = 0;
+    playerIndex < players.value.length;
+    playerIndex += 1
+  ) {
+    const player = players.value[playerIndex];
+    const position = playerIndex + 1;
+
+    if (hasStandings.value && !player.selectedStandingId) {
+      return `Selecciona el jugador de la posición ${position}.`;
+    }
+
+    if (!String(player.name || '').trim()) {
+      return `Falta el nombre del jugador de la posición ${position}.`;
+    }
+
+    if (!String(player.lastName || '').trim()) {
+      return `Falta el apellido del jugador de la posición ${position}.`;
+    }
+
+    const normalizedPokemons = player.pokemons.map((pokemon) =>
+      String(pokemon || '').trim()
+    );
+
+    if (normalizedPokemons.some((pokemon) => !pokemon)) {
+      return `Completa los 6 Pokémon de la posición ${position}.`;
+    }
+
+    if (new Set(normalizedPokemons.map(normalizeText)).size !== POKEMON_SLOTS) {
+      return `No repitas Pokémon en la posición ${position}.`;
     }
   }
 
-  const onKeyDown = (event, suggestions, onSelect) => {
-    if (!suggestions?.length) return
+  return '';
+};
 
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault()
-        activeSuggestionIndex.value =
-          (activeSuggestionIndex.value + 1) % suggestions.length
-        break
+const createPayloadPlayers = () =>
+  players.value.map((player) => ({
+    name: String(player.name || '').trim(),
+    lastName: String(player.lastName || '').trim(),
+    pokemons: player.pokemons.map((pokemon) =>
+      String(pokemon || '').trim()
+    )
+  }));
 
-      case 'ArrowUp':
-        event.preventDefault()
-        activeSuggestionIndex.value =
-          (activeSuggestionIndex.value - 1 + suggestions.length) % suggestions.length
-        break
+const showValidationError = async (message) => {
+  validationError.value = message;
 
-      case 'Enter':
-        event.preventDefault()
-        if (activeSuggestionIndex.value >= 0) {
-          onSelect(suggestions[activeSuggestionIndex.value])
-        }
-        break
+  await Swal.fire({
+    icon: 'error',
+    title: 'Datos incompletos',
+    text: message
+  });
+};
 
-      case 'Escape':
-        closeSuggestions()
-        break
-    }
+const saveTop = async () => {
+  if (saving.value) {
+    return;
   }
 
-  const closeSuggestions = () => {
-    activeSuggestionIndex.value = -1
-    activeAutocompleteId.value = null
+  clearValidation();
+
+  const validationMessage = validatePlayers();
+
+  if (validationMessage) {
+    await showValidationError(validationMessage);
+    return;
   }
 
-  const handleClickOutside = (event) => {
-    if (!event.target.closest('.autocomplete')) {
-      closeSuggestions()
-    }
+  saving.value = true;
+
+  try {
+    const payload = {
+      tournamentId: tournamentId.value,
+      formatoTorneo: formatoTorneo.value,
+      players: createPayloadPlayers()
+    };
+
+    await axios.post(
+      buildApiUrl('tournament-top-players/bulk'),
+      payload
+    );
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Top guardado',
+      showConfirmButton: false,
+      timer: 1500,
+      timerProgressBar: true
+    });
+
+    await router.push(
+      `/tournament/goToTops/${tournamentId.value}`
+    );
+  } catch (error) {
+    console.error('Error guardando top:', error);
+
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text:
+        error?.response?.data?.message ||
+        'No se pudo guardar el top'
+    });
+  } finally {
+    saving.value = false;
+  }
+};
+
+const detectGlobalTheme = () => {
+  if (typeof document === 'undefined') {
+    return;
   }
 
-  onMounted(() => {
-    document.addEventListener('click', handleClickOutside)
-  })
+  const root = document.documentElement;
+  const body = document.body;
+  const classNames = [
+    root?.className || '',
+    body?.className || ''
+  ].join(' ');
 
-  onBeforeUnmount(() => {
-    document.removeEventListener('click', handleClickOutside)
-  })
+  const dataTheme =
+    root?.dataset?.theme ||
+    body?.dataset?.theme ||
+    root?.dataset?.bsTheme ||
+    body?.dataset?.bsTheme ||
+    '';
 
+  detectedDarkTheme.value =
+    /(^|\s)(dark|dark-mode|theme-dark|is-dark)(\s|$)/i.test(
+      classNames
+    ) ||
+    String(dataTheme).toLowerCase() === 'dark';
+};
 
-
-
-  // ===============================
-  // Lifecycle
-  // ===============================
-  onMounted(async () => {
-    loading.value = true
-    try {
-      await Promise.all([
-        loadPokemons(),
-        loadDataTorneo(),
-      ])
-    } finally {
-      loading.value = false
+watch(
+  tournamentId,
+  (newId, previousId) => {
+    if (!newId) {
+      loadingError.value = 'El identificador del torneo no es válido.';
+      loading.value = false;
+      return;
     }
+
+    if (newId !== previousId) {
+      initializeView();
+    }
+  }
+);
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+  detectGlobalTheme();
+
+  themeObserver = new MutationObserver(detectGlobalTheme);
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'data-theme', 'data-bs-theme']
   });
 
+  if (document.body) {
+    themeObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class', 'data-theme', 'data-bs-theme']
+    });
+  }
 
+  initializeView();
+});
+
+onBeforeUnmount(() => {
+  requestController?.abort();
+  themeObserver?.disconnect();
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
-
 <style scoped>
-/* ============================
-   BASE
-   ============================ */
+.tournament-page {
+  --electric-blue: #0066ff;
+  --electric-blue-strong: #004de6;
+  --electric-blue-soft: #e9f2ff;
+  --electric-cyan: #00a6ff;
+  --page-bg: #f4f8ff;
+  --surface: #ffffff;
+  --surface-secondary: #f7f9fc;
+  --surface-hover: #eef5ff;
+  --text-primary: #101828;
+  --text-secondary: #667085;
+  --border-color: #dce6f3;
+  --shadow-soft: 0 14px 38px rgba(0, 65, 170, 0.09);
+  --shadow-card: 0 8px 24px rgba(16, 24, 40, 0.08);
+  --focus-ring: 0 0 0 4px rgba(0, 102, 255, 0.18);
 
-.container {
+  min-height: 100%;
+  padding: 30px 16px 44px;
+  color: var(--text-primary);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(0, 166, 255, 0.15),
+      transparent 32rem
+    ),
+    linear-gradient(180deg, #f9fbff 0%, var(--page-bg) 100%);
+}
+
+.tournament-page.theme-dark {
+  --electric-blue: #3b82ff;
+  --electric-blue-strong: #1f6fff;
+  --electric-blue-soft: rgba(59, 130, 255, 0.15);
+  --page-bg: #070d1a;
+  --surface: #101827;
+  --surface-secondary: #151f31;
+  --surface-hover: #172a46;
+  --text-primary: #f8fafc;
+  --text-secondary: #aab7ca;
+  --border-color: #253553;
+  --shadow-soft: 0 18px 46px rgba(0, 0, 0, 0.32);
+  --shadow-card: 0 10px 28px rgba(0, 0, 0, 0.24);
+  --focus-ring: 0 0 0 4px rgba(59, 130, 255, 0.28);
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(0, 102, 255, 0.2),
+      transparent 34rem
+    ),
+    linear-gradient(180deg, #0a1221 0%, var(--page-bg) 100%);
+}
+
+.tournament-page,
+.tournament-page * {
+  box-sizing: border-box;
+}
+
+.tournament-shell {
+  width: min(100%, 1320px);
+  margin: 0 auto;
+}
+
+.hero-card,
+.content-card {
+  border: 1px solid var(--border-color);
+  background: var(--surface);
+}
+
+.hero-card {
+  position: relative;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(24px, 4vw, 44px);
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: var(--shadow-soft);
+}
+
+.hero-card::after {
+  position: absolute;
+  right: -70px;
+  bottom: -100px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 166, 255, 0.25) 0%,
+    rgba(0, 102, 255, 0.05) 48%,
+    transparent 70%
+  );
+  content: '';
+  pointer-events: none;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+}
+
+.hero-eyebrow,
+.section-kicker {
+  display: inline-block;
+  color: var(--electric-blue);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.hero-title {
+  margin: 8px 0 12px;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 4.8vw, 3.6rem);
+  font-weight: 850;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+.hero-description {
+  max-width: 720px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: clamp(0.98rem, 1.7vw, 1.12rem);
+  line-height: 1.7;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.hero-chip,
+.section-badge,
+.completion-badge,
+.pokemon-count {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(0, 102, 255, 0.22);
+  border-radius: 999px;
+  color: var(--electric-blue);
+  background: var(--electric-blue-soft);
+  font-weight: 800;
+}
+
+.hero-chip {
+  min-height: 30px;
+  padding: 5px 11px;
+  font-size: 0.78rem;
+}
+
+.hero-counter {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  flex: 0 0 170px;
+  min-height: 132px;
+  place-items: center;
+  align-content: center;
   padding: 20px;
-}
-
-.card {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 24px;
-  color: #2c3e50;
-}
-
-.dark-mode {
-  background: #121212;
-}
-
-.dark-card {
-  background: #1e1e1e;
-  color: #ecf0f1;
-}
-
-.title {
+  border: 1px solid rgba(0, 102, 255, 0.22);
+  border-radius: 22px;
+  color: var(--electric-blue);
+  background: linear-gradient(
+    145deg,
+    var(--electric-blue-soft),
+    rgba(0, 166, 255, 0.08)
+  );
   text-align: center;
-  margin-bottom: 24px;
 }
 
-/* ============================
-   PLAYER CARD
-   ============================ */
+.hero-counter strong {
+  font-size: 2.55rem;
+  line-height: 1;
+}
+
+.hero-counter span {
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.content-card {
+  min-width: 0;
+  margin-top: 22px;
+  padding: clamp(20px, 3vw, 32px);
+  border-radius: 22px;
+  box-shadow: var(--shadow-card);
+}
+
+.section-heading {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.section-heading h2 {
+  margin: 5px 0 5px;
+  color: var(--text-primary);
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 800;
+}
+
+.section-heading p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.section-badge {
+  min-height: 30px;
+  flex: 0 0 auto;
+  padding: 5px 11px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.form-message {
+  margin: 0 0 18px;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.error-message {
+  border: 1px solid rgba(220, 53, 69, 0.42);
+  color: #b42318;
+  background: rgba(220, 53, 69, 0.08);
+}
+
+.theme-dark .error-message {
+  color: #ff9b9b;
+}
+
+.players-list {
+  display: grid;
+  gap: 18px;
+}
 
 .player-card {
   position: relative;
-  z-index: 1;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 16px;
+  min-width: 0;
+  padding: clamp(18px, 2.7vw, 28px);
+  overflow: visible;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background: var(--surface-secondary);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.player-card::before {
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 0;
+  width: 4px;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(
+    180deg,
+    var(--electric-cyan),
+    var(--electric-blue)
+  );
+  content: '';
+  box-shadow: 0 0 16px rgba(0, 102, 255, 0.28);
+}
+
+.player-card:hover {
+  border-color: rgba(0, 102, 255, 0.32);
+  box-shadow: 0 12px 28px rgba(0, 65, 170, 0.09);
+}
+
+.player-card-complete {
+  border-color: rgba(0, 102, 255, 0.38);
+}
+
+.player-header {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.dark-card .player-card {
-  border-color: #333;
-}
-
-.player-title {
-  margin-bottom: 12px;
-}
-
-/* ============================
-   INPUTS / ROW
-   ============================ */
-
-.row {
+.player-heading {
   display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
+  min-width: 0;
+  gap: 13px;
+  align-items: center;
 }
 
-.input {
+.position-marker {
+  display: grid;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 14px;
+  color: #ffffff;
+  background: linear-gradient(
+    135deg,
+    var(--electric-blue),
+    var(--electric-cyan)
+  );
+  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.24);
+  font-size: 1.12rem;
+  font-weight: 900;
+}
+
+.player-kicker {
+  color: var(--electric-blue);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.player-heading h3 {
+  margin: 3px 0 0;
+  color: var(--text-primary);
+  font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+  overflow-wrap: anywhere;
+}
+
+.player-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.completion-badge {
+  min-height: 29px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+}
+
+.completion-badge.complete {
+  border-color: rgba(0, 102, 255, 0.44);
+  color: #ffffff;
+  background: var(--electric-blue);
+}
+
+.player-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.standing-selector {
+  max-width: 720px;
+  margin-bottom: 20px;
+}
+
+.field-group {
+  min-width: 0;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.form-control {
+  display: block;
   width: 100%;
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  outline: none;
+  color: var(--text-primary);
+  background: var(--surface);
+  font: inherit;
+  line-height: 1.3;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 }
 
-.dark-card .input {
-  background: #2c2c2c;
-  color: #ecf0f1;
-  border-color: #444;
+.form-control::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.72;
 }
 
-.select {
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+.form-control:focus {
+  border-color: var(--electric-blue);
+  box-shadow: var(--focus-ring);
 }
 
-.dark-card .select {
-  background: #2c2c2c;
-  color: #ecf0f1;
-  border-color: #444;
+select.form-control {
+  cursor: pointer;
 }
 
-/* ============================
-   POKÉMON GRID
-   ============================ */
+select.form-control option {
+  color: var(--text-primary);
+  background: var(--surface);
+}
+
+.pokemon-section {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.pokemon-section legend {
+  display: flex;
+  width: auto;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 0 8px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.pokemon-count {
+  min-height: 25px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+}
 
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  width: 100%;
-  overflow: visible; /* 🔑 no cortar dropdown */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
 }
-
-/* ============================
-   AUTOCOMPLETE
-   ============================ */
 
 .autocomplete {
   position: relative;
-  width: 100%;
-  min-width: 0;
-  z-index: 50;
 }
 
 .suggestions {
   position: absolute;
-  top: 100%;
+  z-index: 80;
+  top: calc(100% + 6px);
+  right: 0;
   left: 0;
-  width: 100%;
-  max-height: 180px;
+  max-height: 280px;
+  margin: 0;
+  padding: 6px;
   overflow-y: auto;
-  background: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-top: 4px;
-  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 13px;
+  background: var(--surface);
+  box-shadow: 0 18px 38px rgba(16, 24, 40, 0.18);
   list-style: none;
-  z-index: 100;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  pointer-events: auto;
 }
 
 .suggestion-item {
   display: flex;
+  min-height: 46px;
+  gap: 9px;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  color: var(--text-primary);
   cursor: pointer;
+  overflow-wrap: anywhere;
 }
 
-.suggestion-item:hover {
-  background: #f0f0f0;
+.suggestion-item:hover,
+.suggestion-item.active {
+  color: var(--electric-blue);
+  background: var(--surface-hover);
 }
 
 .pokemon-thumb {
-  width: 28px;
-  height: 28px;
-  image-rendering: pixelated;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  object-fit: contain;
 }
 
-/* 🌙 Dark mode autocomplete */
-.dark-card .suggestions {
-  background: #2c2c2c;
-  border-color: #444;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-}
-
-.dark-card .suggestion-item {
-  color: #ecf0f1;
-}
-
-.dark-card .suggestion-item:hover {
-  background: #3a3a3a;
-}
-
-/* ============================
-   ACTIONS / BUTTONS
-   ============================ */
-
-.actions {
+.secondary-actions {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
   margin-top: 20px;
 }
 
-.btn {
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
+.action-hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.save-actions {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-color);
+}
+
+.save-summary {
+  display: grid;
+  gap: 4px;
+}
+
+.save-summary strong {
+  color: var(--text-primary);
+}
+
+.save-summary span {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+}
+
+.btn-electric,
+.btn-electric-soft,
+.button-remove {
+  display: inline-flex;
+  min-height: 42px;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  font: inherit;
+  font-weight: 800;
+  line-height: 1.15;
   cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
 }
 
-.btn-add {
-  background: #3498db;
-  color: white;
+.btn-electric {
+  padding: 11px 18px;
+  border: 1px solid var(--electric-blue);
+  color: #ffffff;
+  background: linear-gradient(
+    135deg,
+    var(--electric-blue),
+    var(--electric-cyan)
+  );
+  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.24);
 }
 
-.btn-save {
-  background: #2ecc71;
-  color: white;
+.btn-electric-soft {
+  padding: 10px 15px;
+  border: 1px solid rgba(0, 102, 255, 0.28);
+  color: var(--electric-blue);
+  background: var(--electric-blue-soft);
 }
 
-.btn-save:disabled {
-  background-color: #999;
-  pointer-events: none;
+.button-remove {
+  min-width: 38px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid rgba(220, 53, 69, 0.25);
+  color: #ffffff;
+  background: #c0392b;
 }
 
-/* ============================
-   SPINNER
-   ============================ */
+.btn-electric:hover:not(:disabled),
+.btn-electric-soft:hover:not(:disabled),
+.button-remove:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
 
-.spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #fff;
-  border-top: 2px solid transparent;
-  border-radius: 50%;
+.btn-electric:hover:not(:disabled) {
+  filter: brightness(1.04);
+  box-shadow: 0 11px 24px rgba(0, 102, 255, 0.3);
+}
+
+.btn-electric-soft:hover:not(:disabled) {
+  border-color: var(--electric-blue);
+  color: #ffffff;
+  background: var(--electric-blue);
+}
+
+.button-remove:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.btn-electric:focus-visible,
+.btn-electric-soft:focus-visible,
+.button-remove:focus-visible,
+.form-control:focus-visible {
+  outline: 3px solid rgba(0, 102, 255, 0.24);
+  outline-offset: 3px;
+}
+
+.btn-electric:disabled,
+.btn-electric-soft:disabled,
+.button-remove:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.button-save {
+  min-width: 170px;
+}
+
+.button-spinner,
+.loading-spinner {
   display: inline-block;
-  margin-right: 8px;
+  border: 3px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+.button-spinner {
+  width: 18px;
+  height: 18px;
+}
+
+.state-panel {
+  display: grid;
+  min-height: 390px;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 24px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.state-panel h2,
+.state-panel p {
+  margin: 0;
+}
+
+.state-panel h2 {
+  color: var(--text-primary);
+}
+
+.state-panel .btn-electric {
+  margin-top: 8px;
+}
+
+.state-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--electric-blue);
+  background: var(--electric-blue-soft);
+  font-size: 1.65rem;
+  font-weight: 900;
+}
+
+.loading-image {
+  display: block;
+  /*max-width: min(100%, 220px);*/
+  height: auto;
+  object-fit: contain;
+}
+
+.loading-spinner {
+  width: 64px;
+  height: 64px;
+  color: var(--electric-blue);
+  filter: drop-shadow(0 0 10px rgba(0, 102, 255, 0.28));
 }
 
 @keyframes spin {
@@ -622,157 +1739,128 @@
   }
 }
 
-/* Eleva SOLO el autocomplete activo */
-.autocomplete:focus-within {
-  z-index: 300;
+@media (max-width: 899.98px) {
+  .hero-card {
+    align-items: stretch;
+  }
+
+  .hero-counter {
+    flex-basis: 145px;
+  }
+
+  .pokemon-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.autocomplete:focus-within ~ .autocomplete,
-.autocomplete:focus-within ~ .row,
-.autocomplete:focus-within ~ input {
-  pointer-events: none;
-}
+@media (max-width: 679.98px) {
+  .tournament-page {
+    padding: 18px 10px 32px;
+  }
 
-.suggestions.floating {
-  position: fixed;
-  max-height: 180px;
-  overflow-y: auto;
-  background: #2c2c2c;
-  border: 1px solid #444;
-  border-radius: 8px;
-  list-style: none;
-  padding: 0;
-}
+  .hero-card {
+    display: grid;
+    gap: 20px;
+    border-radius: 20px;
+  }
 
-
-/* ==========================
-   AUTOCOMPLETE – FIX HOVER
-   ========================== */
-
-/* Estado normal */
-.suggestions li {
-  background: transparent;
-  color: inherit;
-  outline: none;
-}
-
-/* Hover */
-.suggestions li:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* Click / focus (el blanco molesto) */
-.suggestions li:active,
-.suggestions li:focus,
-.suggestions li:focus-visible {
-  background: rgba(255, 255, 255, 0.12);
-  outline: none;
-}
-
-/* 🌙 Dark mode */
-.dark-card .suggestions li:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.dark-card .suggestions li:active,
-.dark-card .suggestions li:focus,
-.dark-card .suggestions li:focus-visible {
-  background: rgba(255, 255, 255, 0.18);
-}
-
-/* Evita highlight del navegador (Chrome / Edge) */
-.suggestions li {
-  -webkit-tap-highlight-color: transparent;
-}
-
-.suggestions li.selected {
-  background: rgba(52, 152, 219, 0.25);
-}
-
-
-  /* ==========================
-    AUTOCOMPLETE UX PRO
-    ========================== */
-
-  .suggestion-item {
+  .hero-counter {
     display: flex;
-    align-items: center;
+    min-height: auto;
     gap: 8px;
-    padding: 8px 10px;
-    cursor: pointer;
-    background: transparent;
+    align-items: baseline;
+    justify-content: center;
   }
 
-  .suggestion-item:hover {
-    background: rgba(255, 255, 255, 0.08);
+  .hero-counter strong {
+    font-size: 2rem;
   }
 
-  .suggestion-item.selected {
-    background: rgba(52, 152, 219, 0.35);
+  .section-heading,
+  .player-header,
+  .save-actions {
+    display: grid;
   }
 
-  .dark-card .suggestion-item:hover {
-    background: rgba(255, 255, 255, 0.12);
+  .section-badge {
+    width: fit-content;
   }
 
-  .dark-card .suggestion-item.selected {
-    background: rgba(52, 152, 219, 0.45);
+  .player-header-actions {
+    justify-content: flex-start;
   }
 
-  /* elimina highlight nativo */
-  .suggestions li {
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
+  .player-fields,
+  .pokemon-grid {
+    grid-template-columns: 1fr;
   }
 
-  /* ============================
-    📱 RESPONSIVE (MOBILE)
-    ============================ */
-
-  @media (max-width: 768px) {
-    .row {
-      flex-direction: column;
-    }
-
-    .player-card {
-      padding: 14px;
-    }
-
-    .player-title {
-      text-align: center;
-      font-size: 1rem;
-    }
-
-    .pokemon-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .input {
-      font-size: 0.95rem;
-      padding: 10px;
-    }
-
-    .actions {
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .btn {
-      width: 100%;
-      font-size: 0.95rem;
-    }
-
-    .dark-card .player-card {
-      background: #1f1f1f;
-    }
-
-    .dark-card .input {
-      background: #262626;
-    }
-
-    .dark-card .suggestions {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-    }
+  .save-actions {
+    align-items: stretch;
   }
+
+  .button-save {
+    width: 100%;
+  }
+}
+
+@media (max-width: 439.98px) {
+  .content-card {
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  .player-card {
+    padding: 16px 13px;
+    border-radius: 15px;
+  }
+
+  .player-heading {
+    align-items: flex-start;
+  }
+
+  .position-marker {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .pokemon-section {
+    padding: 12px;
+  }
+
+  .secondary-actions {
+    align-items: stretch;
+  }
+
+  .secondary-actions .btn-electric-soft {
+    width: 100%;
+  }
+
+  .action-hint {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-card,
+  .btn-electric,
+  .btn-electric-soft,
+  .button-remove {
+    transition: none;
+  }
+
+  .btn-electric:hover:not(:disabled),
+  .btn-electric-soft:hover:not(:disabled),
+  .button-remove:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .button-spinner,
+  .loading-spinner {
+    animation-duration: 1.4s;
+  }
+}
 </style>
-

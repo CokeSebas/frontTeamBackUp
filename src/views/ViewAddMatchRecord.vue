@@ -1,545 +1,1601 @@
 <template>
-  <div :class="['container', { 'dark-mode': mode === 'dark' }]">
-    <div :class="['card', { 'dark-card': mode === 'dark' }]">
-
-      <!-- LOADING -->
-      <div v-if="loading" class="loading">
-        <img :src="gifLoading">
-      </div>
-
-      <template v-else>
-        <h2 class="title">{{ $t('matchRecordSection.title') }}</h2>
-
-        <!-- GLOBAL INFO -->
-        <div class="row">
-          <input v-model="form.tournamentName" class="input" placeholder="Torneo" />
-        </div>
-
-        <!-- MATCHES -->
+  <main
+    class="match-record-page"
+    :class="{ 'theme-dark': isDark }"
+  >
+    <div class="view-container">
+      <section class="form-card">
         <div
-          class="player-card"
-          v-for="(m, mIndex) in form.matches"
-          :key="mIndex"
+          v-if="loading"
+          class="state-panel"
+          aria-live="polite"
+          aria-busy="true"
         >
-          <div class="player-header">
-            <h3>{{ $t('matchRecordSection.round') }} {{ mIndex + 1 }}</h3>
-            <small>vs {{ m.opponentName || '...' }}</small>
-
-            <button
-              class="btn btn-remove"
-              @click="removeMatch(mIndex)"
-              v-if="form.matches.length > 1"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div class="row">
-            <input v-model="m.opponentName" class="input" placeholder="Oponente" />
-
-            <select v-model="m.result" class="input">
-              <option value="" disabled>{{ $t('matchRecordSection.result') }}</option>
-              <option value="win">{{ $t('matchRecordSection.victory') }}</option>
-              <option value="loss">{{ $t('matchRecordSection.defeat') }}</option>
-              <option value="tie">{{ $t('matchRecordSection.draw') }}</option>
-            </select>
-          </div>
-
-          <!-- POKEMON GRID -->
-          <div class="pokemon-grid">
-            <div
-              v-for="(poke, i) in m.pokemons"
-              :key="i"
-              class="autocomplete"
-            >
-              <input
-                v-model="m.pokemons[i].name"
-                class="input"
-                placeholder="Pokémon"
-                @input="onPokemonInput(mIndex, i)"
-                @focus="activeAutocompleteId = `${mIndex}-${i}`; activeSuggestionIndex = -1"
-                @keydown="onKeyDown(
-                  $event,
-                  suggestions[mIndex][i],
-                  (pokemon) => selectPokemon(mIndex, i, pokemon)
-                )"
-              />
-
-              <!-- Suggestions -->
-              <ul
-                v-if="
-                  suggestions[mIndex][i]?.length &&
-                  activeAutocompleteId === `${mIndex}-${i}`
-                "
-                class="suggestions"
-              >
-                <li
-                  v-for="(pokemon, idx) in suggestions[mIndex][i]"
-                  :key="pokemon.id"
-                  class="suggestion-item"
-                  :class="{ active: idx === activeSuggestionIndex }"
-                  @mousedown.prevent="selectPokemon(mIndex, i, pokemon)"
-                >
-                  <img :src="pokemon.imageUrl" class="pokemon-thumb" />
-                  {{ pokemon.name }}
-                </li>
-              </ul>
-            </div>
-          </div>
-          
+          <img
+            v-if="gifLoading"
+            :src="gifLoading"
+            class="loading-image"
+            alt="Cargando Pokémon"
+          >
+          <span
+            v-else
+            class="loading-spinner"
+            aria-hidden="true"
+          />
         </div>
 
-        <!-- ADD MATCH -->
-        <button class="btn btn-add" @click="addMatch">
-          + {{ $t('matchRecordSection.addOpponent') }}
-        </button>
-
-        <!-- SAVE -->
-        <div class="actions">
-          <button class="btn btn-save" :disabled="saving" @click="saveAll">
-            <span v-if="saving" class="spinner"></span>
-            {{ saving ? 'Guardando...' : t('matchRecordSection.saveRecord') }}
+        <div
+          v-else-if="loadingError"
+          class="state-panel error-state"
+          role="alert"
+        >
+          <h2>{{ $t('responseApisSeccion.oops') }}</h2>
+          <p>{{ loadingError }}</p>
+          <button
+            type="button"
+            class="button button-primary"
+            @click="initializeView"
+          >
+            Reintentar
           </button>
         </div>
 
-      </template>
+        <form
+          v-else
+          novalidate
+          @submit.prevent="saveAll"
+        >
+          <header class="page-header">
+            <div class="header-kicker">
+              <span class="header-kicker-dot" aria-hidden="true" />
+              {{ $t('matchRecordSection.subTittle1') }}
+            </div>
+
+            <h1>{{ $t('matchRecordSection.title') }}</h1>
+
+            <p class="page-description">
+              {{ $t('matchRecordSection.subTittle2') }}
+            </p>
+
+            <div class="header-stats" aria-label="Resumen del registro">
+              <span class="stat-chip">
+                <strong>{{ form.matches.length }}</strong>
+                {{
+                  form.matches.length === 1
+                    ? 'ronda'
+                    : 'rondas'
+                }}
+              </span>
+
+              <span class="stat-chip">
+                <strong>{{ completedMatches }}</strong>
+                {{ $t('matchRecordSection.complete') }}
+              </span>
+            </div>
+          </header>
+
+          <section class="tournament-panel">
+            <div class="field-group tournament-field">
+              <label for="tournament-name">
+                {{ $t('matchRecordSection.nameTournament') }}
+              </label>
+              <input
+                id="tournament-name"
+                v-model.trim="form.tournamentName"
+                class="form-control"
+                type="text"
+                autocomplete="organization"
+                placeholder="Ej: Liga semanal, Regional..."
+                maxlength="150"
+                @input="validationError = ''"
+              >
+              <small class="field-help">
+                {{ $t('matchRecordSection.nameTournamentTip') }}
+              </small>
+            </div>
+          </section>
+
+          <p
+            v-if="validationError"
+            class="validation-message"
+            role="alert"
+            aria-live="assertive"
+          >
+            {{ validationError }}
+          </p>
+
+          <div class="matches-list">
+            <article
+              v-for="(match, matchIndex) in form.matches"
+              :key="match.clientId"
+              class="match-card"
+            >
+              <header class="match-header">
+                <div class="match-heading">
+                  <span class="round-badge">
+                    {{ $t('matchRecordSection.round') }}
+                    {{ matchIndex + 1 }}
+                  </span>
+
+                  <h2>
+                    {{
+                      match.opponentName
+                        ? `vs ${match.opponentName}`
+                        : '...'
+                    }}
+                  </h2>
+                </div>
+
+                <button
+                  v-if="form.matches.length > 1"
+                  type="button"
+                  class="button button-remove"
+                  :aria-label="`Eliminar ronda ${matchIndex + 1}`"
+                  title="Eliminar ronda"
+                  @click="removeMatch(matchIndex)"
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+              </header>
+
+              <div class="match-fields">
+                <div class="field-group">
+                  <label :for="`opponent-${match.clientId}`">
+                    {{ $t('matchRecordSection.oponente') }}
+                  </label>
+                  <input
+                    :id="`opponent-${match.clientId}`"
+                    v-model.trim="match.opponentName"
+                    class="form-control"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Oponente"
+                    maxlength="120"
+                    @input="validationError = ''"
+                  >
+                </div>
+
+                <div class="field-group">
+                  <label :for="`result-${match.clientId}`">
+                    {{ $t('matchRecordSection.result') }}
+                  </label>
+                  <select
+                    :id="`result-${match.clientId}`"
+                    v-model="match.result"
+                    class="form-control"
+                    :class="
+                      match.result
+                        ? `result-${match.result}`
+                        : ''
+                    "
+                    @change="validationError = ''"
+                  >
+                    <option value="" disabled>
+                      {{ $t('matchRecordSection.result') }}
+                    </option>
+                    <option value="win">
+                      {{ $t('matchRecordSection.victory') }}
+                    </option>
+                    <option value="loss">
+                      {{ $t('matchRecordSection.defeat') }}
+                    </option>
+                    <option value="tie">
+                      {{ $t('matchRecordSection.draw') }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <fieldset class="pokemon-section">
+                <legend>
+                  <span>{{  $t('matchRecordSection.teamPokemon') }}</span>
+                  <span class="pokemon-progress">
+                    {{ getSelectedPokemonCount(match) }}
+                    / {{ POKEMON_SLOTS }}
+                  </span>
+                </legend>
+
+                <div class="pokemon-grid">
+                  <div
+                    v-for="(_, pokemonIndex) in match.pokemons"
+                    :key="`${match.clientId}-${pokemonIndex}`"
+                    class="field-group pokemon-field"
+                  >
+                    <label
+                      :for="getPokemonInputId(match, pokemonIndex)"
+                    >
+                      Pokémon {{ pokemonIndex + 1 }}
+                    </label>
+
+                    <div class="autocomplete">
+                      <input
+                        :id="getPokemonInputId(match, pokemonIndex)"
+                        v-model="match.pokemons[pokemonIndex].name"
+                        class="form-control"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Pokémon"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        :aria-expanded="
+                          isAutocompleteOpen(match, pokemonIndex)
+                        "
+                        :aria-controls="
+                          getSuggestionListId(match, pokemonIndex)
+                        "
+                        @input="
+                          onPokemonInput(matchIndex, pokemonIndex)
+                        "
+                        @focus="
+                          openAutocomplete(matchIndex, pokemonIndex)
+                        "
+                        @keydown="
+                          onPokemonKeyDown(
+                            $event,
+                            matchIndex,
+                            pokemonIndex
+                          )
+                        "
+                      >
+
+                      <ul
+                        v-if="
+                          getSuggestions(matchIndex, pokemonIndex).length &&
+                          isAutocompleteOpen(match, pokemonIndex)
+                        "
+                        :id="getSuggestionListId(match, pokemonIndex)"
+                        class="suggestions"
+                        role="listbox"
+                      >
+                        <li
+                          v-for="(pokemon, suggestionIndex) in
+                            getSuggestions(matchIndex, pokemonIndex)"
+                          :key="pokemon.id"
+                          class="suggestion-item"
+                          :class="{
+                            active:
+                              suggestionIndex === activeSuggestionIndex
+                          }"
+                          role="option"
+                          :aria-selected="
+                            suggestionIndex === activeSuggestionIndex
+                          "
+                          @mousedown.prevent="
+                            selectPokemon(
+                              matchIndex,
+                              pokemonIndex,
+                              pokemon
+                            )
+                          "
+                        >
+                          <img
+                            v-if="pokemon.imageUrl"
+                            :src="pokemon.imageUrl"
+                            class="pokemon-thumb"
+                            :alt="`Imagen de ${pokemon.name}`"
+                            width="32"
+                            height="32"
+                            loading="lazy"
+                          >
+                          <span>{{ pokemon.name }}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </article>
+          </div>
+
+          <div class="secondary-actions">
+            <button
+              type="button"
+              class="button button-primary"
+              @click="addMatch"
+            >
+              <span class="button-icon" aria-hidden="true">+</span>
+              {{ $t('matchRecordSection.addOpponent') }}
+            </button>
+          </div>
+
+          <footer class="save-actions">
+            <button
+              type="submit"
+              class="button button-save"
+              :disabled="saving"
+              :aria-busy="saving"
+            >
+              <span
+                v-if="saving"
+                class="button-spinner"
+                aria-hidden="true"
+              />
+              {{
+                saving
+                  ? 'Guardando...'
+                  : t('matchRecordSection.saveRecord')
+              }}
+            </button>
+          </footer>
+        </form>
+      </section>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup>
-  import { ref, inject, onMounted, onBeforeUnmount } from 'vue'
-  import axios from 'axios'
-  import Swal from 'sweetalert2'
-  import { useRouter } from 'vue-router';
-  import { jwtDecode } from 'jwt-decode';
-  // Importar el store de autenticación de Pinia
-  import { useAuthStore } from '@/stores/authStore';
-  import { useI18n } from 'vue-i18n'; // Importa useI18n
+import {
+  computed,
+  inject,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  unref
+} from 'vue';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
+import { jwtDecode } from 'jwt-decode';
+import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/authStore';
 
-  const mode = inject('mode')
-  const apiUrl = inject('apiUrl')
-  const gifLoading = inject('gifLoading')
+const POKEMON_SLOTS = 6;
+const MAX_SUGGESTIONS = 8;
+const VALID_RESULTS = new Set(['win', 'loss', 'tie']);
 
-  const router = useRouter();
-  const loading = ref(true)
-  const saving = ref(false)
+let clientIdSequence = 0;
 
-  const pokemonList = ref([])
+const mode = inject('mode', ref('light'));
+const apiUrl = inject('apiUrl', '');
+const gifLoading = inject('gifLoading', '');
 
-  const { t } = useI18n(); // Usa `useI18n` para obtener `t`
+const router = useRouter();
+const authStore = useAuthStore();
+const { t } = useI18n();
 
-  const authStore = useAuthStore(); // Instancia del store
+const loading = ref(true);
+const saving = ref(false);
+const loadingError = ref('');
+const validationError = ref('');
 
-  const activeSuggestionIndex = ref(-1)
-  const activeAutocompleteId = ref(null)
+const pokemonList = ref([]);
+const activeSuggestionIndex = ref(-1);
+const activeAutocompleteId = ref(null);
 
-  const emptyPokemon = () => ({
-    name: '',
-    id: null
-  })
+const isDark = computed(() => unref(mode) === 'dark');
 
-  const form = ref({
-    tournamentName: '',
-    matches: [
-      {
-        opponentName: '',
-        result: '',
-        pokemons: Array.from({ length: 6 }, emptyPokemon)
-      }
-    ]
-  })
+const createClientId = () => {
+  clientIdSequence += 1;
+  return `match-${Date.now()}-${clientIdSequence}`;
+};
 
+const createEmptyPokemon = () => ({
+  name: '',
+  id: null
+});
 
-  const suggestions = ref([
-    [[], [], [], [], [], []]
-  ])
+const createSuggestionsRow = () =>
+  Array.from({ length: POKEMON_SLOTS }, () => []);
 
-  //const activeAutocomplete = ref(null)
+const createMatch = () => ({
+  clientId: createClientId(),
+  opponentName: '',
+  result: '',
+  pokemons: Array.from(
+    { length: POKEMON_SLOTS },
+    createEmptyPokemon
+  )
+});
 
-  // ===============================
-  // LOAD POKEMONS
-  // ===============================
-  const loadPokemons = async () => {
-    const res = await axios.get(`${apiUrl}pokemon-seeder`)
-    pokemonList.value = res.data
+const form = ref({
+  tournamentName: '',
+  matches: [createMatch()]
+});
+
+const suggestions = ref([createSuggestionsRow()]);
+
+const getSelectedPokemonCount = (match) =>
+  match.pokemons.filter(
+    (pokemon) =>
+      pokemon.id != null &&
+      pokemon.name.trim()
+  ).length;
+
+const completedMatches = computed(() =>
+  form.value.matches.filter(
+    (match) =>
+      match.opponentName.trim() &&
+      VALID_RESULTS.has(match.result) &&
+      getSelectedPokemonCount(match) === POKEMON_SLOTS
+  ).length
+);
+
+const buildApiUrl = (path) => {
+  const baseUrl = String(unref(apiUrl) || '').replace(/\/+$/, '');
+  const cleanPath = String(path || '').replace(/^\/+/, '');
+
+  return `${baseUrl}/${cleanPath}`;
+};
+
+const getPokemonInputId = (match, pokemonIndex) =>
+  `pokemon-${match.clientId}-${pokemonIndex}`;
+
+const getSuggestionListId = (match, pokemonIndex) =>
+  `pokemon-suggestions-${match.clientId}-${pokemonIndex}`;
+
+const getAutocompleteId = (match, pokemonIndex) =>
+  `${match.clientId}-${pokemonIndex}`;
+
+const isAutocompleteOpen = (match, pokemonIndex) =>
+  activeAutocompleteId.value ===
+  getAutocompleteId(match, pokemonIndex);
+
+const getSuggestions = (matchIndex, pokemonIndex) =>
+  suggestions.value[matchIndex]?.[pokemonIndex] || [];
+
+const ensureSuggestionSlot = (matchIndex, pokemonIndex) => {
+  if (!suggestions.value[matchIndex]) {
+    suggestions.value[matchIndex] = createSuggestionsRow();
   }
 
-
-  // ===============================
-  // ADD MATCH
-  // ===============================
-  const addMatch = () => {
-    form.value.matches.push({
-      opponentName: '',
-      result: '',
-      pokemons: Array.from({ length: 6 }, emptyPokemon)
-    })
-
-    suggestions.value.push([[], [], [], [], [], []])
+  if (!Array.isArray(suggestions.value[matchIndex][pokemonIndex])) {
+    suggestions.value[matchIndex][pokemonIndex] = [];
   }
+};
 
+const normalizePokemonSlot = (pokemon) => ({
+  name: String(pokemon?.name || ''),
+  id: pokemon?.id ?? null
+});
 
-  // ===============================
-  // AUTOCOMPLETE
-  // ===============================
-  const onPokemonInput = (mIndex, i) => {
-    const query = form.value.matches[mIndex].pokemons[i].name
+const normalizeMatch = (match) => {
+  const sourcePokemons = Array.isArray(match?.pokemons)
+    ? match.pokemons
+    : [];
 
-    if (!query || query.length < 2) {
-      suggestions.value[mIndex][i] = []
-      return
-    }
+  const normalizedPokemons = Array.from(
+    { length: POKEMON_SLOTS },
+    (_, index) => normalizePokemonSlot(sourcePokemons[index])
+  );
 
-    suggestions.value[mIndex][i] = pokemonList.value
-      .filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
-      .slice(0, 8)
-  }
+  return {
+    clientId: createClientId(),
+    opponentName: String(match?.opponentName || ''),
+    result: VALID_RESULTS.has(match?.result)
+      ? match.result
+      : '',
+    pokemons: normalizedPokemons
+  };
+};
 
-  const selectPokemon = (mIndex, i, pokemon) => {
-    form.value.matches[mIndex].pokemons[i] = {
-      name: pokemon.name,
-      id: pokemon.id
-    }
+const restorePendingForm = () => {
+  try {
+    const savedForm = localStorage.getItem('pendingMatchForm');
 
-    suggestions.value[mIndex][i] = []
-  }
-
-  const onKeyDown = (event, suggestionsList, onSelect) => {
-    if (!suggestionsList?.length) return
-
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault()
-        activeSuggestionIndex.value =
-          (activeSuggestionIndex.value + 1) % suggestionsList.length
-        break
-
-      case 'ArrowUp':
-        event.preventDefault()
-        activeSuggestionIndex.value =
-          (activeSuggestionIndex.value - 1 + suggestionsList.length) % suggestionsList.length
-        break
-
-      case 'Enter':
-        event.preventDefault()
-        if (activeSuggestionIndex.value >= 0) {
-          onSelect(suggestionsList[activeSuggestionIndex.value])
-        }
-        break
-
-      case 'Escape':
-        closeSuggestions()
-        break
-    }
-  }
-
-  const closeSuggestions = () => {
-    activeSuggestionIndex.value = -1
-    activeAutocompleteId.value = null
-  }
-
-  const handleClickOutside = (event) => {
-    if (!event.target.closest('.autocomplete')) {
-      closeSuggestions()
-    }
-  }
-
-  onMounted(() => {
-    document.addEventListener('click', handleClickOutside)
-  })
-
-  onBeforeUnmount(() => {
-    document.removeEventListener('click', handleClickOutside)
-  })
-
-
-  // ===============================
-  // SAVE
-  // ===============================
-  const saveAll = async () => {
-    if (saving.value) return
-
-    if (!form.value.tournamentName)
-      return Swal.fire('Error', 'Falta torneo', 'error')
-
-    for (const m of form.value.matches) {
-      if (!m.opponentName)
-        return Swal.fire('Error', 'Falta oponente', 'error')
-
-      if (!m.result)
-        return Swal.fire('Error', 'Falta resultado', 'error')
-
-      if (m.pokemons.some(p => !p.name || !p.id))
-      return Swal.fire('Error', 'Completa los 6 Pokémon', 'error')
-    }
-
-    saving.value = true;
-
-    if (!authStore.isAuthenticated) {
-      // 🔥 guardar TODO el form
-      localStorage.setItem('pendingMatchForm', JSON.stringify(form.value));
-      const currentUrl = router.currentRoute.value.fullPath;
-      router.push({
-        path: '/login',
-        query: { redirect: currentUrl }
-      });
-
+    if (!savedForm) {
       return;
     }
 
-    const token = authStore.token;
-    if (!token) {
-      throw new Error('El usuario no está autenticado');
-    }
-    
+    const parsed = JSON.parse(savedForm);
+    const matches = Array.isArray(parsed?.matches)
+      ? parsed.matches.map(normalizeMatch)
+      : [];
+
+    form.value = {
+      tournamentName: String(parsed?.tournamentName || ''),
+      matches: matches.length ? matches : [createMatch()]
+    };
+
+    suggestions.value = form.value.matches.map(
+      createSuggestionsRow
+    );
+  } catch (error) {
+    console.error('Error restaurando el formulario:', error);
+
     try {
-      
-      const decodedToken = jwtDecode(token);
-      const payload = {
-        tournamentName: form.value.tournamentName,
-        userId: decodedToken.userId,
-        matches: form.value.matches.map((m, index) => ({
-          opponentName: m.opponentName,
-          result: m.result,
-          round: index + 1,
-          pokemons: m.pokemons.map(p => ({
-            name: p.name,
-            id: p.id
-          }))
-        }))
-      }
-
-      console.log('PAYLOAD:', payload);
-
-      const response = await axios.post(apiUrl+'matches/bulk', payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log('RESPONSE:', response);
-
-      Swal.fire({
-        title: t('matchRecordSection.saveRecordSuccess'),
-        text: t('matchRecordSection.saveRecordText'),
-        icon: 'success', // Tipos: 'success', 'error', 'warning', 'info', 'question'
-      });
-
-      setTimeout(() => {
-        localStorage.removeItem('pendingMatchForm');
-        const redirectTo = '/vgc/match-record/tournament/'+decodedToken.userId // redirigir a pagina para descargar imagen o a home 
-        router.push(redirectTo);
-      }, 1500);    
-
-    } catch (e) {
-      console.error(e)
-      Swal.fire('Error', 'No se pudo guardar', 'error')
-    } finally {
-      saving.value = false
+      localStorage.removeItem('pendingMatchForm');
+    } catch (storageError) {
+      console.error(
+        'No se pudo limpiar el formulario guardado:',
+        storageError
+      );
     }
   }
+};
 
-  const removeMatch = (index) => {
-    form.value.matches.splice(index, 1)
-    suggestions.value.splice(index, 1)
+const normalizeSearchText = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[♀]/g, ' f')
+    .replace(/[♂]/g, ' m')
+    .toLocaleLowerCase()
+    .trim();
+
+const normalizePokemonList = (data) => {
+  const source = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.data)
+      ? data.data
+      : [];
+
+  return source
+    .filter(
+      (pokemon) =>
+        pokemon &&
+        pokemon.id != null &&
+        typeof pokemon.name === 'string'
+    )
+    .map((pokemon) => ({
+      ...pokemon,
+      name: pokemon.name.trim(),
+      searchName: normalizeSearchText(pokemon.name)
+    }))
+    .filter((pokemon) => pokemon.name);
+};
+
+const loadPokemons = async () => {
+  const response = await axios.get(
+    buildApiUrl('pokemon-seeder')
+  );
+
+  const normalizedList = normalizePokemonList(response?.data);
+
+  if (!normalizedList.length) {
+    throw new Error('EMPTY_POKEMON_LIST');
   }
 
+  pokemonList.value = normalizedList;
+};
 
-  // ===============================
-  // LIFECYCLE
-  // ===============================
-  onMounted(async () => {
+const initializeView = async () => {
+  loading.value = true;
+  loadingError.value = '';
+
+  try {
     await loadPokemons();
+    restorePendingForm();
+  } catch (error) {
+    console.error('Error al cargar los Pokémon:', error);
+    loadingError.value =
+      t('responseApisSeccion.loadingDataError');
+  } finally {
+    loading.value = false;
+  }
+};
 
-    // 🔥 recuperar form si existe
-    const saved = localStorage.getItem('pendingMatchForm');
+const addMatch = () => {
+  form.value.matches.push(createMatch());
+  suggestions.value.push(createSuggestionsRow());
+  validationError.value = '';
+  closeSuggestions();
+};
 
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
+const removeMatch = (matchIndex) => {
+  if (form.value.matches.length <= 1) {
+    return;
+  }
 
-        form.value = parsed;
+  form.value.matches.splice(matchIndex, 1);
+  suggestions.value.splice(matchIndex, 1);
+  validationError.value = '';
+  closeSuggestions();
+};
 
-        // 🔥 reconstruir suggestions (muy importante)
-        suggestions.value = parsed.matches.map(() => [[], [], [], [], [], []]);
+const openAutocomplete = (matchIndex, pokemonIndex) => {
+  const match = form.value.matches[matchIndex];
 
-      } catch (e) {
-        console.error('Error restaurando form', e);
-      }
+  if (!match) {
+    return;
+  }
+
+  activeAutocompleteId.value =
+    getAutocompleteId(match, pokemonIndex);
+  activeSuggestionIndex.value = -1;
+
+  onPokemonInput(matchIndex, pokemonIndex, false);
+};
+
+const onPokemonInput = (
+  matchIndex,
+  pokemonIndex,
+  clearSelectedId = true
+) => {
+  const pokemonSlot =
+    form.value.matches[matchIndex]?.pokemons?.[pokemonIndex];
+
+  if (!pokemonSlot) {
+    return;
+  }
+
+  ensureSuggestionSlot(matchIndex, pokemonIndex);
+
+  if (clearSelectedId) {
+    pokemonSlot.id = null;
+  }
+
+  validationError.value = '';
+  activeSuggestionIndex.value = -1;
+
+  const query = normalizeSearchText(pokemonSlot.name);
+
+  if (query.length < 2) {
+    suggestions.value[matchIndex][pokemonIndex] = [];
+    return;
+  }
+
+  suggestions.value[matchIndex][pokemonIndex] =
+    pokemonList.value
+      .filter((pokemon) => pokemon.searchName.includes(query))
+      .sort((firstPokemon, secondPokemon) => {
+        const firstStartsWith =
+          firstPokemon.searchName.startsWith(query);
+        const secondStartsWith =
+          secondPokemon.searchName.startsWith(query);
+
+        if (firstStartsWith !== secondStartsWith) {
+          return firstStartsWith ? -1 : 1;
+        }
+
+        return firstPokemon.name.localeCompare(
+          secondPokemon.name
+        );
+      })
+      .slice(0, MAX_SUGGESTIONS);
+};
+
+const selectPokemon = (
+  matchIndex,
+  pokemonIndex,
+  pokemon
+) => {
+  const match = form.value.matches[matchIndex];
+
+  if (!match) {
+    return;
+  }
+
+  match.pokemons[pokemonIndex] = {
+    name: pokemon.name,
+    id: pokemon.id
+  };
+
+  ensureSuggestionSlot(matchIndex, pokemonIndex);
+  suggestions.value[matchIndex][pokemonIndex] = [];
+  validationError.value = '';
+  closeSuggestions();
+};
+
+const onPokemonKeyDown = (
+  event,
+  matchIndex,
+  pokemonIndex
+) => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeSuggestions();
+    return;
+  }
+
+  if (event.key === 'Tab') {
+    closeSuggestions();
+    return;
+  }
+
+  const suggestionList =
+    getSuggestions(matchIndex, pokemonIndex);
+
+  if (event.key === 'Enter') {
+    event.preventDefault();
+
+    if (
+      activeSuggestionIndex.value >= 0 &&
+      suggestionList[activeSuggestionIndex.value]
+    ) {
+      selectPokemon(
+        matchIndex,
+        pokemonIndex,
+        suggestionList[activeSuggestionIndex.value]
+      );
     }
 
-    loading.value = false;
+    return;
+  }
+
+  if (!suggestionList.length) {
+    return;
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    activeSuggestionIndex.value =
+      (activeSuggestionIndex.value + 1) %
+      suggestionList.length;
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    activeSuggestionIndex.value =
+      (
+        activeSuggestionIndex.value -
+        1 +
+        suggestionList.length
+      ) % suggestionList.length;
+  }
+};
+
+const closeSuggestions = () => {
+  activeSuggestionIndex.value = -1;
+  activeAutocompleteId.value = null;
+};
+
+const handleClickOutside = (event) => {
+  if (
+    event.target instanceof Element &&
+    !event.target.closest('.autocomplete')
+  ) {
+    closeSuggestions();
+  }
+};
+
+const showValidationError = async (message) => {
+  validationError.value = message;
+
+  await Swal.fire({
+    title: 'Error',
+    text: message,
+    icon: 'error'
   });
+};
+
+const validateForm = () => {
+  const tournamentName = form.value.tournamentName.trim();
+
+  if (!tournamentName) {
+    return 'Falta torneo';
+  }
+
+  for (
+    let matchIndex = 0;
+    matchIndex < form.value.matches.length;
+    matchIndex += 1
+  ) {
+    const match = form.value.matches[matchIndex];
+    const round = matchIndex + 1;
+
+    if (!match.opponentName.trim()) {
+      return `Falta el oponente de la ronda ${round}`;
+    }
+
+    if (!VALID_RESULTS.has(match.result)) {
+      return `Falta el resultado de la ronda ${round}`;
+    }
+
+    const hasIncompletePokemon = match.pokemons.some(
+      (pokemon) =>
+        !pokemon.name.trim() ||
+        pokemon.id == null
+    );
+
+    if (hasIncompletePokemon) {
+      return `Completa los 6 Pokémon de la ronda ${round}`;
+    }
+  }
+
+  return '';
+};
+
+const createSerializableForm = () => ({
+  tournamentName: form.value.tournamentName.trim(),
+  matches: form.value.matches.map((match) => ({
+    opponentName: match.opponentName.trim(),
+    result: match.result,
+    pokemons: match.pokemons.map((pokemon) => ({
+      name: pokemon.name.trim(),
+      id: pokemon.id
+    }))
+  }))
+});
+
+const redirectToLogin = async () => {
+  try {
+    localStorage.setItem(
+      'pendingMatchForm',
+      JSON.stringify(createSerializableForm())
+    );
+  } catch (error) {
+    console.error(
+      'No se pudo guardar temporalmente el formulario:',
+      error
+    );
+  }
+
+  await router.push({
+    path: '/login',
+    query: {
+      redirect: router.currentRoute.value.fullPath
+    }
+  });
+};
+
+const saveAll = async () => {
+  if (saving.value) {
+    return;
+  }
+
+  validationError.value = '';
+
+  const validationMessage = validateForm();
+
+  if (validationMessage) {
+    await showValidationError(validationMessage);
+    return;
+  }
+
+  if (!authStore.isAuthenticated || !authStore.token) {
+    await redirectToLogin();
+    return;
+  }
+
+  saving.value = true;
+
+  try {
+    const decodedToken = jwtDecode(authStore.token);
+    const userId = decodedToken?.userId;
+
+    if (userId == null) {
+      throw new Error('INVALID_USER_TOKEN');
+    }
+
+    const serializableForm = createSerializableForm();
+
+    const payload = {
+      tournamentName: serializableForm.tournamentName,
+      userId,
+      matches: serializableForm.matches.map(
+        (match, matchIndex) => ({
+          opponentName: match.opponentName,
+          result: match.result,
+          round: matchIndex + 1,
+          pokemons: match.pokemons
+        })
+      )
+    };
+
+    await axios.post(
+      buildApiUrl('matches/bulk'),
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${authStore.token}`
+        }
+      }
+    );
+
+    try {
+      localStorage.removeItem('pendingMatchForm');
+    } catch (storageError) {
+      console.error(
+        'No se pudo limpiar el formulario guardado:',
+        storageError
+      );
+    }
+
+    await Swal.fire({
+      title: t('matchRecordSection.saveRecordSuccess'),
+      text: t('matchRecordSection.saveRecordText'),
+      icon: 'success',
+      timer: 1500,
+      timerProgressBar: true,
+      showConfirmButton: false
+    });
+
+    await router.push(
+      `/vgc/match-record/tournament/${userId}`
+    );
+  } catch (error) {
+    console.error('Error al guardar el registro:', error);
+
+    const message =
+      error?.response?.data?.message ||
+      'No se pudo guardar';
+
+    await Swal.fire({
+      title: 'Error',
+      text: message,
+      icon: 'error'
+    });
+  } finally {
+    saving.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+  initializeView();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <style scoped>
-  /* ===== Layout ===== */
-  .container {
-    padding: 20px;
+.match-record-page {
+  --accent: #e05263;
+  --accent-strong: #c63f52;
+  --accent-dark: #9f3545;
+  --accent-soft: rgba(224, 82, 99, 0.10);
+  --accent-border: rgba(224, 82, 99, 0.28);
+  --accent-glow: rgba(224, 82, 99, 0.18);
+  --page-bg: #fff8f9;
+  --page-text: #2d2023;
+  --card-bg: rgba(255, 255, 255, 0.94);
+  --card-border: #eadde0;
+  --card-shadow: 0 24px 60px rgba(112, 43, 55, 0.10);
+  --match-bg: #fffbfc;
+  --input-bg: #ffffff;
+  --input-text: #2d2023;
+  --input-border: #d8cacc;
+  --muted-text: #776a6d;
+  --suggestion-bg: #ffffff;
+  --suggestion-hover: rgba(224, 82, 99, 0.08);
+  --focus-ring: rgba(224, 82, 99, 0.20);
+  --danger-bg: #9f3042;
+
+  min-height: 100%;
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(224, 82, 99, 0.10),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 92% 18%,
+      rgba(236, 117, 132, 0.08),
+      transparent 24rem
+    ),
+    linear-gradient(180deg, #fff8f9 0%, #fff 56%, #fff9fa 100%);
+  color: var(--page-text);
+}
+
+.match-record-page.theme-dark {
+  --accent: #e76f80;
+  --accent-strong: #e05263;
+  --accent-dark: #a93f50;
+  --accent-soft: rgba(231, 111, 128, 0.12);
+  --accent-border: rgba(231, 111, 128, 0.28);
+  --accent-glow: rgba(231, 111, 128, 0.20);
+  --page-bg: #151011;
+  --page-text: #fff3f5;
+  --card-bg: rgba(34, 25, 27, 0.96);
+  --card-border: #49383c;
+  --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+  --match-bg: #261d1f;
+  --input-bg: #302326;
+  --input-text: #fff3f5;
+  --input-border: #665055;
+  --muted-text: #d0c0c3;
+  --suggestion-bg: #302326;
+  --suggestion-hover: rgba(231, 111, 128, 0.14);
+  --focus-ring: rgba(231, 111, 128, 0.24);
+  --danger-bg: #ad3b4d;
+
+  background:
+    radial-gradient(
+      circle at 8% 0%,
+      rgba(224, 82, 99, 0.14),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 94% 20%,
+      rgba(231, 111, 128, 0.09),
+      transparent 26rem
+    ),
+    linear-gradient(180deg, #151011 0%, #191214 55%, #120d0e 100%);
+}
+
+.match-record-page,
+.match-record-page * {
+  box-sizing: border-box;
+}
+
+.view-container {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2.25rem);
+}
+
+.form-card {
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(12px);
+}
+
+.form-card > form {
+  padding: 0 clamp(1rem, 3vw, 2rem) clamp(1.25rem, 3vw, 2rem);
+}
+
+.page-header {
+  position: relative;
+  margin: 0 clamp(-2rem, -3vw, -1rem) 1.75rem;
+  padding: clamp(1.0rem, 3vw, 1.65rem);
+  overflow: hidden;
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent-dark) 0%,
+      var(--accent) 58%,
+      #ec7c8c 100%
+    );
+  color: #ffffff;
+  text-align: center;
+  isolation: isolate;
+}
+
+.page-header::before,
+.page-header::after {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
+.page-header::before {
+  top: -6rem;
+  right: -3rem;
+  width: 15rem;
+  height: 15rem;
+}
+
+.page-header::after {
+  bottom: -8rem;
+  left: -4rem;
+  width: 18rem;
+  height: 18rem;
+}
+
+.header-kicker {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 0.7rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header-kicker-dot {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.85);
+}
+
+.page-header h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: clamp(1.75rem, 4.5vw, 2.7rem);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.page-description {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0.75rem auto 0;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.6;
+  text-wrap: balance;
+}
+
+.header-stats {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+  margin-top: 1.15rem;
+}
+
+.stat-chip {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.88rem;
+}
+
+.stat-chip strong {
+  font-size: 1rem;
+}
+
+.tournament-panel {
+  max-width: 760px;
+  margin: 0 auto 1.5rem;
+  padding: clamp(1rem, 2.5vw, 1.35rem);
+  border: 1px solid var(--accent-border);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, var(--accent-soft), transparent 70%);
+}
+
+.field-group {
+  min-width: 0;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.field-help {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--muted-text);
+  line-height: 1.45;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0.72rem 0.88rem;
+  border: 1px solid var(--input-border);
+  border-radius: 11px;
+  outline: none;
+  background: var(--input-bg);
+  color: var(--input-text);
+  font: inherit;
+  line-height: 1.3;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.form-control::placeholder {
+  color: var(--muted-text);
+  opacity: 0.78;
+}
+
+.form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.23rem var(--focus-ring);
+}
+
+select.form-control {
+  cursor: pointer;
+}
+
+select.form-control.result-win {
+  border-color: #22a06b;
+  box-shadow: inset 4px 0 0 #22a06b;
+}
+
+select.form-control.result-loss {
+  border-color: var(--accent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+select.form-control.result-tie {
+  border-color: #d69514;
+  box-shadow: inset 4px 0 0 #d69514;
+}
+
+.validation-message {
+  max-width: 760px;
+  margin: -0.5rem auto 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-weight: 800;
+  text-align: center;
+}
+
+.theme-dark .validation-message {
+  color: #f0a0ac;
+}
+
+.matches-list {
+  display: grid;
+  gap: 1.35rem;
+}
+
+.match-card {
+  position: relative;
+  min-width: 0;
+  padding: clamp(1rem, 2.6vw, 1.5rem);
+  overflow: visible;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  background: var(--match-bg);
+  box-shadow: 0 12px 28px rgba(112, 43, 55, 0.05);
+}
+
+.match-card::before {
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  left: 0;
+  width: 4px;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(
+    180deg,
+    var(--accent),
+    var(--accent-strong)
+  );
+  content: '';
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.match-header {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.15rem;
+  padding-left: 0.25rem;
+}
+
+.match-heading {
+  min-width: 0;
+}
+
+.round-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  padding: 0.32rem 0.6rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.theme-dark .round-badge {
+  color: #f0a0ac;
+}
+
+.match-heading h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: clamp(1.08rem, 3vw, 1.35rem);
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+}
+
+.match-fields {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.4fr)
+    minmax(190px, 0.6fr);
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+}
+
+.pokemon-section {
+  min-width: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: var(--card-bg);
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+}
+
+.pokemon-section legend {
+  display: flex;
+  width: auto;
+  gap: 0.75rem;
+  align-items: center;
+  margin: 0;
+  padding: 0 0.45rem;
+  color: var(--page-text);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.pokemon-progress {
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.75rem;
+}
+
+.theme-dark .pokemon-progress {
+  color: #f0a0ac;
+}
+
+.pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.autocomplete {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  left: 0;
+  max-height: 280px;
+  margin: 0;
+  padding: 0.35rem;
+  overflow-y: auto;
+  border: 1px solid var(--input-border);
+  border-radius: 11px;
+  background: var(--suggestion-bg);
+  box-shadow: 0 18px 36px rgba(71, 33, 42, 0.18);
+  list-style: none;
+}
+
+.suggestion-item {
+  display: flex;
+  min-height: 44px;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+  background: var(--suggestion-hover);
+  color: var(--accent-strong);
+}
+
+.theme-dark .suggestion-item:hover,
+.theme-dark .suggestion-item.active {
+  color: #f0a0ac;
+}
+
+.pokemon-thumb {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  object-fit: contain;
+}
+
+.secondary-actions,
+.save-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.35rem;
+}
+
+.secondary-actions {
+  justify-content: flex-start;
+}
+
+.save-actions {
+  justify-content: flex-end;
+  padding-top: 1.35rem;
+  border-top: 1px solid var(--card-border);
+}
+
+.button {
+  display: inline-flex;
+  min-height: 44px;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.68rem 1.05rem;
+  border: 0;
+  border-radius: 11px;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    filter 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.button:hover:not(:disabled) {
+  filter: brightness(1.04);
+  transform: translateY(-2px);
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.button-primary,
+.button-save {
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent-strong),
+      var(--accent),
+      #ec7c8c
+    );
+  box-shadow: 0 10px 22px var(--accent-glow);
+}
+
+.button-save {
+  min-width: 180px;
+}
+
+.button-remove {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0.45rem 0.72rem;
+  background: var(--danger-bg);
+  box-shadow: 0 8px 18px rgba(159, 48, 66, 0.18);
+}
+
+.button-icon {
+  display: inline-grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 1.05rem;
+}
+
+.button-spinner,
+.loading-spinner {
+  display: inline-block;
+  border: 3px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.button-spinner {
+  width: 18px;
+  height: 18px;
+}
+
+.state-panel {
+  display: grid;
+  min-height: 420px;
+  place-items: center;
+  align-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.state-panel h2,
+.state-panel p {
+  margin: 0;
+}
+
+.loading-image {
+  display: block;
+  /*max-width: min(100%, 240px);*/
+  height: auto;
+  object-fit: contain;
+}
+
+.loading-spinner {
+  width: 66px;
+  height: 66px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 10px var(--accent-glow));
+}
+
+.error-state {
+  color: var(--page-text);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .match-fields {
+    grid-template-columns: 1fr;
   }
 
-  .row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .actions {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .player-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  /* ===== Cards ===== */
-  .card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 24px;
-  }
-
-  .player-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 20px;
-  }
-
-  /* ===== Dark mode ===== */
-  .dark-mode {
-    background: #121212;
-  }
-
-  .dark-card {
-    background: #1e1e1e;
-    color: #fff;
-  }
-
-  /* ===== Typography ===== */
-  .title {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  /* ===== Inputs ===== */
-  .input {
-    flex: 1;
-    width: auto;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-  }
-
-  .input[type="number"] {
-    max-width: 220px;
-  }
-
-  /* Dark inputs */
-  .dark-card .input,
-  .dark-card select.input {
-    background: #2c2c2c;
-    color: #ecf0f1;
-    border-color: #444;
-  }
-
-  .dark-card .input::placeholder {
-    color: #aaa;
-  }
-
-  .dark-card .input:focus,
-  .dark-card select.input:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 1px #3498db;
-  }
-
-  /* ===== Grid ===== */
   .pokemon-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479.98px) {
+  .view-container {
+    padding: 0.65rem;
   }
 
-  /* ===== Autocomplete ===== */
-  .autocomplete {
-    position: relative;
+  .form-card {
+    border-radius: 16px;
   }
 
-  .suggestions {
-    position: absolute;
+  .form-card > form {
+    padding-right: 0.8rem;
+    padding-left: 0.8rem;
+  }
+
+  .page-header {
+    margin-right: -0.8rem;
+    margin-left: -0.8rem;
+  }
+
+  .match-card {
+    border-radius: 14px;
+  }
+
+  .pokemon-section {
+    padding: 0.8rem;
+  }
+
+  .pokemon-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .secondary-actions,
+  .save-actions {
+    align-items: stretch;
+  }
+
+  .secondary-actions .button,
+  .save-actions .button {
     width: 100%;
-    background: #2c2c2c;
-    border: 1px solid #444;
-    border-radius: 8px;
-    list-style: none;
-    padding: 0;
-    z-index: 10;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
   }
 
-  .suggestion-item {
-    display: flex;
-    gap: 8px;
-    padding: 8px;
-    cursor: pointer;
+  .button:hover:not(:disabled) {
+    transform: none;
   }
 
-  .suggestion-item:hover,
-  .suggestion-item.active {
-    background: rgba(52, 152, 219, 0.25);
+  .button-spinner,
+  .loading-spinner {
+    animation-duration: 1.4s;
   }
-
-  .pokemon-thumb {
-    width: 24px;
-  }
-
-  /* ===== Buttons ===== */
-  .btn {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    color: #fff;
-  }
-
-  .btn-add {
-    background: #3498db;
-    margin-bottom: 15px;
-  }
-
-  .btn-save {
-    background: #2ecc71;
-  }
-
-  .btn-remove {
-    background: #e74c3c;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-  }
-
-  .btn-remove:hover {
-    background: #c0392b;
-  }
-
-  /* ===== Spinner ===== */
-  .spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid #fff;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
+}
 </style>

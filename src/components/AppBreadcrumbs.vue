@@ -1,30 +1,34 @@
 <template>
-  <nav aria-label="breadcrumb" class="breadcrumb-container">
-    <ol class="breadcrumb">
+  <nav
+    v-if="breadcrumbs.length"
+    class="breadcrumb-container"
+    aria-label="Navegación secundaria"
+  >
+    <ol class="breadcrumb-list">
       <li
-        class="breadcrumb-item"
         v-for="(crumb, index) in breadcrumbs"
-        :key="index"
+        :key="crumb.key"
+        class="breadcrumb-item"
+        :aria-current="index === breadcrumbs.length - 1 ? 'page' : undefined"
       >
-        <!-- Breadcrumb normal -->
         <router-link
           v-if="crumb.link && crumb.link !== 'back'"
           :to="crumb.link"
+          class="breadcrumb-link"
         >
           {{ crumb.text }}
         </router-link>
 
-        <!-- Breadcrumb volver atrás -->
-        <a
+        <button
           v-else-if="crumb.link === 'back'"
-          href="#"
-          @click.prevent="goBack"
+          type="button"
+          class="breadcrumb-link breadcrumb-back"
+          @click="goBack"
         >
           {{ crumb.text }}
-        </a>
+        </button>
 
-        <!-- Breadcrumb solo texto -->
-        <span v-else>
+        <span v-else class="breadcrumb-current">
           {{ crumb.text }}
         </span>
       </li>
@@ -32,46 +36,129 @@
   </nav>
 </template>
 
+<script setup>
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-<script>
-export default {
-  name: 'AppBreadcrumbs',
-  methods: {
-    goBack() {
-      if (window.history.length > 1) {
-        this.$router.back()
+const route = useRoute()
+const router = useRouter()
+
+const breadcrumbs = computed(() =>
+  route.matched
+    .filter((matchedRoute) => matchedRoute.meta?.breadcrumb)
+    .map((matchedRoute, index) => {
+      const breadcrumb = matchedRoute.meta.breadcrumb
+      const normalizedBreadcrumb =
+        typeof breadcrumb === 'string'
+          ? { text: breadcrumb }
+          : breadcrumb
+
+      return {
+        key: matchedRoute.name ?? matchedRoute.path ?? index,
+        text: normalizedBreadcrumb?.text ?? '',
+        link: normalizedBreadcrumb?.link ?? null
       }
-    }
-  },
-  computed: {
-    breadcrumbs() {
-      return this.$route.matched
-        .filter(route => route.meta && route.meta.breadcrumb)
-        .map(route => ({
-          text: route.meta.breadcrumb.text,
-          link: route.meta.breadcrumb.link
-        }))
-    }
+    })
+    .filter((breadcrumb) => breadcrumb.text)
+)
+
+function goBack() {
+  const hasInternalHistory =
+    typeof window !== 'undefined' && Boolean(window.history.state?.back)
+
+  if (hasInternalHistory) {
+    router.back()
+    return
   }
+
+  router.push('/')
 }
 </script>
 
+<style scoped>
+.breadcrumb-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 0;
+}
 
-<style>
+.breadcrumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: '/';
+  padding: 0 0.55rem;
+  color: var(--bs-tertiary-color, #adb5bd);
+}
+
+.breadcrumb-link,
+.breadcrumb-back {
+  display: inline;
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
+  color: var(--bs-link-color, #0d6efd);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.breadcrumb-back {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.breadcrumb-link:hover,
+.breadcrumb-back:hover {
+  color: var(--bs-link-hover-color, #0a58ca);
+  text-decoration: underline;
+}
+
+.breadcrumb-link:focus-visible,
+.breadcrumb-back:focus-visible {
+  border-radius: 0.25rem;
+  outline: 3px solid rgba(13, 110, 253, 0.3);
+  outline-offset: 3px;
+}
+
+.breadcrumb-current {
+  max-width: min(420px, 60vw);
+  overflow: hidden;
+  color: var(--bs-body-color, #212529);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
   .breadcrumb-container {
-    max-width: 1200px; /* Ancho máximo para que no se extienda más allá del contenido */
-    margin: 0 auto;    /* Centrado horizontal */
-    padding: 1rem;     /* Espaciado alrededor */
+    padding: 0.8rem 1rem 0;
   }
 
-  .breadcrumb {
-    background: none;
-    padding: 0;
-    margin-bottom: 1rem;
+  .breadcrumb-list {
+    font-size: 0.84rem;
   }
 
   .breadcrumb-item + .breadcrumb-item::before {
-    content: ">";
-    padding: 0 5px;
+    padding: 0 0.4rem;
   }
+}
 </style>

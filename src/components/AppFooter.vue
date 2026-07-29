@@ -1,122 +1,154 @@
-<!-- src/components/AppFooter.vue -->
 <template>
-  <footer :class="['footer', footerClass]">
+  <footer :class="['app-footer', `app-footer--${currentMode}`]">
     <div class="footer-content">
-
-      <!-- Logo -->
-      <div class="footer-logo">
+      <router-link to="/" class="footer-logo-link" aria-label="Ir al inicio de PokeCircuit">
         <img
           :src="logoSrc"
-          alt="MakiseVGC Logo"
+          class="footer-logo"
+          alt="PokeCircuit"
+          width="160"
+          height="60"
+          loading="lazy"
         />
-      </div>
+      </router-link>
 
-      <!-- Información -->
       <div class="footer-info">
         <p>
-          Creado por <a href="https://x.com/CokeSebas"> <strong>CokeSebas </strong> ({{ currentYear }}) </a>
+          Creado por
+          <a
+            href="https://x.com/CokeSebas"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <strong>CokeSebas</strong>
+          </a>
+          <span aria-hidden="true"> · </span>
+          <span>{{ currentYear }}</span>
         </p>
+
         <p>
-          Contacto:
-          <a :href="'mailto:' + contactEmail">
+          <span>Contacto: </span>
+          <a :href="`mailto:${contactEmail}`">
             {{ contactEmail }}
           </a>
         </p>
       </div>
-
     </div>
   </footer>
 </template>
 
-<script>
-  import { inject, computed } from 'vue';
-  import logo from '@/assets/pokecircuit.png'; // 👈 ajusta el path si es necesario
+<script setup>
+import { computed, inject, ref, unref } from 'vue'
+import logo from '@/assets/pokecircuit.png'
 
-  export default {
-    setup() {
-      const mode = inject('mode');
+const injectedMode = inject('mode', ref('light'))
 
-      const footerClass = computed(() =>
-        mode.value === 'dark' ? 'footer-dark' : 'footer-light'
-      );
+const currentMode = computed(() =>
+  unref(injectedMode) === 'dark' ? 'dark' : 'light'
+)
 
-      return {
-        footerClass,
-        logoSrc: logo,
-        currentYear: new Date().getFullYear(),
-        contactEmail: 'teamsbackupokemon@gmail.com'
-      };
-    },
-  };
+const logoSrc = logo
+const currentYear = new Date().getFullYear()
+const contactEmail = 'teamsbackupokemon@gmail.com'
 </script>
 
 <style scoped>
-  /* Base footer */
-  .footer {
-    width: 100%;
-    padding: 30px 0;
+.app-footer {
+  width: 100%;
+  margin-top: auto;
+  padding: 1.75rem 0;
+  border-top: 1px solid transparent;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.app-footer--light {
+  border-color: #dee2e6;
+  background: #f8f9fa;
+  color: #212529;
+}
+
+.app-footer--dark {
+  border-color: #3f4650;
+  background: #212529;
+  color: #f8f9fa;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 960px;
+  min-height: 72px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  gap: 1.5rem;
+}
+
+.footer-logo-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+}
+
+.footer-logo-link:focus-visible {
+  outline: 3px solid rgba(13, 110, 253, 0.35);
+  outline-offset: 4px;
+}
+
+.footer-logo {
+  display: block;
+  width: auto;
+  height: 56px;
+  object-fit: contain;
+}
+
+.footer-info {
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.footer-info p {
+  margin: 0.15rem 0;
+}
+
+.footer-info a {
+  color: inherit;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.footer-info a:hover {
+  text-decoration-thickness: 2px;
+}
+
+@media (max-width: 575.98px) {
+  .app-footer {
+    padding: 1.4rem 0;
   }
 
-  /* Light / Dark */
-  .footer-light {
-    background-color: #f1f1f1;
-    color: #000;
-  }
-
-  .footer-dark {
-    background-color: #333;
-    color: #fff;
-  }
-
-  /* Layout */
   .footer-content {
-    max-width: 900px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 0 16px;
+    flex-direction: column;
+    padding: 0 1rem;
+    gap: 0.75rem;
   }
 
-  /* Logo */
-  .footer-logo img {
-    height: 70px;
-    width: auto;
-    max-height: 60px;
+  .footer-logo {
+    height: 48px;
   }
 
-
-  /* Info */
   .footer-info {
-    text-align: left;
-    font-size: 14px;
+    font-size: 0.85rem;
+    text-align: center;
+    overflow-wrap: anywhere;
   }
-
-  .footer-info p {
-    margin: 4px 0;
-  }
-
-  /* Links */
-  .footer a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .footer a:hover {
-    text-decoration: underline;
-  }
-
-  /* Responsive */
-  @media (max-width: 600px) {
-    .footer-content {
-      flex-direction: column;
-      text-align: center;
-    }
-
-    .footer-info {
-      text-align: center;
-    }
-  }
+}
 </style>

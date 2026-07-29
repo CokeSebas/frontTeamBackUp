@@ -14,7 +14,7 @@ import AppNavbar from './components/AppNavbar.vue';
 import MyAppBreadcrumbs from './components/AppBreadcrumbs.vue';
 import Footer from './components/AppFooter.vue'; 
 
-import { API_URL, GIF_LOAD, SUN_ICON, MOON_ICON } from '@/config/config';
+import { API_URL, GIF_LOAD, SUN_ICON, MOON_ICON, UNOW_ICON, NOTT_ICON } from '@/config/config';
 
 export default {
   name: 'App',
@@ -27,7 +27,9 @@ export default {
     apiUrl: API_URL,
     gifLoading: GIF_LOAD,
     sunIcon: SUN_ICON,
-    moonIcon: MOON_ICON
+    moonIcon: MOON_ICON,
+    unowIcon: UNOW_ICON,
+    notificacionIcon: NOTT_ICON,
   },
   setup() {
     const mode = ref('light');

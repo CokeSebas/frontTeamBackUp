@@ -37,6 +37,7 @@ import ViewTeamSheetPublic from '@/views/ViewTeamSheet.vue';
 import ViewPrintTeamSheet from '@/views/ViewTeamSheet.vue';
 import ViewAddMatchRecord from '@/views/ViewAddMatchRecord.vue';
 import ViewMyStatsMatch from '@/views/ViewMyStatsMatch.vue';
+import ViewGuide from '@/views/ViewGuide.vue';
 
 import i18n from '@/i18n';
 
@@ -368,6 +369,13 @@ const routes = [
         next();
       }
     },
+    meta: {
+      title: i18n.global.t('organizerTournament'),
+      breadcrumb: {
+        text: i18n.global.t('profile'),
+        link: 'back',
+      }
+    }
   },
   {
     path: '/tournament/add-standing/:id_torneo',
@@ -488,6 +496,18 @@ const routes = [
         link: 'back',
       }
     }
+  },
+  {
+    path: '/guide',
+    name: 'ViewGuide',
+    component: ViewGuide,
+    meta: {
+      title: 'Guía de uso',
+      breadcrumb: {
+        text: 'Home',
+        link: '/',
+      },
+    },
   },
 ];
 

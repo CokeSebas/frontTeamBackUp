@@ -19,8 +19,8 @@
   "subir": "Subir",
   "uploadFiles": "Carregar Arquivos",
   "seeTournaments": "Ver Torneios",
-  "tittleMetaTag":"Pokecircuit | Pokémon Competitive Tournaments & VGC Teams",
-  "descripcionMetaTag":"Pokecircuit is a Pokémon competitive platform for VGC teams, tournaments, standings, and downloadable top results. TCG tournaments supported.",
+  "tittleMetaTag": "Pokecircuit | Pokémon Competitive Tournaments & VGC Teams",
+  "descripcionMetaTag": "Pokecircuit is a Pokémon competitive platform for VGC teams, tournaments, standings, and downloadable top results. TCG tournaments supported.",
   "crearPokemon": "Criar pokémon",
   "crearEquipo": "Criar equipe",
   "team": "Equipe",
@@ -39,7 +39,6 @@
     "teamSeccion": "Últimas Equipes Registradas",
     "pokemonSeccion": "Últimos Pokémon Registrados"
   },
-
   "buttons": {
     "createTeam": "Criar Equipe",
     "createPokemon": "Criar Pokémon",
@@ -70,7 +69,6 @@
     "goToTeamsheet": "Ir para Hoja de Equipo",
     "goToMyStats": "Ir para Mis Estadísticas"
   },
-
   "teamsSeccion": {
     "title": "Equipes Registradas",
     "detail": "Detalhes da Equipe",
@@ -94,9 +92,10 @@
     "subFormat": "Regulamento",
     "selectSubFormat": "Selecione um regulamento",
     "searchTeam": "Buscar equipe pelo nome",
-    "codeRental": "Código de aluguel"
+    "codeRental": "Código de aluguel",
+    "teamTip": "Importe uma Poképaste ou uma equipe do Showdown e adicione todas as informações necessárias para compartilhá-la.",
+    "": ""
   },
-
   "pokemonsSeccion": {
     "title": "Pokémon Registrados",
     "detail": "Detalhes do Pokémon",
@@ -119,9 +118,10 @@
     "pasteForSd": "Colar do equipamento copiado com sucesso",
     "subtitle": "Se você selecionar 6 Pokémon, poderá obter o formato SD",
     "tittleSwal": "Você selecionou 6 Pokémon!",
-    "subTittleSwal": "Agora você pode criar uma equipe."
+    "subTittleSwal": "Agora você pode criar uma equipe.",
+    "createTip": "Salve um conjunto de Pokémon Showdown juntamente com companheiros, cálculos e notas de uso..",
+    "": ""
   },
-
   "profileSeccion": {
     "title": "Perfil do Usuário",
     "name": "Nome",
@@ -155,8 +155,6 @@
     "isAdmin": "É Administrador",
     "isActive": "Está Ativo"
   },
-
-
   "errorsSeccion": {
     "errorName": "O nome deve ter pelo menos 3 caracteres.",
     "errorLastName": "O sobrenome deve ter pelo menos 3 caracteres.",
@@ -164,7 +162,6 @@
     "errorPassword": "A senha deve ter pelo menos 6 caracteres.",
     "errorConfirmPassword": "As senhas não coincidem."
   },
-
   "responseApisSeccion": {
     "exito": "Sucesso!",
     "error": "Erro",
@@ -201,8 +198,7 @@
     "passwordRestabled": "Senha redefinida com sucesso!",
     "passwordRestableError": "Houve um problema ao redefinir a senha."
   },
-
-  "tournamentsSeccion":{
+  "tournamentsSeccion": {
     "title": "Torneio",
     "noTournaments": "Ainda não há torneios organizados!",
     "myTournaments": "Meus Torneios Organizados",
@@ -255,10 +251,10 @@
     "position": "Posição",
     "selectPlayer": "Selecione um jogador",
     "addPlayer": "Adicionar Jogador",
-    "":""
+    "subTittle": "Confira os torneios disponíveis, veja as fases, a classificação, os resultados e as fotos das melhores equipes.",
+    "": ""
   },
-
-  "filesSeccion":{
+  "filesSeccion": {
     "currentRound": "Rodada Atual",
     "currentResults": "Resultados Atuais",
     "standing": "Clasificação",
@@ -266,7 +262,6 @@
     "uploadFile": "Carregar arquivo",
     "fileUploaded": "Arquivo carregado com sucesso!"
   },
-
   "teamSheetSection": {
     "title": "Lista de Equipe",
     "playerName": "Nome do Jogador",
@@ -281,10 +276,47 @@
     "selectTypeSheet": "Selecione um tipo de folha",
     "pasteTeamSheet": "Anexar Folha de Equipamento",
     "printEmptyTeamSheet": "Imprimir Folha de Equipamento Vazia",
-    "subtittle": "Estão em andamento os trabalhos para implementar o espanhol latino-americano."
+    "subtittle": "Estão em andamento os trabalhos para implementar o espanhol latino-americano.",
+    "imgTeam1": "Deslize a tela para cima até encontrar a tela onde aparecem os Pokémon, suas habilidades, itens e movimentos.",
+    "imgTeam2": "Deslize a tela para cima até encontrar as estatísticas e naturezas reais.",
+    "datosImg1": "Pokémon, Movimentos, Habilidades, Itens e Movimentos",
+    "datosImg2": "Estatísticas reais e naturezas",
+    "success": "Equipamentos processados",
+    "successText": "Os dados foram inseridos manualmente. Por favor, revise-os antes de imprimir.",
+    "warning": "Equipamentos processados ​​com observações",
+    "warningText": "Por favor, revise todos os campos cuidadosamente antes de imprimir.",
+    "buttonEntendido": "Entendido",
+    "buttonProccess": "Equipamentos de processo",
+    "loadingProccess": "Equipamentos de processamento",
+    "errorProccess": "Houve um problema no processamento do equipamento",
+    "textExample": "Exemplo",
+    "textYourTeam": "Sua Imagem",
+    "textConfirm1": "Antes de imprimir, revise cuidadosamente as informações do jogador. Verifique se o nome, o ID, a categoria e outros detalhes estão corretos.",
+    "textConfirm2": "Antes de imprimir, revise cuidadosamente todas as informações sobre jogadores e equipes. Os dados obtidos a partir de imagens podem conter erros de leitura.",
+    "textWarning1": "Analise as informações.",
+    "textWarning2": "Confirma que as informações estão corretas e deseja prosseguir?",
+    "buttonPrint1": "Sim, imprimir",
+    "buttonPrint2": "Analise novamente",
+    "tipNickTrainer": "Digite o nome exato do seu personagem no jogo.",
+    "tipNameTeam": "Insira o nome ou o número da sua equipe que você usará no torneio.",
+    "tipNameSwitch": "Digite o nome do seu perfil do Nintendo Switch.",
+    "tipIdPlayer": "Insira seu POPID de jogador do PlayPokémon.",
+    "tipSupportId": "Insira o ID de usuário que aparece na tela inicial do Pokémon Champions.",
+    "titleImagesReversed": "Imagens em ordem incorreta.",
+    "textImagesReversed": "A primeira imagem deve corresponder a “Dados Diversos“ e a segunda a “Características“. Troque-as de lugar e tente novamente.",
+    "titleInvalidImagePair": "Imagens não reconhecidas.",
+    "textInvalidImagePair": "Não foi possível identificar corretamente as duas telas do dispositivo. Por favor, envie uma imagem de “Dados Diversos“ e outra de “Recursos“.",
+    "titleInvalidInfoImage": "Imagem de dados inválida",
+    "textInvalidInfoImage": "A primeira imagem não contém informações suficientes sobre nomes, habilidades, objetos e movimentos.",
+    "titleInvalidStatsImage": "Imagem de recurso inválida.",
+    "textInvalidStatsImage": "A segunda imagem não contém estatísticas suficientes da equipe.",
+    "titleInsufficientTeamData": "Informações insuficientes",
+    "textInsufficientTeamData": "As imagens foram reconhecidas, mas não contêm informações suficientes para completar a equipe. Por favor, verifique se estão completas, nítidas e sem cortes.",
+    "titleImageProcessingError": "Não foi possível processar as imagens.",
+    "textImageProcessingError": "Verifique se ambas as imagens correspondem às telas corretas, estão completas e têm boa qualidade.",
+    "": ""
   },
-
-   "matchRecordSection": {
+  "matchRecordSection": {
     "title": "Registro de Partidas",
     "selectTeam": "Selecione um Time",
     "opponentTeam": "Time Oponente",
@@ -308,10 +340,210 @@
     "ocultarDetails": "Ocultar Detalhes",
     "shareCard": "Compartilhar Run",
     "myTournaments": "Meus Torneios",
-    "noTournaments": "Você ainda não registrou nenhum torneio!"
+    "noTournaments": "Você ainda não registrou nenhum torneio!",
+    "subTittle1": "Inscrição competitiva",
+    "subTittle2": "Registre cada rodada, o resultado e os seis Pokémon usados ​​por seus rivais.",
+    "complete": "Completo",
+    "nameTournament": "Nome do Torneio",
+    "nameTournamentTip": "Use um nome que permita identificar este registro.",
+    "oponente": "Oponente",
+    "teamPokemon": "Pokémon do Time",
+    "textTip1": "Selecione “Ver detalhes” para verificar as rodadas e gerar um cartão compartilhável.",
+    "": ""
   },
-
-
-
-  "": ""
+  "": "",
+  "guideSeccion": {
+    "metaTitle": "Guia de uso | Pokecircuit",
+    "metaDescription": "Guia de uso do Pokecircuit: equipes, Pokémon, Team Sheets, torneios e ferramentas para a comunidade competitiva.",
+    "hero": {
+      "eyebrow": "GUIA DE USO",
+      "title": "Tudo o que você precisa para começar no Pokecircuit",
+      "subtitle": "Aprenda a criar equipes, registrar seus Pokémon, gerar Team Sheets, consultar torneios e organizar suas informações competitivas em um só lugar.",
+      "quickAccessAria": "Acessos rápidos ao guia",
+      "startGuide": "Começar guia",
+      "viewTeamSheets": "Ver Team Sheets"
+    },
+    "index": {
+      "eyebrow": "EXPLORE A PLATAFORMA",
+      "title": "O que você pode fazer no Pokecircuit?",
+      "description": "Acesse diretamente a seção deste guia que você deseja consultar.",
+      "items": {
+        "home": {
+          "title": "Início",
+          "description": "Conheça os principais acessos da plataforma."
+        },
+        "teams": {
+          "title": "Equipes",
+          "description": "Crie, edite e organize suas equipes competitivas."
+        },
+        "pokemon": {
+          "title": "Pokémon",
+          "description": "Registre todas as informações dos seus Pokémon."
+        },
+        "teamSheets": {
+          "title": "Team Sheets",
+          "description": "Gere folhas a partir de equipes, dados manuais ou imagens."
+        },
+        "tournaments": {
+          "title": "Torneios",
+          "description": "Consulte rodadas, resultados, classificação e Top Cut."
+        },
+        "profile": {
+          "title": "Perfil",
+          "description": "Administre seu conteúdo competitivo em um só lugar."
+        }
+      }
+    },
+    "home": {
+      "eyebrow": "PRIMEIROS PASSOS",
+      "title": "Início",
+      "lead": "Na página inicial, você pode acessar rapidamente as principais ferramentas do Pokecircuit.",
+      "features": {
+        "teams": "Equipes",
+        "pokemon": "Pokémon",
+        "tournaments": "Torneios",
+        "teamSheets": "Team Sheets",
+        "profile": "Seu perfil, se você estiver conectado"
+      }
+    },
+    "teams": {
+      "eyebrow": "GESTÃO COMPETITIVA",
+      "title": "Gestão de Equipes",
+      "lead": "A seção Equipes permite administrar todas as suas equipes competitivas e mantê-las disponíveis para futuras competições.",
+      "subtitle": "A partir daqui você pode",
+      "actions": {
+        "create": "Criar uma nova equipe.",
+        "name": "Dar um nome à equipe.",
+        "privacy": "Escolher se ela será pública ou privada.",
+        "rentalCode": "Adicionar um Rental Code, quando aplicável.",
+        "edit": "Editar as informações sempre que precisar.",
+        "delete": "Excluir equipes que você não utiliza mais."
+      },
+      "infoLabel": "PARA QUE SERVE?",
+      "infoText": "Cada equipe armazena as informações necessárias para utilizá-la posteriormente em Team Sheets ou compartilhá-la com outros jogadores.",
+      "viewTeams": "Ver equipes"
+    },
+    "pokemon": {
+      "eyebrow": "MONTE SUA EQUIPE",
+      "title": "Administração de Pokémon",
+      "lead": "Para cada Pokémon, você pode registrar todas as informações utilizadas na preparação da sua equipe competitiva.",
+      "fields": {
+        "species": "Espécie",
+        "nickname": "Apelido",
+        "ability": "Habilidade",
+        "item": "Item",
+        "nature": "Natureza",
+        "teraType": "Tipo Tera",
+        "sps": "SPs",
+        "ivs": "IVs",
+        "moves": "Movimentos"
+      },
+      "callout": "Todas essas informações ficam organizadas para que você possa consultar, editar e reutilizar seus Pokémon quando precisar.",
+      "explore": "Explorar Pokémon"
+    },
+    "teamSheets": {
+      "eyebrow": "LISTAS PARA COMPETIR",
+      "title": "Criação de Team Sheets",
+      "lead": "O Pokecircuit oferece diferentes formas de gerar Team Sheets prontas para usar e imprimir em seus torneios.",
+      "options": {
+        "registered": {
+          "title": "A partir de uma equipe registrada",
+          "description": "Se você já tem uma equipe criada no Pokecircuit, a Team Sheet pode ser gerada automaticamente usando as informações que você já salvou."
+        },
+        "manual": {
+          "title": "Preenchimento manual",
+          "description": "Digite manualmente os dados de cada Pokémon. É uma alternativa rápida quando você ainda não registrou a equipe na plataforma."
+        },
+        "images": {
+          "title": "A partir de imagens do Pokémon Champions",
+          "description": "Envie as capturas obtidas no jogo e o Pokecircuit processará as informações para ajudar a gerar a Team Sheet.",
+          "pokemonImage": "Imagem com os Pokémon.",
+          "statsImage": "Imagem com suas estatísticas."
+        }
+      },
+      "print": {
+        "eyebrow": "IMPRESSÃO",
+        "title": "Sua Team Sheet pronta para o torneio",
+        "description": "Depois de gerada, você poderá imprimi-la e utilizá-la durante suas competições.",
+        "button": "Criar Team Sheet"
+      }
+    },
+    "tournaments": {
+      "eyebrow": "EVENTOS E RESULTADOS",
+      "title": "Torneios",
+      "lead": "Consulte os torneios registrados e veja as informações necessárias para acompanhar cada evento.",
+      "fields": {
+        "name": "Nome do torneio",
+        "date": "Data",
+        "format": "Formato",
+        "rounds": "Rodadas",
+        "results": "Resultados",
+        "standings": "Classificação final",
+        "topCut": "Top Cut"
+      },
+      "note": "Isso facilita revisar eventos anteriores, consultar o desempenho dos jogadores e entender como cada torneio aconteceu.",
+      "view": "Consultar torneios"
+    },
+    "publicTeams": {
+      "eyebrow": "COMUNIDADE",
+      "title": "Visualização de Equipes",
+      "lead": "As equipes configuradas como públicas podem ser consultadas pela comunidade.",
+      "items": {
+        "sixPokemon": "Os seis Pokémon da equipe.",
+        "individualInfo": "As informações individuais de cada integrante.",
+        "teamData": "Os dados registrados para a equipe."
+      },
+      "explore": "Explorar equipes públicas"
+    },
+    "profile": {
+      "eyebrow": "SEU ESPAÇO",
+      "title": "Perfil do Usuário",
+      "lead": "Cada usuário possui um espaço pessoal para administrar seu conteúdo competitivo.",
+      "items": {
+        "teams": "Gerenciar equipes.",
+        "teamSheets": "Criar novas Team Sheets.",
+        "organization": "Manter organizadas as informações utilizadas nas competições."
+      },
+      "goToProfile": "Ir para meu perfil"
+    },
+    "audience": {
+      "eyebrow": "COMUNIDADE VGC",
+      "title": "Para quem o Pokecircuit foi feito?",
+      "players": {
+        "label": "JOGADORES",
+        "title": "Todo o seu conteúdo competitivo organizado",
+        "items": {
+          "teams": "Organizar equipes competitivas.",
+          "teamSheets": "Criar Team Sheets em poucos minutos.",
+          "allInOne": "Manter todas as suas equipes em um só lugar."
+        }
+      },
+      "organizers": {
+        "label": "ORGANIZADORES",
+        "title": "Informações claras para cada torneio",
+        "items": {
+          "publish": "Publicar informações de torneios.",
+          "results": "Compartilhar resultados e classificações.",
+          "topCut": "Mostrar o Top Cut de cada evento."
+        }
+      }
+    },
+    "summary": {
+      "eyebrow": "TUDO EM UM SÓ LUGAR",
+      "title": "Pokecircuit simplifica sua experiência competitiva",
+      "description": "Desde a preparação de uma equipe até a consulta dos resultados de torneios.",
+      "items": {
+        "teams": "Gestão de equipes.",
+        "pokemon": "Registro completo de Pokémon.",
+        "teamSheets": "Geração de Team Sheets.",
+        "imageTeamSheets": "Team Sheets a partir de imagens do Pokémon Champions.",
+        "print": "Impressão de Team Sheets.",
+        "tournaments": "Consulta de torneios.",
+        "results": "Visualização de resultados e Top Cut.",
+        "organization": "Organização das suas informações competitivas."
+      },
+      "createTeam": "＋ Criar Equipe",
+      "createPokemon": "＋ Criar Pokémon"
+    }
+  }
 }

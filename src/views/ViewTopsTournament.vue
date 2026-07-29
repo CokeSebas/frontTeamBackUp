@@ -1,547 +1,942 @@
 <template>
-  <div :class="['container', { 'dark-mode': mode === 'dark' }]">
-    <div class="top-actions">
-      <div class="download-actions">
-        <button
-          class="btn btn-download"
-          @click="downloadImage('light')"
-        >
-          <img :src="sunIcon" width="20" height="20">
-          {{ $t('tournamentsSeccion.dowloadLight') }}
-        </button>
-
-        <button
-          class="btn btn-download dark"
-          @click="downloadImage('dark')"
-        >
-          <img :src="moonIcon" width="20" height="20">
-          {{ $t('tournamentsSeccion.dowloadDark') }}
-        </button>
-      </div>
-
-      <div class="share-box">
-        <h3>{{ $t('share') }}</h3>
-        <ShareButtons
-          :shareUrl="currentUrl"
-          shareText="Check this Tournament Top"
-        />
-      </div>
-    </div>
-
-
-    <!-- LOADING -->
-    <div v-if="loading" style="align-items: center; display: flex; justify-content: center;">
-      <img :src="gifLoading">
-    </div>
-
-    
-    <div v-else ref="captureArea" :class="['card', { 'dark-card': mode === 'dark' }]">
-
-      <h2 class="title">
-        {{ $t('tournamentsSeccion.title') }} {{ tournamentTop.nombre }}
-      </h2>
-
-      <div 
-        v-for="player in topPlayers"
-        :key="player.id"
-        class="player-card"
-        :class="getCardClass(player.position)"
-      >
-        <div class="player-header">
-          <span 
-            class="position"
-            :class="getPositionClass(player.position)"
-          >
-            #{{ player.position }}
-          </span>
-
-
-          <span class="player-name">
-            {{ player.firstName }} {{ player.lastName }}
-          </span>
-        </div>
-
-        <div class="pokemon-row">
-          <div
-            v-for="poke in orderedPokemons(player.pokemons)"
-            :key="poke.id"
-            class="pokemon-card"
+  <main :class="['tournament-top-page', { 'is-dark': isDarkMode }]">
+    <section class="page-shell">
+      <div class="top-actions">
+        <div class="download-actions" aria-label="Opciones de descarga">
+          <button
+            type="button"
+            class="action-button action-button--light"
+            :disabled="!canDownload"
+            @click="downloadImage('light')"
           >
             <img
-              :src="poke.pokemon.imageUrl"
-              :alt="poke.pokemon.name"
-              crossorigin="anonymous"
-            />
-            <span class="pokemon-name">
-              {{ poke.pokemon.name }}
+              v-if="sunIcon"
+              :src="sunIcon"
+              width="20"
+              height="20"
+              alt=""
+              aria-hidden="true"
+            >
+            <span>
+              {{ isExporting && captureTheme === 'light'
+                ? 'Generando imagen...'
+                : $t('tournamentsSeccion.dowloadLight') }}
             </span>
-          </div>
+          </button>
+
+          <button
+            type="button"
+            class="action-button action-button--dark"
+            :disabled="!canDownload"
+            @click="downloadImage('dark')"
+          >
+            <img
+              v-if="moonIcon"
+              :src="moonIcon"
+              width="20"
+              height="20"
+              alt=""
+              aria-hidden="true"
+            >
+            <span>
+              {{ isExporting && captureTheme === 'dark'
+                ? 'Generando imagen...'
+                : $t('tournamentsSeccion.dowloadDark') }}
+            </span>
+          </button>
+        </div>
+
+        <div v-if="currentUrl" class="share-box">
+          <h3>{{ $t('share') }}</h3>
+          <ShareButtons
+            :share-url="currentUrl"
+            :share-text="shareText"
+          />
         </div>
       </div>
 
-      <h6 align="center">{{ $t('tournamentsSeccion.tournamentImgFooter') }} <a href="https://x.com/Pokecircuit" target="_blank">@Pokecircuit</a> </h6>
+      <div
+        v-if="loading"
+        class="state-card state-card--loading"
+        role="status"
+        aria-live="polite"
+      >
+        <img
+          v-if="gifLoading"
+          class="loading-image"
+          :src="gifLoading"
+          alt="Cargando resultados del torneo"
+        >
+        <span v-else class="loading-spinner" aria-hidden="true"></span>
+      </div>
 
-    </div>
-  </div>
+      <div
+        v-else-if="errorMessage"
+        class="state-card state-card--error"
+        role="alert"
+      >
+        <span class="state-icon" aria-hidden="true">!</span>
+        <h2>No fue posible cargar el torneo</h2>
+        <p>{{ errorMessage }}</p>
+        <button type="button" class="retry-button" @click="loadTopPlayers">
+          Reintentar
+        </button>
+      </div>
+
+      <div
+        v-else-if="topPlayers.length === 0"
+        class="state-card state-card--empty"
+      >
+        <span class="state-icon" aria-hidden="true">🏆</span>
+        <h2>No hay resultados disponibles</h2>
+        <p>Aún no se han registrado jugadores en el top de este torneo.</p>
+      </div>
+
+      <article
+        v-else
+        ref="captureArea"
+        :class="[
+          'tournament-card',
+          {
+            'is-dark-card': effectiveDarkCard,
+            'is-capturing': isExporting
+          }
+        ]"
+      >
+        <header class="tournament-header">
+          <p class="eyebrow">Tournament Top</p>
+          <h1 class="title">
+            {{ $t('tournamentsSeccion.title') }}
+            <span>{{ tournamentName }}</span>
+          </h1>
+        </header>
+
+        <div class="players-list">
+          <section
+            v-for="player in topPlayers"
+            :key="getPlayerKey(player)"
+            :class="['player-card', getCardClass(player.position)]"
+          >
+            <div class="player-header">
+              <span
+                :class="['position', getPositionClass(player.position)]"
+                :aria-label="`Posición ${player.position}`"
+              >
+                #{{ player.position }}
+              </span>
+
+              <div class="player-identity">
+                <span class="player-name">{{ getPlayerName(player) }}</span>
+                <span class="team-count">
+                  {{ orderedPokemons(player.pokemons).length }} Pokémon
+                </span>
+              </div>
+            </div>
+
+            <div class="pokemon-row">
+              <article
+                v-for="poke in orderedPokemons(player.pokemons)"
+                :key="getPokemonKey(player, poke)"
+                class="pokemon-card"
+              >
+                <div class="pokemon-image-shell">
+                  <span class="pokemon-placeholder" aria-hidden="true">?</span>
+                  <img
+                    v-if="getPokemonImage(poke)"
+                    :src="getPokemonImage(poke)"
+                    :alt="getPokemonName(poke)"
+                    crossorigin="anonymous"
+                    loading="eager"
+                    decoding="async"
+                    @error="hideBrokenImage"
+                  >
+                </div>
+                <span class="pokemon-name">{{ getPokemonName(poke) }}</span>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <footer class="tournament-footer">
+          <span>{{ $t('tournamentsSeccion.tournamentImgFooter') }}</span>
+          <a
+            href="https://x.com/Pokecircuit"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @Pokecircuit
+          </a>
+        </footer>
+      </article>
+    </section>
+  </main>
 </template>
 
 <script setup>
-  import { ref, inject, onMounted } from 'vue'
-  import { useRoute } from 'vue-router'
-  import axios from 'axios'
-  import ShareButtons from "../components/ShareButtons.vue";
-  import { createEvent } from "@/services/eventService";
+import { computed, inject, nextTick, onMounted, ref, unref } from 'vue'
+import { useRoute } from 'vue-router'
+import axios from 'axios'
+import html2canvas from 'html2canvas'
+import Swal from 'sweetalert2'
 
+import ShareButtons from '../components/ShareButtons.vue'
+import { createEvent } from '@/services/eventService'
 
-  import html2canvas from 'html2canvas'
-  import Swal from 'sweetalert2';
+const mode = inject('mode', ref('light'))
+const apiUrl = inject('apiUrl', '')
+const gifLoading = inject('gifLoading', '')
+const sunIcon = inject('sunIcon', '')
+const moonIcon = inject('moonIcon', '')
 
-  const mode = inject('mode')
-  const apiUrl = inject('apiUrl')
+const route = useRoute()
+const idTorneo = computed(() => String(route.params.id_torneo ?? '').trim())
 
-  const route = useRoute()
-  const idTorneo = route.params.id_torneo
+const captureArea = ref(null)
+const loading = ref(true)
+const isExporting = ref(false)
+const captureTheme = ref(null)
+const errorMessage = ref('')
+const topPlayers = ref([])
+const tournamentTop = ref(null)
 
-  const captureArea = ref(null)
+const currentUrl = ref(
+  typeof window !== 'undefined' ? window.location.href : ''
+)
 
-  const currentUrl = window.location.href;
+const isDarkMode = computed(() => unref(mode) === 'dark')
 
-  const loading = ref(true)
-  
-  const gifLoading = inject('gifLoading');
-  const sunIcon = inject('sunIcon');
-  const moonIcon = inject('moonIcon');
+const effectiveDarkCard = computed(() => {
+  if (captureTheme.value) return captureTheme.value === 'dark'
+  return isDarkMode.value
+})
 
-  // ===============================
-  // State
-  // ===============================
-  const topPlayers = ref([])
+const tournamentName = computed(() => {
+  const tournament = tournamentTop.value ?? {}
+  return tournament.nombre || tournament.name || `#${idTorneo.value}`
+})
 
-  const tournamentTop = ref([])
+const shareText = computed(() => (
+  `Revisa el top del torneo ${tournamentName.value}`
+))
 
-  // ===============================
-  // Load top players
-  // ===============================
-  const loadTopPlayers = async () => {
-    try {
-      loading.value = true
-      const response = await axios.get(
-        `${apiUrl}tournament-top-players/tops/${idTorneo}`
+const canDownload = computed(() => (
+  !loading.value &&
+  !isExporting.value &&
+  !errorMessage.value &&
+  topPlayers.value.length > 0
+))
+
+const buildApiUrl = (path) => {
+  const baseUrl = String(unref(apiUrl) ?? '').replace(/\/+$/, '')
+  const normalizedPath = String(path).replace(/^\/+/, '')
+  return `${baseUrl}/${normalizedPath}`
+}
+
+const registerAnalyticsEvent = async (description) => {
+  try {
+    await createEvent({
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      date: new Date().toISOString(),
+      type: `top_tournament, id_tournament: ${idTorneo.value}`,
+      description
+    })
+  } catch (error) {
+    // La analítica no debe interrumpir la experiencia principal.
+    console.warn('No se pudo registrar el evento del top del torneo', error)
+  }
+}
+
+const loadTopPlayers = async () => {
+  loading.value = true
+  errorMessage.value = ''
+  topPlayers.value = []
+  tournamentTop.value = null
+
+  if (!idTorneo.value) {
+    errorMessage.value = 'El identificador del torneo no es válido.'
+    loading.value = false
+    return
+  }
+
+  try {
+    const response = await axios.get(
+      buildApiUrl(`tournament-top-players/tops/${encodeURIComponent(idTorneo.value)}`)
+    )
+
+    const players = Array.isArray(response.data) ? response.data : []
+    topPlayers.value = players
+    tournamentTop.value = players[0]?.tournament ?? null
+
+    if (players.length > 0) {
+      void registerAnalyticsEvent(
+        `Visualización de la imagen del top del torneo ${tournamentName.value}`
       )
-
-      if(response.data.length === 0) {
-        Swal.fire({
-          icon: 'info',
-          title: 'No hay datos',
-          text: 'No se encontraron jugadores en el top de este torneo.',
-        })
-      }else{
-        topPlayers.value = response.data;
-        tournamentTop.value = response.data[0].tournament;
-
-        await createEvent({
-          userAgent: navigator.userAgent,
-          date: new Date().toISOString(),
-          type: "top_tournament, id_tournament: "+idTorneo,
-          description: "imagem del top del torneo "+tournamentTop.value.name,
-        });
-        
-      }
-
-
-    } catch (error) {
-      console.error('Error cargando top del torneo', error)
-    } finally {
-      loading.value = false
     }
+  } catch (error) {
+    console.error('Error cargando el top del torneo', error)
+    errorMessage.value =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      'Ocurrió un problema al consultar los resultados. Inténtalo nuevamente.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const orderedPokemons = (pokemons) => {
+  if (!Array.isArray(pokemons)) return []
+
+  return [...pokemons]
+    .filter(Boolean)
+    .sort((pokemonA, pokemonB) => {
+      const slotA = Number(pokemonA?.slot ?? Number.MAX_SAFE_INTEGER)
+      const slotB = Number(pokemonB?.slot ?? Number.MAX_SAFE_INTEGER)
+      return slotA - slotB
+    })
+}
+
+const getPlayerName = (player) => {
+  const fullName = [player?.firstName, player?.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+
+  return fullName || player?.name || 'Jugador sin nombre'
+}
+
+const getPlayerKey = (player) => (
+  player?.id ||
+  `${player?.position ?? 'position'}-${getPlayerName(player)}`
+)
+
+const getPokemonName = (poke) => (
+  poke?.pokemon?.name || poke?.name || 'Pokémon'
+)
+
+const getPokemonImage = (poke) => (
+  poke?.pokemon?.imageUrl || poke?.imageUrl || ''
+)
+
+const getPokemonKey = (player, poke) => (
+  poke?.id ||
+  `${getPlayerKey(player)}-${poke?.slot ?? 'slot'}-${getPokemonName(poke)}`
+)
+
+const hideBrokenImage = (event) => {
+  event.currentTarget.style.display = 'none'
+}
+
+const waitForImages = async (container) => {
+  const images = Array.from(container.querySelectorAll('img'))
+
+  await Promise.all(
+    images.map((image) => {
+      if (image.complete) return Promise.resolve()
+
+      return new Promise((resolve) => {
+        image.addEventListener('load', resolve, { once: true })
+        image.addEventListener('error', resolve, { once: true })
+      })
+    })
+  )
+}
+
+const waitForRendering = async () => {
+  await nextTick()
+
+  if (typeof document !== 'undefined' && document.fonts?.ready) {
+    await document.fonts.ready
   }
 
-  // ===============================
-  // Helpers
-  // ===============================
-  const orderedPokemons = (pokemons) => {
-    return [...pokemons].sort((b, a) => a.slot - b.slot)
-  }
+  await new Promise((resolve) => requestAnimationFrame(() => resolve()))
+  await new Promise((resolve) => requestAnimationFrame(() => resolve()))
+}
 
-  const downloadImage = async (theme) => {
-    if (!captureArea.value) return
+const sanitizeFileName = (value) => (
+  String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()
+)
 
-    // Guardamos clases actuales
-    const card = captureArea.value
-    const hadDark = card.classList.contains('dark-card')
+const downloadImage = async (theme) => {
+  if (!captureArea.value || !canDownload.value) return
 
-    // Forzar modo deseado SOLO para la captura
-    if (theme === 'light') {
-      card.classList.remove('dark-card')
-    } else {
-      card.classList.add('dark-card')
-    }
+  const selectedTheme = theme === 'dark' ? 'dark' : 'light'
+  isExporting.value = true
+  captureTheme.value = selectedTheme
 
-    await new Promise(resolve => requestAnimationFrame(resolve))
+  try {
+    await waitForRendering()
+    await waitForImages(captureArea.value)
 
-    const canvas = await html2canvas(card, {
-      backgroundColor: null,
-      scale: 2,
+    const canvas = await html2canvas(captureArea.value, {
+      backgroundColor: selectedTheme === 'dark' ? '#111827' : '#ffffff',
+      scale: Math.min(window.devicePixelRatio || 2, 3),
       useCORS: true,
-      allowTaint: false
+      allowTaint: false,
+      logging: false,
+      imageTimeout: 15000
     })
 
-    // Restaurar estado original
-    if (hadDark) {
-      card.classList.add('dark-card')
-    } else {
-      card.classList.remove('dark-card')
-    }
-
-    await createEvent({
-      userAgent: navigator.userAgent,
-      date: new Date().toISOString(),
-      type: "top_tournament, id_tournament: "+idTorneo,
-      description: "Descargan imagen del torneoId "+idTorneo,
-    });
-
+    const tournamentSlug = sanitizeFileName(tournamentName.value) || idTorneo.value
     const link = document.createElement('a')
-    link.download = `top-torneo-${idTorneo}-${theme}.png`
+    link.download = `top-torneo-${tournamentSlug}-${selectedTheme}.png`
     link.href = canvas.toDataURL('image/png')
+    document.body.appendChild(link)
     link.click()
+    link.remove()
+
+    void registerAnalyticsEvent(
+      `Descarga de imagen ${selectedTheme} del torneo ${idTorneo.value}`
+    )
+  } catch (error) {
+    console.error('Error generando la imagen del torneo', error)
+    await Swal.fire({
+      icon: 'error',
+      title: 'No se pudo generar la imagen',
+      text: 'Verifica que las imágenes estén disponibles e inténtalo nuevamente.'
+    })
+  } finally {
+    captureTheme.value = null
+    isExporting.value = false
   }
+}
 
-  const getPositionClass = (position) => {
-    if (position === 1) return 'gold'
-    if (position === 2) return 'silver'
-    if (position === 3) return 'bronze'
-    return 'default'
-  }
+const getPositionClass = (position) => {
+  const normalizedPosition = Number(position)
+  if (normalizedPosition === 1) return 'position--gold'
+  if (normalizedPosition === 2) return 'position--silver'
+  if (normalizedPosition === 3) return 'position--bronze'
+  return 'position--default'
+}
 
-  const getCardClass = (position) => {
-    if (position === 1) return 'card-gold'
-    if (position === 2) return 'card-silver'
-    if (position === 3) return 'card-bronze'
-    return ''
-  }
+const getCardClass = (position) => {
+  const normalizedPosition = Number(position)
+  if (normalizedPosition === 1) return 'player-card--gold'
+  if (normalizedPosition === 2) return 'player-card--silver'
+  if (normalizedPosition === 3) return 'player-card--bronze'
+  return ''
+}
 
-
-
-  // ===============================
-  // Lifecycle
-  // ===============================
-  onMounted(loadTopPlayers)
-
-
+onMounted(loadTopPlayers)
 </script>
 
-
 <style scoped>
-  .container {
-    padding: 20px;
-  }
+.tournament-top-page {
+  --page-background: #f3f6fb;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --text-primary: #172033;
+  --text-secondary: #667085;
+  --border-color: #e4e7ec;
+  --focus-color: rgba(124, 58, 237, 0.3);
 
-  .card {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 24px;
-    color: #2c3e50;
-  }
+  min-height: 100%;
+  padding: clamp(16px, 3vw, 32px);
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.08), transparent 32rem),
+    var(--page-background);
+  color: var(--text-primary);
+}
 
-  .dark-mode {
-    background: #121212;
-  }
+.tournament-top-page.is-dark {
+  --page-background: #0b1020;
+  --surface: #151b2d;
+  --surface-muted: #1b2338;
+  --text-primary: #f4f7fb;
+  --text-secondary: #aeb8ca;
+  --border-color: #2a344b;
 
-  .dark-card {
-    background: #1e1e1e;
-    color: #ecf0f1;
-  }
+  background:
+    radial-gradient(circle at top left, rgba(139, 92, 246, 0.15), transparent 32rem),
+    var(--page-background);
+}
 
-  .title {
-    text-align: center;
-    margin-bottom: 24px;
-  }
+.page-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
 
-  /* ===============================
-    Player card
-  =============================== */
-  .player-card {
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-  }
-
-  /* =====================
-    🥇 GOLD
-    ===================== */
-  .player-card.card-gold {
-    border: 2px solid #d4af37;
-    background: linear-gradient(
-      135deg,
-      rgba(212, 175, 55, 0.08),
-      rgba(212, 175, 55, 0.02)
-    );
-    box-shadow: 0 0 18px rgba(212, 175, 55, 0.4);
-  }
-
-  /* =====================
-    🥈 SILVER
-    ===================== */
-  .player-card.card-silver {
-    border: 2px solid #c0c0c0;
-    background: linear-gradient(
-      135deg,
-      rgba(192, 192, 192, 0.08),
-      rgba(192, 192, 192, 0.02)
-    );
-    box-shadow: 0 0 14px rgba(192, 192, 192, 0.3);
-  }
-
-  /* =====================
-    🥉 BRONZE
-    ===================== */
-  .player-card.card-bronze {
-    border: 2px solid #cd7f32;
-    background: linear-gradient(
-      135deg,
-      rgba(205, 127, 50, 0.08),
-      rgba(205, 127, 50, 0.02)
-    );
-    box-shadow: 0 0 12px rgba(205, 127, 50, 0.3);
-  }
-
-
-  .dark-card .player-card {
-    border-color: #333;
-  }
-
-  .dark-card .player-card.card-gold {
-    background: linear-gradient(
-      135deg,
-      rgba(212, 175, 55, 0.15),
-      rgba(212, 175, 55, 0.05)
-    );
-  }
-
-  .dark-card .player-card.card-silver {
-    background: linear-gradient(
-      135deg,
-      rgba(192, 192, 192, 0.15),
-      rgba(192, 192, 192, 0.05)
-    );
-  }
-
-  .dark-card .player-card.card-bronze {
-    background: linear-gradient(
-      135deg,
-      rgba(205, 127, 50, 0.15),
-      rgba(205, 127, 50, 0.05)
-    );
-  }
-
-
-  .player-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  .position {
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-weight: bold;
-    color: white;
-  }
-
-  /* 🥇 Oro */
-  .position.gold {
-    background: linear-gradient(135deg, #f7d046, #d4af37);
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
-  }
-
-  /* 🥈 Plata */
-  .position.silver {
-    background: linear-gradient(135deg, #e0e0e0, #b0b0b0);
-    box-shadow: 0 0 6px rgba(192, 192, 192, 0.5);
-  }
-
-  /* 🥉 Bronce */
-  .position.bronze {
-    background: linear-gradient(135deg, #cd7f32, #a97142);
-    box-shadow: 0 0 6px rgba(205, 127, 50, 0.5);
-  }
-
-  /* Otros */
-  .position.default {
-    background: #3498db;
-  }
-
-
-  .player-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  /* ===============================
-    Pokémon row
-  =============================== */
-  .pokemon-row {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 12px;
-  }
-
-  .pokemon-card {
-    text-align: center;
-  }
-
-  .pokemon-card img {
-    width: 100px;
-    height: 100px;
-  }
-
-  .pokemon-name {
-    display: block;
-    margin-top: 4px;
-    font-size: 0.8rem;
-    text-transform: capitalize;
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .pokemon-row {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  .btn-download {
-    background: #9b59b6;
-    color: white;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 16px;
-  }
-
-  .btn-download:hover {
-    opacity: 0.9;
-  }
-
-  .top-actions {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-bottom: 20px;
-  }
-
-  /* Share block */
-  .share-box h3 {
-    margin: 0 0 6px 0;
-    font-size: 1rem;
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .top-actions {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 16px;
-    }
-  }
-
-  .download-group {
-    display: flex;
-    gap: 10px;
-  }
-
-  .btn-download {
-    background: #9b59b6;
-    color: white;
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-  }
-
-  .btn-download.dark {
-    background: #34495e;
-  }
-
-  .btn-download:hover {
-    opacity: 0.9;
-  }
-
-  .top-actions {
+.top-actions {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 20px;
   margin-bottom: 20px;
 }
 
-/* Botones */
 .download-actions {
   display: flex;
-  gap: 12px;
-}
-
-.btn-download {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-/* Share box */
-.share-box {
-  display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
-.dark-mode .btn-download {
-  background: #2c2c2c;
-  color: #ecf0f1;
+.action-button,
+.retry-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 15px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
 }
 
-.btn-download.dark {
-  background: #34495e;
+.action-button:hover:not(:disabled),
+.retry-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.14);
 }
 
+.action-button:focus-visible,
+.retry-button:focus-visible,
+.tournament-footer a:focus-visible {
+  outline: 3px solid var(--focus-color);
+  outline-offset: 2px;
+}
 
-/* =====================
-   📱 MOBILE
-   ===================== */
+.action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.action-button--light {
+  background: #ffffff;
+  border-color: #d0d5dd;
+  color: #344054;
+}
+
+.action-button--dark {
+  background: #253047;
+  border-color: #34415d;
+  color: #ffffff;
+}
+
+.is-dark .action-button--light {
+  background: #f8fafc;
+  color: #1f2937;
+}
+
+.share-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.share-box h3 {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.state-card {
+  display: flex;
+  min-height: 320px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background: var(--surface);
+  text-align: center;
+  box-shadow: 0 18px 45px rgba(16, 24, 40, 0.08);
+}
+
+.state-card h2,
+.state-card p {
+  margin: 0;
+}
+
+.state-card p {
+  max-width: 520px;
+  color: var(--text-secondary);
+}
+
+.state-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.state-card--error .state-icon {
+  background: #fee4e2;
+  color: #b42318;
+}
+
+.loading-image {
+  /*width: min(110px, 32vw);*/
+  height: auto;
+}
+
+.loading-spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid var(--border-color);
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+.retry-button {
+  margin-top: 8px;
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.tournament-card {
+  width: 100%;
+  padding: clamp(20px, 4vw, 44px);
+  overflow: hidden;
+  border: 1px solid #e4e7ec;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(124, 58, 237, 0.09), transparent 23rem),
+    #ffffff;
+  color: #172033;
+  box-shadow: 0 22px 60px rgba(16, 24, 40, 0.12);
+}
+
+.tournament-card.is-dark-card {
+  border-color: #2a344b;
+  background:
+    radial-gradient(circle at 100% 0, rgba(139, 92, 246, 0.2), transparent 23rem),
+    #111827;
+  color: #f7f9fc;
+}
+
+.tournament-card.is-capturing {
+  box-shadow: none;
+}
+
+.tournament-header {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #7c3aed;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.is-dark-card .eyebrow {
+  color: #c4b5fd;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.55rem, 4vw, 2.45rem);
+  line-height: 1.15;
+}
+
+.title span {
+  display: block;
+  margin-top: 5px;
+  color: #7c3aed;
+}
+
+.is-dark-card .title span {
+  color: #c4b5fd;
+}
+
+.players-list {
+  display: grid;
+  gap: 18px;
+}
+
+.player-card {
+  position: relative;
+  padding: clamp(16px, 2.5vw, 24px);
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.is-dark-card .player-card {
+  border-color: #303b52;
+  background: rgba(25, 34, 52, 0.82);
+}
+
+.player-card--gold {
+  border: 2px solid #d4af37;
+  background: linear-gradient(135deg, rgba(247, 208, 70, 0.15), rgba(255, 255, 255, 0.8));
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.17);
+}
+
+.player-card--silver {
+  border: 2px solid #b8bec9;
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.16), rgba(255, 255, 255, 0.8));
+}
+
+.player-card--bronze {
+  border: 2px solid #c47a35;
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.14), rgba(255, 255, 255, 0.8));
+}
+
+.is-dark-card .player-card--gold {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(25, 34, 52, 0.9));
+}
+
+.is-dark-card .player-card--silver {
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.17), rgba(25, 34, 52, 0.9));
+}
+
+.is-dark-card .player-card--bronze {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.18), rgba(25, 34, 52, 0.9));
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 18px;
+}
+
+.position {
+  display: inline-grid;
+  min-width: 48px;
+  min-height: 40px;
+  place-items: center;
+  padding: 6px 10px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.position--gold {
+  background: linear-gradient(135deg, #f5d45b, #b88b12);
+  color: #3d2c00;
+  box-shadow: 0 6px 14px rgba(212, 175, 55, 0.32);
+}
+
+.position--silver {
+  background: linear-gradient(135deg, #edf0f5, #9ea6b3);
+  color: #27303f;
+  box-shadow: 0 6px 14px rgba(145, 151, 162, 0.26);
+}
+
+.position--bronze {
+  background: linear-gradient(135deg, #d99759, #9b5720);
+  box-shadow: 0 6px 14px rgba(155, 87, 32, 0.28);
+}
+
+.position--default {
+  background: linear-gradient(135deg, #667eea, #4f46e5);
+}
+
+.player-identity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.player-name {
+  overflow: hidden;
+  font-size: clamp(1rem, 2.4vw, 1.2rem);
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-count {
+  color: #667085;
+  font-size: 0.78rem;
+}
+
+.is-dark-card .team-count {
+  color: #aeb8ca;
+}
+
+.pokemon-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(8px, 1.5vw, 14px);
+}
+
+.pokemon-card {
+  min-width: 0;
+  padding: 10px 6px;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.85);
+  text-align: center;
+}
+
+.is-dark-card .pokemon-card {
+  background: rgba(11, 16, 32, 0.46);
+}
+
+.pokemon-image-shell {
+  position: relative;
+  display: grid;
+  width: min(100%, 108px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  place-items: center;
+}
+
+.pokemon-image-shell img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 7px rgba(16, 24, 40, 0.15));
+}
+
+.pokemon-placeholder {
+  position: absolute;
+  display: grid;
+  width: 62%;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: #e4e7ec;
+  color: #98a2b3;
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.is-dark-card .pokemon-placeholder {
+  background: #303b52;
+  color: #98a2b3;
+}
+
+.pokemon-name {
+  display: block;
+  overflow: hidden;
+  margin-top: 7px;
+  font-size: clamp(0.68rem, 1.6vw, 0.82rem);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.tournament-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 26px;
+  color: #667085;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.is-dark-card .tournament-footer {
+  color: #aeb8ca;
+}
+
+.tournament-footer a {
+  color: #7c3aed;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.is-dark-card .tournament-footer a {
+  color: #c4b5fd;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 768px) {
+  .tournament-top-page {
+    padding: 14px;
+  }
+
   .top-actions {
     flex-direction: column;
     align-items: stretch;
   }
 
   .download-actions {
-    flex-direction: column;
-  }
-
-  .btn-download {
-    width: 100%;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .share-box {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 10px;
-    background: #f7f7f7;
-    flex-direction: column;
+    justify-content: space-between;
   }
 
-  .dark-mode .share-box {
-    background: #1f1f1f;
+  .pokemon-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
+@media (max-width: 480px) {
+  .download-actions {
+    grid-template-columns: 1fr;
+  }
 
+  .share-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
+  .tournament-card {
+    padding: 18px 13px;
+    border-radius: 16px;
+  }
 
+  .player-card {
+    padding: 14px 10px;
+  }
+
+  .pokemon-row {
+    gap: 6px;
+  }
+
+  .pokemon-card {
+    padding: 7px 3px;
+  }
+
+  .tournament-footer {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-button,
+  .retry-button,
+  .loading-spinner {
+    transition: none;
+    animation-duration: 1ms;
+  }
+}
 </style>

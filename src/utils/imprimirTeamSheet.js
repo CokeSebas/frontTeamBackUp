@@ -4,13 +4,13 @@
 
 /**Fonts */
 //import { fontChs } from './fonts/fontChs.js';
-import fontLatin  from './fonts/fontLatin.js';
-import fontCh  from './fonts/fontCht.js';
-import fontJpn  from './fonts/fontJpn.js';
-import fontKor  from './fonts/fontKor.js';
+import fontLatin from './fonts/fontLatin.js';
+import fontCh from './fonts/fontCht.js';
+import fontJpn from './fonts/fontJpn.js';
+import fontKor from './fonts/fontKor.js';
 import text1 from './fonts/font1.js'
 import text2 from './fonts/font2.js';
-import text3  from './fonts/font3.js';
+import text3 from './fonts/font3.js';
 /**Fonts */
 
 import pokedex from './resources/Showdown/pokedex.js';
@@ -34,6 +34,7 @@ export async function generateTeamPDF(data) {
     switchName,
     playerId,
     birth,
+    supportId = '',
     ageDivision,
     sheet,
     lang,
@@ -49,18 +50,15 @@ export async function generateTeamPDF(data) {
     Kor: fontKor
   }
 
-  //const selectedFont = fontMap[lang] || fontLatin
-
-  if(onlyPdf === true){
+  if (onlyPdf === true) {
     if (!sheet || !lang) {
       throw new Error('Missing required data')
     }
-  }else{
+  } else {
     if (!sheet || !paste || !lang) {
       throw new Error('Missing required data')
     }
   }
-
 
   let msg, x, y, mygap;
 
@@ -74,12 +72,28 @@ export async function generateTeamPDF(data) {
 
   let pokes = parsedTeam.teams[0].pokemon;
 
-  if(onlyPdf === true){
+  if (onlyPdf === true) {
     pokes = []
   }
 
-  let ivs = {'hp': 31, 'atk': 31, 'def': 31, 'spa': 31, 'spd': 31, 'spe': 31};
-  let evs = {'hp': 0, 'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0};
+  let ivs = {
+    hp: 31,
+    atk: 31,
+    def: 31,
+    spa: 31,
+    spd: 31,
+    spe: 31
+  };
+
+  let evs = {
+    hp: 0,
+    atk: 0,
+    def: 0,
+    spa: 0,
+    spd: 0,
+    spe: 0
+  };
+
   let level = 100;
   let nature = 'Serious';
 
@@ -89,7 +103,7 @@ export async function generateTeamPDF(data) {
   let gapx = 21;
 
 
-  if (sheet == 'open' || sheet == 'staff'){
+  if (sheet == 'open' || sheet == 'staff') {
     chosenLang = lang;
 
     const selectedFont = fontMap[lang] || fontLatin
@@ -100,24 +114,34 @@ export async function generateTeamPDF(data) {
 
     doc.setFontSize(7);
     doc.setFont("text2", 'normal');
+
     msg = "All Pokémon must be listed exactly as they appear in the Battle Team,";
     doc.text(50, 272, msg);
 
     doc.setFont("text1", 'normal');
+
     msg = "at the level they are in the game.";
     doc.text(120.5, 272, msg);
 
     doc.setFontSize(13);
     doc.setFont("text1", 'normal');
+
     msg = "Pokémon Video Game Team List";
     doc.text(73, 12.5, msg);
 
     doc.setLineWidth(0.3);
+
     x = 45;
     y = 34.5;
     mygap = 7;
+
     for (let i = 0; i < 4; i++) {
-        doc.line(x, y+mygap*i, x+65, y+mygap*i);
+      doc.line(
+        x,
+        y + mygap * i,
+        x + 65,
+        y + mygap * i
+      );
     }
 
     doc.setFontSize(12);
@@ -139,118 +163,165 @@ export async function generateTeamPDF(data) {
 
     x = 155;
     gapx = 21;
+
     for (let i = 0; i < 3; i++) {
-        doc.rect(x + gapx * i, 30, 4, 4);
+      doc.rect(x + gapx * i, 30, 4, 4);
     }
 
     msg = "Age Division: ";
     doc.text(140, 33, msg, "right");
+
     msg = "Juniors ";
     doc.text(154, 33, msg, "right");
+
     msg = "Seniors ";
     doc.text(175, 33, msg, "right");
+
     msg = "Masters ";
     doc.text(196, 33, msg, "right");
 
     doc.setFont("text2", 'normal');
     doc.setFontSize(13);
+
     doc.text(playerName, 47, 33);
     doc.text(trainerName, 47, 40);
     doc.text(teamName, 47, 47);
     doc.text(switchName, 47, 54);
 
     for (let i = 0; i < 6; i++) {
-        doc.setLineWidth(0.6);
-        x = 6.5 + 99 * (i%2);
-        y = 59.5 + 70 * Math.floor(i/2);
-        doc.rect(x, y, 95, 68);
+      doc.setLineWidth(0.6);
 
-        doc.setLineWidth(0.4);
-        let startY = 12;
-        mygap = 8;
-        for (let b = 0; b < 7; b++) {
-            doc.line(x, y+startY+mygap*b, x+95, y+startY+mygap*b);
-        }
+      x = 6.5 + 99 * (i % 2);
+      y = 59.5 + 70 * Math.floor(i / 2);
+
+      doc.rect(x, y, 95, 68);
+
+      doc.setLineWidth(0.4);
+
+      let startY = 12;
+      mygap = 8;
+
+      for (let b = 0; b < 7; b++) {
+        doc.line(
+          x,
+          y + startY + mygap * b,
+          x + 95,
+          y + startY + mygap * b
+        );
+      }
     }
 
-    if (ageDivision !== undefined && ageDivision !== null){
-        doc.setLineWidth(1);
-        let posX = 154 + 21 * ageDivision;
-        doc.line(posX, 29, posX+6, 35);
-        doc.line(posX+6, 29, posX, 35);
+    if (ageDivision !== undefined && ageDivision !== null) {
+      doc.setLineWidth(1);
+
+      let posX = 154 + 21 * ageDivision;
+
+      doc.line(posX, 29, posX + 6, 35);
+      doc.line(posX + 6, 29, posX, 35);
     }
 
     const t = await loadTranslations(lang);
 
-    if(onlyPdf === true){
+    if (onlyPdf === true) {
       for (let i = 0; i < 6; i++) {
-  
         let textX = 35;
         statX = 100;
+
         let gapX = 100;
         let textXX = 27.5;
-  
+
         pokeY = 67;
+
         let teraY = pokeY + 9.5;
         levelY = pokeY + 9.5;
+
         let abilityY = pokeY + 18;
         let itemY = pokeY + 26;
         let gapY = 70;
-  
+
         let moveY = pokeY + 34;
         let moveGapY = 8;
-  
+
         let itemId = 'NOITEM';
-     
+
         let item = 'NO ITEM';
-        if (itemId != 'NOITEM'){
-            item = t.items[itemId];
+
+        if (itemId != 'NOITEM') {
+          item = t.items[itemId];
         }
+
         let movs = [];
 
-  
-        //Nombre
+        // Nombre
         doc.setFontSize(13);
         doc.setFont("text1", 'normal');
-        doc.text("Pokémon", textXX + (i%2) * gapX, pokeY + (Math.floor(i/2)) * gapY, "right");
 
-  
-        //TeraType
+        doc.text(
+          "Pokémon",
+          textXX + (i % 2) * gapX,
+          pokeY + Math.floor(i / 2) * gapY,
+          "right"
+        );
+
+        // Stat Alignment
         doc.setFontSize(11);
         doc.setFont("text1", 'normal');
-        doc.text("Stat Alignment", (textXX + 5) + (i%2) * gapX, teraY + (Math.floor(i/2)) * gapY, "right");
 
-  
-        //Ability
+        doc.text(
+          "Stat Alignment",
+          (textXX + 5) + (i % 2) * gapX,
+          teraY + Math.floor(i / 2) * gapY,
+          "right"
+        );
+
+        // Ability
         doc.setFontSize(13);
         doc.setFont("text1", 'normal');
-        doc.text("Ability", textXX + (i%2) * gapX, abilityY + (Math.floor(i/2)) * gapY, "right");
 
-  
-        //Item
+        doc.text(
+          "Ability",
+          textXX + (i % 2) * gapX,
+          abilityY + Math.floor(i / 2) * gapY,
+          "right"
+        );
+
+        // Item
         doc.setFontSize(13);
         doc.setFont("text1", 'normal');
-        doc.text("Held Item", textXX + (i%2) * gapX, itemY + (Math.floor(i/2)) * gapY, "right");
 
-  
+        doc.text(
+          "Held Item",
+          textXX + (i % 2) * gapX,
+          itemY + Math.floor(i / 2) * gapY,
+          "right"
+        );
+
         for (let j = 0; j < 4; j++) {
           doc.setFontSize(13);
           doc.setFont("text1", 'normal');
-          doc.text("Move " + (j+1), textXX + (i%2) * gapX, moveY + (Math.floor(i/2)) * gapY + j * moveGapY, "right");
+
+          doc.text(
+            "Move " + (j + 1),
+            textXX + (i % 2) * gapX,
+            moveY + Math.floor(i / 2) * gapY + j * moveGapY,
+            "right"
+          );
         }
       }
     }
 
     for (let i = 0; i < pokes.length; i++) {
-
       let textX = 35;
       statX = 100;
+
       let gapX = 100;
       let textXX = 27.5;
 
       pokeY = 67;
+
       let teraY = pokeY + 9.5;
       levelY = pokeY + 9.5;
+
       let abilityY = pokeY + 18;
       let itemY = pokeY + 26;
       let gapY = 70;
@@ -260,221 +331,367 @@ export async function generateTeamPDF(data) {
 
       let nameId = PokeTranslator[pokes[i].name];
       let abilityId = AbilityTranslator[pokes[i].ability];
-      //let teraTypeId = TypeTranslator[pokes[i].teraType];
       let natureId = NaturesTranslator[pokes[i].nature];
 
       let itemId = 'NOITEM';
-      if (pokes[i].item){
-          itemId = ItemTranslator[pokes[i].item];
+
+      if (pokes[i].item) {
+        itemId = ItemTranslator[pokes[i].item];
       }
 
-      if (pokes[i].nature){
+      if (pokes[i].nature) {
         nature = t.natures[natureId];
       }
-      if(nature === undefined){
+
+      if (nature === undefined) {
         nature = pokes[i].nature;
       }
 
-      if (pokes[i].level){
+      if (pokes[i].level) {
         level = pokes[i].level;
       }
 
       if (pokes[i].ivs) {
-        for (const [key, value] of Object.entries(pokes[i].ivs)){
+        for (const [key, value] of Object.entries(pokes[i].ivs)) {
           ivs[key] = value;
         }
       }
 
-      if (pokes[i].evs){
-        for (const [key, value] of Object.entries(pokes[i].evs)){
+      if (pokes[i].evs) {
+        for (const [key, value] of Object.entries(pokes[i].evs)) {
           evs[key] = value;
         }
       }
 
-      if(inputMode === 'paste'){
-        if (!pokedex[pokes[i].name]){
+      if (inputMode === 'paste') {
+        if (!pokedex[pokes[i].name]) {
           throw new Error('ERROR IN PASTE')
-        }      
+        }
       }
 
       let name = t.pokes[nameId];
+
+      if (name === undefined) {
+        name = pokes[i].name;
+      }
+
       let ability = t.abilities[abilityId];
 
-      if(ability === undefined){
+      if (ability === undefined) {
         ability = pokes[i].ability;
       }
 
       let item = 'NO ITEM';
-      if (itemId != 'NOITEM'){
-          item = t.items[itemId];
+
+      if (itemId != 'NOITEM') {
+        item = t.items[itemId];
       }
-      if(item === undefined){
+
+      if (item === undefined) {
         item = pokes[i].item;
       }
 
       let movs = [];
-      for (let x = 0; x < pokes[i].moves.length; x++){
-          let moveId = MoveTranslator[pokes[i].moves[x]];
-          if (moveId === undefined) {
-            movs.push(pokes[i].moves[x]);
-          }else{
-            movs.push(t.moves[moveId]);
-          }
+
+      for (let moveIndex = 0; moveIndex < pokes[i].moves.length; moveIndex++) {
+        let moveId = MoveTranslator[pokes[i].moves[moveIndex]];
+
+        if (moveId === undefined) {
+          movs.push(pokes[i].moves[moveIndex]);
+        } else {
+          movs.push(t.moves[moveId]);
+        }
       }
 
-      //Nombre
+      // Nombre Pokémon
       doc.setFontSize(13);
       doc.setFont("text1", 'normal');
-      doc.text("Pokémon", textXX + (i%2) * gapX, pokeY + (Math.floor(i/2)) * gapY, "right");
+
+      doc.text(
+        "Pokémon",
+        textXX + (i % 2) * gapX,
+        pokeY + Math.floor(i / 2) * gapY,
+        "right"
+      );
+
       doc.setFontSize(12);
       doc.setFont("customFont", 'normal');
-      doc.text(name, textX + (i%2) * gapX, pokeY + (Math.floor(i/2)) * gapY);
 
-      //nature
+      doc.text(
+        name,
+        textX + (i % 2) * gapX,
+        pokeY + Math.floor(i / 2) * gapY
+      );
+
+      // Naturaleza
       doc.setFontSize(11);
       doc.setFont("text1", 'normal');
-      doc.text("Stat Alignment", (textXX + 5) + (i%2) * gapX, teraY + (Math.floor(i/2)) * gapY, "right");
+
+      doc.text(
+        "Stat Alignment",
+        (textXX + 5) + (i % 2) * gapX,
+        teraY + Math.floor(i / 2) * gapY,
+        "right"
+      );
+
       doc.setFontSize(11);
       doc.setFont("customFont", 'normal');
-      doc.text(nature, textX  + (i%2) * gapX, teraY + (Math.floor(i/2)) * gapY);
 
-      //Ability
+      doc.text(
+        nature,
+        textX + (i % 2) * gapX,
+        teraY + Math.floor(i / 2) * gapY
+      );
+
+      // Ability
       doc.setFontSize(13);
       doc.setFont("text1", 'normal');
-      doc.text("Ability", textXX + (i%2) * gapX, abilityY + (Math.floor(i/2)) * gapY, "right");
+
+      doc.text(
+        "Ability",
+        textXX + (i % 2) * gapX,
+        abilityY + Math.floor(i / 2) * gapY,
+        "right"
+      );
+
       doc.setFontSize(11);
       doc.setFont("customFont", 'normal');
-      doc.text(ability, textX + (i%2) * gapX, abilityY + (Math.floor(i/2)) * gapY);
 
-      //Item
+      doc.text(
+        ability,
+        textX + (i % 2) * gapX,
+        abilityY + Math.floor(i / 2) * gapY
+      );
+
+      // Item
       doc.setFontSize(13);
       doc.setFont("text1", 'normal');
-      doc.text("Held Item", textXX + (i%2) * gapX, itemY + (Math.floor(i/2)) * gapY, "right");
+
+      doc.text(
+        "Held Item",
+        textXX + (i % 2) * gapX,
+        itemY + Math.floor(i / 2) * gapY,
+        "right"
+      );
+
       doc.setFontSize(11);
       doc.setFont("customFont", 'normal');
-      doc.text(item, textX + (i%2) * gapX, itemY + (Math.floor(i/2)) * gapY);
+
+      doc.text(
+        item,
+        textX + (i % 2) * gapX,
+        itemY + Math.floor(i / 2) * gapY
+      );
 
       for (let j = 0; j < movs.length; j++) {
         doc.setFontSize(13);
         doc.setFont("text1", 'normal');
-        doc.text("Move " + (j+1), textXX + (i%2) * gapX, moveY + (Math.floor(i/2)) * gapY + j * moveGapY, "right");
+
+        doc.text(
+          "Move " + (j + 1),
+          textXX + (i % 2) * gapX,
+          moveY + Math.floor(i / 2) * gapY + j * moveGapY,
+          "right"
+        );
+
         doc.setFontSize(11);
         doc.setFont("customFont", 'normal');
-        doc.text(movs[j], textX + (i%2) * gapX, moveY + (Math.floor(i/2)) * gapY + j * moveGapY);
+
+        doc.text(
+          movs[j],
+          textX + (i % 2) * gapX,
+          moveY + Math.floor(i / 2) * gapY + j * moveGapY
+        );
       }
     }
-    
   }
 
   if (sheet === 'open') {
-      doc.setFontSize(13);
-      doc.setFont("text1", 'normal');
-      msg = "2 of 2: ";
-      doc.text(83, 18, msg);
+    doc.setFontSize(13);
+    doc.setFont("text1", 'normal');
 
-      doc.setFont("text3", 'normal');
-      msg = "For Opponents";
-      doc.text(96, 18, msg);
+    msg = "2 of 2: ";
+    doc.text(83, 18, msg);
 
-      doc.setFontSize(10);
-      doc.setFont("text3", 'normal');
-      msg = "Do not lose this page! Keep it throughout the tournament, sharing it with your opponent each round.";
-      doc.text(31, 24, msg);
+    doc.setFont("text3", 'normal');
 
-      doc.save(playerId+"-"+playerName+"-openTeamSheet.pdf");
+    msg = "For Opponents";
+    doc.text(96, 18, msg);
 
+    doc.setFontSize(10);
+    doc.setFont("text3", 'normal');
+
+    msg = "Do not lose this page! Keep it throughout the tournament, sharing it with your opponent each round.";
+    doc.text(31, 24, msg);
+
+    doc.save(
+      playerId + "-" + playerName + "-openTeamSheet.pdf"
+    );
   }
 
   if (sheet == 'staff') {
-      doc.setFontSize(13);
+    doc.setFontSize(13);
+    doc.setFont("text1", 'normal');
+
+    msg = "1 of 2: ";
+    doc.text(77, 18, msg);
+
+    doc.setFont("text3", 'normal');
+
+    msg = "For Tournament Staff";
+    doc.text(90, 18, msg);
+
+    doc.setFontSize(10);
+    doc.setFont("text3", 'normal');
+
+    msg = "Complete both pages of this document. Submit this page to event staff before the tournament, at the time set by the Organizer.";
+    doc.text(12, 24, msg);
+
+    doc.setLineWidth(0.3);
+
+    /*
+     * CAMPOS SUPERIORES DERECHOS
+     *
+     * Player ID
+     * Date of Birth
+     * Support ID
+     */
+
+    // Player ID
+    doc.setFontSize(9);
+    doc.setFont("text1", 'normal');
+
+    msg = "Player ID: ";
+    doc.text(140, 40, msg, "right");
+
+    doc.line(140, 41.5, 180, 41.5);
+
+    doc.setFontSize(13);
+    doc.setFont("text2", 'normal');
+
+    doc.text(
+      String(playerId ?? ''),
+      142,
+      40
+    );
+
+    // Date of Birth
+    doc.setFontSize(9);
+    doc.setFont("text1", 'normal');
+
+    msg = "Year of Birth: ";
+    doc.text(140, 47, msg, "right");
+
+    doc.line(140, 48.5, 180, 48.5);
+
+    doc.setFontSize(13);
+    doc.setFont("text2", 'normal');
+
+    const birthYear = birth ? String(birth).substring(0, 4) : '';
+    doc.text( String(birthYear ?? ''), 142, 47 );
+
+    // Support ID
+    doc.setFontSize(9);
+    doc.setFont("text1", 'normal');
+
+    msg = "Support ID: ";
+    doc.text(140, 54, msg, "right");
+
+    doc.line(140, 55.5, 180, 55.5);
+
+    doc.setFontSize(13);
+    doc.setFont("text2", 'normal');
+
+    doc.text(
+      String(supportId ?? ''),
+      142,
+      54
+    );
+
+    for (let i = 0; i < 6; i++) {
+      doc.setLineWidth(0.4);
+
+      x = 6.5 + 99 * (i % 2);
+      y = 59.5 + 70 * Math.floor(i / 2);
+
+      doc.line(
+        x + 80,
+        y + 12,
+        x + 80,
+        y + 68
+      );
+
+      doc.setFontSize(6);
       doc.setFont("text1", 'normal');
-      msg = "1 of 2: ";
-      doc.text(77, 18, msg);
 
-      doc.setFont("text3", 'normal');
-      msg = "For Tournament Staff";
-      doc.text(90, 18, msg);
+      doc.text(x + 81, y + 14, "Level");
+      doc.text(x + 81, y + 22, "HP");
+      doc.text(x + 81, y + 30, "Atk");
+      doc.text(x + 81, y + 38, "Def");
+      doc.text(x + 81, y + 46, "Sp. Atk");
+      doc.text(x + 81, y + 54, "Sp. Def");
+      doc.text(x + 81, y + 62, "Speed");
+    }
 
-      doc.setFontSize(10);
-      doc.setFont("text3", 'normal');
-      msg = "Complete both pages of this document. Submit this page to event staff before the tournament, at the time set by the Organizer.";
-      doc.text(12, 24, msg);
+    doc.setFontSize(11);
+    doc.setFont("customFont", 'normal');
 
-      doc.setLineWidth(0.3);
-      doc.setFontSize(9);
-      doc.setFont("text1", 'normal');
-      msg = "Player ID: ";
-      doc.text(140, 43, msg, "right");
-      doc.line(140, 44.5, 180, 44.5);
-      doc.setFontSize(13);
-      doc.setFont("text2", 'normal');
-      doc.text(playerId, 142, 43);
+    for (let i = 0; i < pokes.length; i++) {
+      let stats = getStats(
+        pokes[i].name,
+        pokes[i].ivs,
+        pokes[i].evs,
+        pokes[i].level,
+        pokes[i].nature,
+        inputMode
+      );
 
-      doc.setFontSize(9);
-      doc.setFont("text1", 'normal');
-      msg = "Date of Birth: ";
-      doc.text(140, 51, msg, "right");
-      doc.line(140, 52.5, 180, 52.5);
-      doc.setFontSize(13);
-      doc.setFont("text2", 'normal');
-      doc.text(birth, 142, 51);
+      let gapX = 100;
+      let gapY = 70;
 
+      let statY = pokeY + 19;
+      let statGapY = 8;
 
-      for (let i = 0; i < 6; i++) {
-          doc.setLineWidth(0.4);
-          x = 6.5 + 99 * (i%2);
-          y = 59.5 + 70 * Math.floor(i/2);
+      let pokemonLevel = pokes[i].level
+        ? pokes[i].level
+        : 100;
 
-          doc.line(x+80, y+12, x+80, y+68);
-          doc.setFontSize(6);
-          doc.setFont("text1", 'normal');
-          doc.text(x+81, y+14, "Level");
-          doc.text(x+81, y+22, "HP");
-          doc.text(x+81, y+30, "Atk");
-          doc.text(x+81, y+38, "Def");
-          doc.text(x+81, y+46, "Sp. Atk");
-          doc.text(x+81, y+54, "Sp. Def");
-          doc.text(x+81, y+62, "Speed");
-      }
+      doc.text(
+        pokemonLevel.toString(),
+        statX + (i % 2) * (gapX - 1),
+        levelY + Math.floor(i / 2) * gapY,
+        'right'
+      );
 
-      doc.setFontSize(11);
-      doc.setFont("customFont", 'normal');
+      let j = 0;
 
-      for (let i = 0; i < pokes.length; i++) {
-
-        let stats = getStats(
-          pokes[i].name,
-          pokes[i].ivs,
-          pokes[i].evs,
-          pokes[i].level,
-          pokes[i].nature,
-          inputMode
+      for (const [key, value] of Object.entries(stats)) {
+        doc.text(
+          value.toString(),
+          statX + (i % 2) * (gapX - 1),
+          statY + Math.floor(i / 2) * gapY + j * statGapY,
+          'right'
         );
 
-        let gapX = 100, gapY = 70;
-
-        let statY = pokeY + 19;
-        let statGapY = 8;
-
-
-        let level = pokes[i].level ? pokes[i].level : 100;
-
-        doc.text(level.toString(), statX + (i%2) * (gapX-1), levelY + (Math.floor(i/2)) * gapY, 'right');
-
-        let j = 0;
-        for (const [key, value] of Object.entries(stats)){
-            doc.text(value.toString(), statX + (i%2) * (gapX-1), statY + (Math.floor(i/2)) * gapY + j * statGapY, 'right');
-
-            j = j + 1;
-        }
+        j = j + 1;
       }
-      doc.save(playerId+"-"+playerName+"-closedTeamSheet.pdf");
+    }
 
+    doc.save(
+      playerId + "-" + playerName + "-closedTeamSheet.pdf"
+    );
   }
 }
 
 
-function getStats(poke, ivs = {}, evs = {}, level = 100, nat, inputMode) {
+function getStats(
+  poke,
+  ivs = {},
+  evs = {},
+  level = 100,
+  nat,
+  inputMode
+) {
   // MANUAL: tomar valores tal cual llegan
   if (inputMode === 'manual') {
     return {
@@ -486,7 +703,6 @@ function getStats(poke, ivs = {}, evs = {}, level = 100, nat, inputMode) {
       spe: evs.spe ?? 0
     };
   }
-
 
   // PASTE: mantener cálculo actual
   ivs = validateIVs(normalizeIVs(ivs));
@@ -505,20 +721,32 @@ function getStats(poke, ivs = {}, evs = {}, level = 100, nat, inputMode) {
   const nature = natures[nat];
 
   for (const [key] of Object.entries(baseStats)) {
-
     const effectiveEV = evs[key] * 8;
 
     if (key === 'hp') {
       ret.hp = Math.floor(
-        (((2 * baseStats.hp + ivs.hp + effectiveEV / 4) * level) / 100)
-        + level
-        + 10
+        (
+          (
+            (
+              2 * baseStats.hp +
+              ivs.hp +
+              effectiveEV / 4
+            ) * level
+          ) / 100
+        ) + level + 10
       );
     } else {
       ret[key] = Math.floor(
         Math.floor(
-          (((2 * baseStats[key] + ivs[key] + effectiveEV / 4) * level) / 100)
-          + 5
+          (
+            (
+              (
+                2 * baseStats[key] +
+                ivs[key] +
+                effectiveEV / 4
+              ) * level
+            ) / 100
+          ) + 5
         ) * nature[key]
       );
     }
@@ -538,8 +766,12 @@ function normalizeEVs(evs = {}) {
     spe: 0
   };
 
-  return { ...defaultEVs, ...evs };
+  return {
+    ...defaultEVs,
+    ...evs
+  };
 }
+
 
 function normalizeIVs(ivs = {}) {
   const defaultIVs = {
@@ -551,23 +783,40 @@ function normalizeIVs(ivs = {}) {
     spe: 31
   };
 
-  return { ...defaultIVs, ...ivs };
+  return {
+    ...defaultIVs,
+    ...ivs
+  };
 }
+
 
 function validateIVs(ivs) {
   for (const key in ivs) {
-    if (ivs[key] > 31) ivs[key] = 31;
-    if (ivs[key] < 0) ivs[key] = 0;
+    if (ivs[key] > 31) {
+      ivs[key] = 31;
+    }
+
+    if (ivs[key] < 0) {
+      ivs[key] = 0;
+    }
   }
+
   return ivs;
 }
+
 
 function validateEVs(evs) {
   let total = 0;
 
   for (const key in evs) {
-    if (evs[key] > 32) evs[key] = 32;
-    if (evs[key] < 0) evs[key] = 0;
+    if (evs[key] > 32) {
+      evs[key] = 32;
+    }
+
+    if (evs[key] < 0) {
+      evs[key] = 0;
+    }
+
     total += evs[key];
   }
 
@@ -580,7 +829,14 @@ function validateEVs(evs) {
 
 
 async function loadTranslations(lang) {
-  const [types, abilities, items, moves, pokes, natures] = await Promise.all([
+  const [
+    types,
+    abilities,
+    items,
+    moves,
+    pokes,
+    natures
+  ] = await Promise.all([
     import(`./resources/Types/Types${lang}.js`),
     import(`./resources/Abilities/Abilities${lang}.js`),
     import(`./resources/Items/Items${lang}.js`),
@@ -598,6 +854,7 @@ async function loadTranslations(lang) {
     natures: natures.default
   }
 }
+
 
 function loadBaseFonts(doc) {
   doc.addFileToVFS("text1.ttf", text1)
