@@ -183,6 +183,7 @@
                           <button
                             type="button"
                             class="action-button"
+                            :disabled="!tournament.hasRound"
                             :aria-label="`${$t('tournamentsSeccion.goToRound')}: ${tournament.nombre || 'torneo'}`"
                             @click="goToRound(tournament.id)"
                           >
@@ -192,6 +193,7 @@
                           <button
                             type="button"
                             class="action-button"
+                            :disabled="!tournament.hasStanding"
                             :aria-label="`${$t('tournamentsSeccion.goToStanding')}: ${tournament.nombre || 'torneo'}`"
                             @click="goToStanding(tournament.id)"
                           >
@@ -201,6 +203,7 @@
                           <button
                             type="button"
                             class="action-button"
+                            :disabled="!tournament.hasResults"
                             :aria-label="`${$t('tournamentsSeccion.goToResults')}: ${tournament.nombre || 'torneo'}`"
                             @click="goToResults(tournament.id)"
                           >
@@ -256,6 +259,7 @@
                     <button
                       type="button"
                       class="action-button"
+                      :disabled="!tournament.hasRound"
                       @click="goToRound(tournament.id)"
                     >
                       {{ $t('tournamentsSeccion.round') }}
@@ -264,6 +268,7 @@
                     <button
                       type="button"
                       class="action-button"
+                      :disabled="!tournament.hasStanding"
                       @click="goToStanding(tournament.id)"
                     >
                       {{ $t('tournamentsSeccion.standing') }}
@@ -272,6 +277,7 @@
                     <button
                       type="button"
                       class="action-button"
+                      :disabled="!tournament.hasResults"
                       @click="goToResults(tournament.id)"
                     >
                       {{ $t('tournamentsSeccion.results') }}

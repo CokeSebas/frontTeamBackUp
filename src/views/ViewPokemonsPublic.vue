@@ -329,7 +329,7 @@
 
                 <router-link
                   class="btn btn-outline-success pokemon-card__link"
-                  :to="`/pokemon/${encodeURIComponent(pokemon.id)}`"
+                  :to="`/vgc/pokemon/${encodeURIComponent(pokemon.id)}`"
                   :aria-label="`${$t('buttons.seePokemon')}: ${pokemon.name}`"
                 >
                   {{ $t('buttons.seePokemon') }}

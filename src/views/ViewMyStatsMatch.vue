@@ -801,22 +801,23 @@ export default {
 
 <style scoped>
 .stats-match-view {
-  --accent: #e05263;
-  --accent-strong: #c63f52;
-  --accent-dark: #9f3545;
-  --accent-soft: rgba(224, 82, 99, 0.1);
-  --accent-border: rgba(224, 82, 99, 0.28);
-  --accent-glow: rgba(224, 82, 99, 0.18);
-  --page-text: #2d2023;
-  --muted-text: #776a6d;
+  --accent: #7357d5;
+  --accent-strong: #6446c4;
+  --accent-dark: #4d3196;
+  --accent-light: #8b72e6;
+  --accent-soft: rgba(115, 87, 213, 0.1);
+  --accent-border: rgba(115, 87, 213, 0.28);
+  --accent-glow: rgba(115, 87, 213, 0.18);
+  --page-text: #292333;
+  --muted-text: #746d7f;
   --card-bg: rgba(255, 255, 255, 0.95);
-  --card-border: #eadde0;
-  --card-shadow: 0 24px 60px rgba(112, 43, 55, 0.1);
-  --surface-bg: #fffbfc;
-  --surface-strong: #fff5f7;
-  --table-head: #f9ecef;
-  --input-border: #d8cacc;
-  --focus-ring: rgba(224, 82, 99, 0.2);
+  --card-border: #e3deef;
+  --card-shadow: 0 24px 60px rgba(77, 49, 150, 0.1);
+  --surface-bg: #fdfcff;
+  --surface-strong: #f7f3ff;
+  --table-head: #eee9f8;
+  --input-border: #d6d0e2;
+  --focus-ring: rgba(115, 87, 213, 0.2);
   --success: #239466;
   --success-soft: rgba(35, 148, 102, 0.13);
   --warning: #b78310;
@@ -828,35 +829,36 @@ export default {
   background:
     radial-gradient(
       circle at 10% 0%,
-      rgba(224, 82, 99, 0.1),
+      rgba(115, 87, 213, 0.1),
       transparent 28rem
     ),
     radial-gradient(
       circle at 92% 18%,
-      rgba(236, 117, 132, 0.08),
+      rgba(139, 114, 230, 0.08),
       transparent 24rem
     ),
-    linear-gradient(180deg, #fff8f9 0%, #fff 56%, #fff9fa 100%);
+    linear-gradient(180deg, #faf8ff 0%, #fff 56%, #fbf9ff 100%);
   color: var(--page-text);
 }
 
 .stats-match-view.theme-dark {
-  --accent: #e76f80;
-  --accent-strong: #e05263;
-  --accent-dark: #a93f50;
-  --accent-soft: rgba(231, 111, 128, 0.12);
-  --accent-border: rgba(231, 111, 128, 0.28);
-  --accent-glow: rgba(231, 111, 128, 0.2);
-  --page-text: #fff3f5;
-  --muted-text: #d0c0c3;
-  --card-bg: rgba(34, 25, 27, 0.96);
-  --card-border: #49383c;
+  --accent: #9278e7;
+  --accent-strong: #7b5fd7;
+  --accent-dark: #5d42b0;
+  --accent-light: #c4b5ff;
+  --accent-soft: rgba(146, 120, 231, 0.12);
+  --accent-border: rgba(146, 120, 231, 0.28);
+  --accent-glow: rgba(146, 120, 231, 0.2);
+  --page-text: #f7f3ff;
+  --muted-text: #cbc3d5;
+  --card-bg: rgba(35, 30, 46, 0.96);
+  --card-border: #484057;
   --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
-  --surface-bg: #261d1f;
-  --surface-strong: #302326;
-  --table-head: #382a2e;
-  --input-border: #665055;
-  --focus-ring: rgba(231, 111, 128, 0.24);
+  --surface-bg: #211d2a;
+  --surface-strong: #2c2637;
+  --table-head: #352f40;
+  --input-border: #625970;
+  --focus-ring: rgba(146, 120, 231, 0.24);
   --success: #68d7a5;
   --success-soft: rgba(104, 215, 165, 0.14);
   --warning: #efc864;
@@ -867,15 +869,15 @@ export default {
   background:
     radial-gradient(
       circle at 8% 0%,
-      rgba(224, 82, 99, 0.14),
+      rgba(123, 95, 215, 0.14),
       transparent 30rem
     ),
     radial-gradient(
       circle at 94% 20%,
-      rgba(231, 111, 128, 0.09),
+      rgba(146, 120, 231, 0.09),
       transparent 26rem
     ),
-    linear-gradient(180deg, #151011 0%, #191214 55%, #120d0e 100%);
+    linear-gradient(180deg, #14111c 0%, #191521 55%, #100d16 100%);
 }
 
 .stats-match-view,
@@ -907,7 +909,7 @@ export default {
       135deg,
       var(--accent-dark) 0%,
       var(--accent) 58%,
-      #ec7c8c 100%
+      var(--accent-light) 100%
     );
   color: #ffffff;
   text-align: center;
@@ -1047,7 +1049,7 @@ export default {
 
 .theme-dark .summary-badge,
 .theme-dark .detail-kicker {
-  color: #f0a0ac;
+  color: var(--accent-light);
 }
 
 .table-scroll {
@@ -1158,7 +1160,7 @@ export default {
       135deg,
       var(--accent-strong),
       var(--accent),
-      #ec7c8c
+      var(--accent-light)
     );
   color: #ffffff;
   font: inherit;
@@ -1272,7 +1274,7 @@ export default {
   border: 1px solid var(--card-border);
   border-radius: 14px;
   background: var(--card-bg);
-  box-shadow: 0 10px 24px rgba(112, 43, 55, 0.06);
+  box-shadow: 0 10px 24px rgba(77, 49, 150, 0.06);
 }
 
 .match-card::before {
@@ -1324,7 +1326,7 @@ export default {
 
 .theme-dark .badge-round,
 .theme-dark .round-badge {
-  color: #f0a0ac;
+  color: var(--accent-light);
 }
 
 .opponent {
@@ -1494,7 +1496,7 @@ export default {
 }
 
 .theme-dark .error-message {
-  color: #f0a0ac;
+  color: var(--accent-light);
 }
 
 .error-message--compact {
@@ -1535,31 +1537,31 @@ export default {
   justify-content: space-between;
   gap: 24px;
   padding: 30px;
-  border: 1px solid #eadde0;
+  border: 1px solid #e3deef;
   border-radius: 24px;
-  color: #2d2023;
+  color: #292333;
   background:
     radial-gradient(
       circle at 10% 0%,
-      rgba(224, 82, 99, 0.1),
+      rgba(115, 87, 213, 0.1),
       transparent 24rem
     ),
     #ffffff;
-  box-shadow: 0 20px 40px rgba(112, 43, 55, 0.18);
+  box-shadow: 0 20px 40px rgba(77, 49, 150, 0.18);
   font-family: 'Segoe UI', Arial, sans-serif;
   pointer-events: none;
 }
 
 .export-card.dark {
-  border-color: #49383c;
-  color: #fff3f5;
+  border-color: #484057;
+  color: #f7f3ff;
   background:
     radial-gradient(
       circle at 10% 0%,
-      rgba(231, 111, 128, 0.12),
+      rgba(146, 120, 231, 0.12),
       transparent 24rem
     ),
-    #1f1719;
+    #191521;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.42);
 }
 
@@ -1567,7 +1569,7 @@ export default {
   padding: 20px;
   border-radius: 18px;
   background:
-    linear-gradient(135deg, #9f3545, #e05263, #ec7c8c);
+    linear-gradient(135deg, #4d3196, #7357d5, #8b72e6);
   color: #ffffff;
   font-size: 38px;
   font-weight: 800;
@@ -1614,15 +1616,15 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border: 1px solid rgba(112, 43, 55, 0.12);
+  border: 1px solid rgba(77, 49, 150, 0.12);
   border-radius: 14px;
-  background: linear-gradient(145deg, #ffffff, #fff5f7);
-  box-shadow: 0 4px 12px rgba(112, 43, 55, 0.08);
+  background: linear-gradient(145deg, #ffffff, #f7f3ff);
+  box-shadow: 0 4px 12px rgba(77, 49, 150, 0.08);
 }
 
 .dark .match-banner {
   border-color: rgba(255, 255, 255, 0.08);
-  background: linear-gradient(145deg, #302326, #261d1f);
+  background: linear-gradient(145deg, #2c2637, #211d2a);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 

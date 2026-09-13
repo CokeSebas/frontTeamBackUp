@@ -58,7 +58,15 @@
 
 <script setup>
 /* global defineProps, defineEmits, defineExpose */
-import { computed, inject, ref, unref, watch } from 'vue'
+import {
+  computed,
+  inject,
+  onMounted,
+  ref,
+  unref,
+  watch
+} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps({
   items: {
@@ -69,13 +77,58 @@ const props = defineProps({
     type: Number,
     default: 5,
     validator: (value) => Number.isInteger(value) && value > 0
+  },
+
+  /*
+   * Nombre del parámetro que se guardará en la URL.
+   *
+   * Ejemplo:
+   * /partidas?page=5
+   */
+  queryKey: {
+    type: String,
+    default: 'page'
+  },
+
+  /*
+   * Mantiene la página en la URL para que el historial
+   * del navegador pueda restaurarla.
+   */
+  syncWithRoute: {
+    type: Boolean,
+    default: true
+  },
+
+  /*
+   * Guarda la última página en sessionStorage.
+   *
+   * Esto permite restaurarla incluso cuando un breadcrumb
+   * vuelve al listado sin incluir ?page=5.
+   */
+  rememberPage: {
+    type: Boolean,
+    default: true
+  },
+
+  /*
+   * Permite definir una clave propia cuando existen varios
+   * paginadores dentro de una misma ruta.
+   */
+  storageKey: {
+    type: String,
+    default: ''
   }
 })
 
-const emit = defineEmits(['page-changed'])
+const emit = defineEmits([
+  'page-changed',
+  'current-page-changed'
+])
+
+const route = useRoute()
+const router = useRouter()
 
 const injectedMode = inject('mode', ref('light'))
-const currentPage = ref(1)
 
 const mode = computed(() =>
   unref(injectedMode) === 'dark' ? 'dark' : 'light'
@@ -85,120 +138,381 @@ const totalPages = computed(() =>
   Math.ceil(props.items.length / props.itemsPerPage)
 )
 
+const pageStorageKey = computed(() => {
+  if (props.storageKey.trim()) {
+    return props.storageKey.trim()
+  }
+
+  const routeIdentifier = String(
+    route.name || route.path || 'default'
+  )
+
+  return `app-paginator:${routeIdentifier}:${props.queryKey}`
+})
+
+function parsePage(value) {
+  const rawValue = Array.isArray(value) ? value[0] : value
+  const parsedValue = Number.parseInt(String(rawValue ?? ''), 10)
+
+  if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+    return null
+  }
+
+  return parsedValue
+}
+
+function normalizePage(page) {
+  const parsedPage = parsePage(page) ?? 1
+
+  /*
+   * Mientras los elementos todavía no han cargado,
+   * conservamos la página solicitada sin limitarla.
+   */
+  if (totalPages.value < 1) {
+    return parsedPage
+  }
+
+  return Math.min(parsedPage, totalPages.value)
+}
+
+function readStoredPage() {
+  if (
+    !props.rememberPage ||
+    typeof window === 'undefined'
+  ) {
+    return null
+  }
+
+  try {
+    return parsePage(
+      window.sessionStorage.getItem(pageStorageKey.value)
+    )
+  } catch (error) {
+    console.warn(
+      '[AppPaginator] No fue posible leer sessionStorage:',
+      error
+    )
+
+    return null
+  }
+}
+
+function saveStoredPage(page) {
+  if (
+    !props.rememberPage ||
+    typeof window === 'undefined'
+  ) {
+    return
+  }
+
+  try {
+    window.sessionStorage.setItem(
+      pageStorageKey.value,
+      String(page)
+    )
+  } catch (error) {
+    console.warn(
+      '[AppPaginator] No fue posible guardar sessionStorage:',
+      error
+    )
+  }
+}
+
+function getInitialPage() {
+  const routePage = parsePage(route.query[props.queryKey])
+
+  if (routePage !== null) {
+    return normalizePage(routePage)
+  }
+
+  const storedPage = readStoredPage()
+
+  if (storedPage !== null) {
+    return normalizePage(storedPage)
+  }
+
+  return 1
+}
+
+const currentPage = ref(getInitialPage())
+
 const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * props.itemsPerPage
-  return props.items.slice(start, start + props.itemsPerPage)
+  const start =
+    (currentPage.value - 1) * props.itemsPerPage
+
+  return props.items.slice(
+    start,
+    start + props.itemsPerPage
+  )
 })
 
 const visiblePages = computed(() => {
   const total = totalPages.value
   const current = currentPage.value
-  const siblingCount = 1
 
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, index) => ({
-      key: `page-${index + 1}`,
+  /*
+   * Cantidad de páginas consecutivas visibles.
+   *
+   * Inicio: 1 2 3 4 5 6 7 … 157
+   * Centro: 1 … 75 76 77 78 79 80 81 … 157
+   * Final:  1 … 151 152 153 154 155 156 157
+   */
+  const visiblePageCount = 7
+  const halfWindow = Math.floor(visiblePageCount / 2)
+
+  if (total <= visiblePageCount) {
+    return Array.from(
+      { length: total },
+      (_, index) => ({
+        key: `page-${index + 1}`,
+        type: 'page',
+        page: index + 1
+      })
+    )
+  }
+
+  let startPage = current - halfWindow
+  let endPage = current + halfWindow
+
+  if (startPage < 1) {
+    startPage = 1
+    endPage = visiblePageCount
+  }
+
+  if (endPage > total) {
+    endPage = total
+    startPage = total - visiblePageCount + 1
+  }
+
+  const pages = []
+
+  if (startPage > 1) {
+    pages.push({
+      key: 'page-1',
       type: 'page',
-      page: index + 1
-    }))
-  }
+      page: 1
+    })
 
-  const pages = new Set([1, total])
-
-  for (
-    let page = Math.max(2, current - siblingCount);
-    page <= Math.min(total - 1, current + siblingCount);
-    page += 1
-  ) {
-    pages.add(page)
-  }
-
-  if (current <= 3) {
-    pages.add(2)
-    pages.add(3)
-    pages.add(4)
-  }
-
-  if (current >= total - 2) {
-    pages.add(total - 1)
-    pages.add(total - 2)
-    pages.add(total - 3)
-  }
-
-  const sortedPages = [...pages]
-    .filter((page) => page >= 1 && page <= total)
-    .sort((a, b) => a - b)
-
-  const result = []
-
-  sortedPages.forEach((page, index) => {
-    const previousPage = sortedPages[index - 1]
-
-    if (previousPage && page - previousPage > 1) {
-      result.push({
-        key: `ellipsis-${previousPage}-${page}`,
+    if (startPage > 2) {
+      pages.push({
+        key: `ellipsis-1-${startPage}`,
         type: 'ellipsis'
       })
     }
+  }
 
-    result.push({
+  for (
+    let page = startPage;
+    page <= endPage;
+    page += 1
+  ) {
+    pages.push({
       key: `page-${page}`,
       type: 'page',
       page
     })
-  })
+  }
 
-  return result
+  if (endPage < total) {
+    if (endPage < total - 1) {
+      pages.push({
+        key: `ellipsis-${endPage}-${total}`,
+        type: 'ellipsis'
+      })
+    }
+
+    pages.push({
+      key: `page-${total}`,
+      type: 'page',
+      page: total
+    })
+  }
+
+  return pages
 })
 
-function changePage(page) {
-  const normalizedPage = Number(page)
+async function syncPageWithRoute(page) {
+  if (!props.syncWithRoute) {
+    return
+  }
+
+  const nextQuery = {
+    ...route.query
+  }
+
+  /*
+   * Dejamos la URL limpia en la página 1.
+   *
+   * Página 1:
+   * /partidas
+   *
+   * Página 5:
+   * /partidas?page=5
+   */
+  if (page <= 1) {
+    delete nextQuery[props.queryKey]
+  } else {
+    nextQuery[props.queryKey] = String(page)
+  }
+
+  const currentRoutePage =
+    parsePage(route.query[props.queryKey]) ?? 1
+
+  if (currentRoutePage === page) {
+    return
+  }
+
+  try {
+    /*
+     * replace evita crear una entrada del historial por cada
+     * clic del paginador, pero conserva la última página cuando
+     * después se navega al detalle de un registro.
+     */
+    await router.replace({
+      query: nextQuery
+    })
+  } catch (error) {
+    console.warn(
+      '[AppPaginator] No fue posible actualizar la URL:',
+      error
+    )
+  }
+}
+
+async function setCurrentPage(
+  page,
+  {
+    updateRoute = true,
+    force = false
+  } = {}
+) {
+  const normalizedPage = normalizePage(page)
 
   if (
-    !Number.isInteger(normalizedPage) ||
-    normalizedPage < 1 ||
-    normalizedPage > totalPages.value ||
+    totalPages.value > 0 &&
+    (
+      normalizedPage < 1 ||
+      normalizedPage > totalPages.value
+    )
+  ) {
+    return
+  }
+
+  if (
+    !force &&
     normalizedPage === currentPage.value
   ) {
     return
   }
 
   currentPage.value = normalizedPage
+  saveStoredPage(normalizedPage)
+
+  emit('current-page-changed', normalizedPage)
+
+  if (updateRoute) {
+    await syncPageWithRoute(normalizedPage)
+  }
+}
+
+function changePage(page) {
+  void setCurrentPage(page)
 }
 
 function clampCurrentPage() {
   if (totalPages.value === 0) {
-    currentPage.value = 1
     return
   }
 
-  currentPage.value = Math.min(currentPage.value, totalPages.value)
+  const validPage = Math.min(
+    Math.max(currentPage.value, 1),
+    totalPages.value
+  )
+
+  if (validPage !== currentPage.value) {
+    void setCurrentPage(validPage, {
+      force: true
+    })
+  }
 }
 
+/*
+ * Restaura la página cuando cambia la URL mediante:
+ * - botón atrás/adelante del navegador;
+ * - navegación programática;
+ * - un enlace que incluya ?page=N.
+ */
 watch(
-  () => props.items,
-  () => {
-    currentPage.value = 1
+  () => route.query[props.queryKey],
+  (routePageValue) => {
+    const routePage = parsePage(routePageValue)
+
+    if (routePage !== null) {
+      void setCurrentPage(routePage, {
+        updateRoute: false,
+        force: true
+      })
+
+      return
+    }
+
+    /*
+     * Si el breadcrumb vuelve al listado sin query,
+     * recuperamos la última página guardada.
+     */
+    const storedPage = readStoredPage()
+
+    void setCurrentPage(storedPage ?? 1, {
+      updateRoute: false,
+      force: true
+    })
   }
 )
 
+/*
+ * Ya no reiniciamos automáticamente a página 1 cuando cambia
+ * la referencia del arreglo. Solo validamos que la página siga
+ * existiendo.
+ */
 watch(
-  () => [props.items.length, props.itemsPerPage],
+  () => [
+    props.items.length,
+    props.itemsPerPage
+  ],
   clampCurrentPage
 )
 
 watch(
   paginatedItems,
   (items) => {
-    emit('page-changed', items)
+    emit(
+      'page-changed',
+      items,
+      currentPage.value
+    )
   },
-  { immediate: true }
+  {
+    immediate: true
+  }
 )
+
+onMounted(() => {
+  saveStoredPage(currentPage.value)
+
+  /*
+   * Si la página fue recuperada desde sessionStorage,
+   * la reflejamos también en la URL.
+   */
+  void syncPageWithRoute(currentPage.value)
+})
 
 defineExpose({
   changePage,
+  currentPage,
   resetPage: () => {
-    currentPage.value = 1
+    void setCurrentPage(1, {
+      force: true
+    })
   }
 })
 </script>

@@ -57,23 +57,30 @@ const contactEmail = 'teamsbackupokemon@gmail.com'
   width: 100%;
   margin-top: auto;
   padding: 1.75rem 0;
-  border-top: 1px solid transparent;
+  border-top: 1px solid var(--layout-accent-border);
+  background: linear-gradient(
+    180deg,
+    var(--layout-footer-start) 0%,
+    var(--layout-footer-end) 100%
+  );
+  box-shadow:
+    0 -10px 30px -28px var(--layout-accent-glow);
   transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
+    background 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
 .app-footer--light {
-  border-color: #dee2e6;
-  background: #f8f9fa;
   color: #212529;
 }
 
 .app-footer--dark {
-  border-color: #3f4650;
-  background: #212529;
-  color: #f8f9fa;
+  color: #f1f5f3;
+  box-shadow:
+    0 -12px 30px -28px rgba(0, 0, 0, 0.9),
+    inset 0 14px 28px -30px var(--layout-accent-bright);
 }
 
 .footer-content {
@@ -97,7 +104,7 @@ const contactEmail = 'teamsbackupokemon@gmail.com'
 }
 
 .footer-logo-link:focus-visible {
-  outline: 3px solid rgba(13, 110, 253, 0.35);
+  outline: 3px solid var(--layout-accent-soft);
   outline-offset: 4px;
 }
 
@@ -120,14 +127,26 @@ const contactEmail = 'teamsbackupokemon@gmail.com'
 }
 
 .footer-info a {
-  color: inherit;
+  color: var(--layout-accent);
   text-decoration-color: currentColor;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+  transition:
+    color 0.18s ease,
+    text-decoration-thickness 0.18s ease;
 }
 
 .footer-info a:hover {
+  color: var(--layout-accent-strong);
   text-decoration-thickness: 2px;
+}
+
+.app-footer--dark .footer-info a {
+  color: var(--layout-accent-bright);
+}
+
+.app-footer--dark .footer-info a:hover {
+  color: var(--layout-accent);
 }
 
 @media (max-width: 575.98px) {
@@ -149,6 +168,13 @@ const contactEmail = 'teamsbackupokemon@gmail.com'
     font-size: 0.85rem;
     text-align: center;
     overflow-wrap: anywhere;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-footer,
+  .footer-info a {
+    transition: none;
   }
 }
 </style>

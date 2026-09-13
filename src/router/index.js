@@ -50,6 +50,14 @@ const routes = [
     path: '/',
     name: 'Home',
     component: HomeView,
+    meta: {
+      title: 'Home',
+      breadcrumb: {
+        text: 'Home',
+        link: '/',
+      },
+      themeColor: 'green',
+    },
   },
   {
     path: '/login',
@@ -61,6 +69,7 @@ const routes = [
         text: 'Home',
         link: '/',
       },
+      themeColor: 'green',
     },
   },
   {
@@ -73,6 +82,7 @@ const routes = [
         text:  i18n.global.t('teams'),
         link: '/vgc/teams',
       },
+      themeColor: 'green'
     },
   },
   {
@@ -85,6 +95,7 @@ const routes = [
         text: 'Pokémon',
         link: 'pokemons',
       },
+      themeColor: 'green'
     },
   },
   {
@@ -97,6 +108,7 @@ const routes = [
         text: 'Home',
         link: '/',
       },
+      themeColor: 'green'
     },
   },
   {
@@ -110,6 +122,7 @@ const routes = [
         text:  i18n.global.t('teams'),
         link: '/vgc/teams',
       },
+      themeColor: 'green'
     },
   },
   {
@@ -122,10 +135,11 @@ const routes = [
         text: 'Home',
         link: '/',
       },
+      themeColor: 'green'
     },
   },
   {
-    path: '/pokemon/:id',
+    path: '/vgc/pokemon/:id',
     name: 'PokemonDetail',
     component: PokemonDetail,
     props: true,
@@ -135,6 +149,7 @@ const routes = [
         text: 'Pokémons',
         link: '/vgc/pokemons',
       },
+      themeColor: 'green'
     },
   },
   {
@@ -147,6 +162,7 @@ const routes = [
         text: 'Home',
         link: '/',
       },
+      themeColor: 'neutral',
     },
   },
   {
@@ -167,6 +183,7 @@ const routes = [
         text: 'Home',
         link: '/',
       },
+      themeColor: 'yellow'
     },
   },
   {
@@ -188,10 +205,11 @@ const routes = [
         text: i18n.global.t('profile'),
         link: 'back',
       },
+      themeColor: 'green'
     },
   },
   {
-    path: '/my-pokemon-detail/:id',
+    path: '/vgc/my-pokemon-detail/:id',
     name: 'ViewEditPokemonDetail',
     component: ViewEditPokemonDetail,
     props: true,
@@ -208,7 +226,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('myPokemons'),
         link: 'back',
-      }
+      },
+      themeColor: 'green'
     }
   },
   {
@@ -230,6 +249,7 @@ const routes = [
         text: i18n.global.t('profile'),
         link: 'back',
       },
+      themeColor: 'green'
     },
   },
   {
@@ -250,7 +270,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('myTeams'),
         link: 'back',
-      }
+      },
+      themeColor: 'green'
     }
   },
   {
@@ -271,7 +292,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('myTeams'),
         link: 'back',
-      }
+      },
+      themeColor: 'blue'
     }
   },
   {
@@ -284,7 +306,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('teams'),
         link: 'back',
-      }
+      },
+      themeColor: 'blue'
     }
   },
   {
@@ -297,7 +320,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('teams'),
         link: 'back',
-      }
+      },
+      themeColor: 'blue'
     }
   },
   {
@@ -310,7 +334,8 @@ const routes = [
       breadcrumb: {
         text: 'Home',
         link: 'back',
-      }
+      },
+      themeColor: 'purple'
     }
   },
   {
@@ -319,6 +344,7 @@ const routes = [
     component: ViewVerifyAccount,
     meta: {
       title: i18n.global.t('verifyAccount'),
+      themeColor: 'neutral',
     }
   },
   {
@@ -327,6 +353,7 @@ const routes = [
     component: ViewForgotPassword,
     meta: {
       title: i18n.global.t('forgotMyPassword'),
+      themeColor: 'neutral',
     }
   },
   {
@@ -335,6 +362,7 @@ const routes = [
     component: ViewResetPassword,
     meta: {
       title: i18n.global.t('resetPassword'),
+      themeColor: 'neutral',
     }
   },
   {
@@ -354,7 +382,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('profile'),
         link: 'back',
-      }
+      },
+      themeColor: 'purple'
     }
   },
   {
@@ -374,7 +403,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('profile'),
         link: 'back',
-      }
+      },
+      themeColor: 'purple',
     }
   },
   {
@@ -394,7 +424,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('addTournament'),
         link: 'back',
-      }
+      },
+      themeColor: 'purple',
     }
   },
   {
@@ -406,7 +437,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('seeTournaments'),
         link: 'back',
-      }
+      },
+      themeColor: 'purple',
     }
   },
   {
@@ -427,6 +459,7 @@ const routes = [
         text: i18n.global.t('profile'),
         link: '/perfil',
       },
+      themeColor: 'yellow'
     }
   },
   {
@@ -439,6 +472,7 @@ const routes = [
         text: 'Home',
         link: '/',
       },
+      themeColor: 'blue'
     }
   },
   {
@@ -470,7 +504,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('organizerTournament'),
         link: 'back',
-      }
+      },
+      themeColor: 'purple',
     }
   },
   {
@@ -482,7 +517,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('organizerTournament'),
         link: 'back',
-      }
+      },
+      themeColor: 'purple',
     }
   },
   {
@@ -494,7 +530,8 @@ const routes = [
       breadcrumb: {
         text: i18n.global.t('organizerTournament'),
         link: 'back',
-      }
+      },
+      themeColor: 'purple',
     }
   },
   {
@@ -507,11 +544,10 @@ const routes = [
         text: 'Home',
         link: '/',
       },
+      themeColor: 'green'
     },
   },
 ];
-
-
 
 // Crea el router
 const router = createRouter({

@@ -127,9 +127,11 @@
 
               <div class="player-identity">
                 <span class="player-name">{{ getPlayerName(player) }}</span>
+                <!--
                 <span class="team-count">
                   {{ orderedPokemons(player.pokemons).length }} Pokémon
                 </span>
+                -->
               </div>
             </div>
 
@@ -291,7 +293,8 @@ const orderedPokemons = (pokemons) => {
     .sort((pokemonA, pokemonB) => {
       const slotA = Number(pokemonA?.slot ?? Number.MAX_SAFE_INTEGER)
       const slotB = Number(pokemonB?.slot ?? Number.MAX_SAFE_INTEGER)
-      return slotA - slotB
+      //return slotA - slotB
+      return slotB - slotA
     })
 }
 

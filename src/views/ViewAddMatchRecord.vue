@@ -922,77 +922,79 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .match-record-page {
-  --accent: #e05263;
-  --accent-strong: #c63f52;
-  --accent-dark: #9f3545;
-  --accent-soft: rgba(224, 82, 99, 0.10);
-  --accent-border: rgba(224, 82, 99, 0.28);
-  --accent-glow: rgba(224, 82, 99, 0.18);
-  --page-bg: #fff8f9;
-  --page-text: #2d2023;
+  --accent: #7357d5;
+  --accent-strong: #6446c4;
+  --accent-dark: #4d3196;
+  --accent-light: #8b72e6;
+  --accent-soft: rgba(115, 87, 213, 0.10);
+  --accent-border: rgba(115, 87, 213, 0.28);
+  --accent-glow: rgba(115, 87, 213, 0.18);
+  --page-bg: #faf8ff;
+  --page-text: #292333;
   --card-bg: rgba(255, 255, 255, 0.94);
-  --card-border: #eadde0;
-  --card-shadow: 0 24px 60px rgba(112, 43, 55, 0.10);
-  --match-bg: #fffbfc;
+  --card-border: #e3deef;
+  --card-shadow: 0 24px 60px rgba(77, 49, 150, 0.10);
+  --match-bg: #fdfcff;
   --input-bg: #ffffff;
-  --input-text: #2d2023;
-  --input-border: #d8cacc;
-  --muted-text: #776a6d;
+  --input-text: #292333;
+  --input-border: #d6d0e2;
+  --muted-text: #746d7f;
   --suggestion-bg: #ffffff;
-  --suggestion-hover: rgba(224, 82, 99, 0.08);
-  --focus-ring: rgba(224, 82, 99, 0.20);
+  --suggestion-hover: rgba(115, 87, 213, 0.08);
+  --focus-ring: rgba(115, 87, 213, 0.20);
   --danger-bg: #9f3042;
 
   min-height: 100%;
   background:
     radial-gradient(
       circle at 10% 0%,
-      rgba(224, 82, 99, 0.10),
+      rgba(115, 87, 213, 0.10),
       transparent 28rem
     ),
     radial-gradient(
       circle at 92% 18%,
-      rgba(236, 117, 132, 0.08),
+      rgba(139, 114, 230, 0.08),
       transparent 24rem
     ),
-    linear-gradient(180deg, #fff8f9 0%, #fff 56%, #fff9fa 100%);
+    linear-gradient(180deg, #faf8ff 0%, #fff 56%, #fbf9ff 100%);
   color: var(--page-text);
 }
 
 .match-record-page.theme-dark {
-  --accent: #e76f80;
-  --accent-strong: #e05263;
-  --accent-dark: #a93f50;
-  --accent-soft: rgba(231, 111, 128, 0.12);
-  --accent-border: rgba(231, 111, 128, 0.28);
-  --accent-glow: rgba(231, 111, 128, 0.20);
-  --page-bg: #151011;
-  --page-text: #fff3f5;
-  --card-bg: rgba(34, 25, 27, 0.96);
-  --card-border: #49383c;
+  --accent: #9278e7;
+  --accent-strong: #7b5fd7;
+  --accent-dark: #5d42b0;
+  --accent-light: #c4b5ff;
+  --accent-soft: rgba(146, 120, 231, 0.12);
+  --accent-border: rgba(146, 120, 231, 0.28);
+  --accent-glow: rgba(146, 120, 231, 0.20);
+  --page-bg: #14111c;
+  --page-text: #f7f3ff;
+  --card-bg: rgba(35, 30, 46, 0.96);
+  --card-border: #484057;
   --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
-  --match-bg: #261d1f;
-  --input-bg: #302326;
-  --input-text: #fff3f5;
-  --input-border: #665055;
-  --muted-text: #d0c0c3;
-  --suggestion-bg: #302326;
-  --suggestion-hover: rgba(231, 111, 128, 0.14);
-  --focus-ring: rgba(231, 111, 128, 0.24);
+  --match-bg: #211d2a;
+  --input-bg: #2c2637;
+  --input-text: #f7f3ff;
+  --input-border: #625970;
+  --muted-text: #cbc3d5;
+  --suggestion-bg: #2c2637;
+  --suggestion-hover: rgba(146, 120, 231, 0.14);
+  --focus-ring: rgba(146, 120, 231, 0.24);
   --danger-bg: #ad3b4d;
 
   background:
     radial-gradient(
       circle at 8% 0%,
-      rgba(224, 82, 99, 0.14),
+      rgba(123, 95, 215, 0.14),
       transparent 30rem
     ),
     radial-gradient(
       circle at 94% 20%,
-      rgba(231, 111, 128, 0.09),
+      rgba(146, 120, 231, 0.09),
       transparent 26rem
     ),
-    linear-gradient(180deg, #151011 0%, #191214 55%, #120d0e 100%);
+    linear-gradient(180deg, #14111c 0%, #191521 55%, #100d16 100%);
 }
 
 .match-record-page,
@@ -1029,7 +1031,7 @@ onBeforeUnmount(() => {
       135deg,
       var(--accent-dark) 0%,
       var(--accent) 58%,
-      #ec7c8c 100%
+      var(--accent-light) 100%
     );
   color: #ffffff;
   text-align: center;
@@ -1218,7 +1220,7 @@ select.form-control.result-tie {
 }
 
 .theme-dark .validation-message {
-  color: #f0a0ac;
+  color: var(--accent-light);
 }
 
 .matches-list {
@@ -1234,7 +1236,7 @@ select.form-control.result-tie {
   border: 1px solid var(--card-border);
   border-radius: 18px;
   background: var(--match-bg);
-  box-shadow: 0 12px 28px rgba(112, 43, 55, 0.05);
+  box-shadow: 0 12px 28px rgba(77, 49, 150, 0.06);
 }
 
 .match-card::before {
@@ -1282,7 +1284,7 @@ select.form-control.result-tie {
 }
 
 .theme-dark .round-badge {
-  color: #f0a0ac;
+  color: var(--accent-light);
 }
 
 .match-heading h2 {
@@ -1334,7 +1336,7 @@ select.form-control.result-tie {
 }
 
 .theme-dark .pokemon-progress {
-  color: #f0a0ac;
+  color: var(--accent-light);
 }
 
 .pokemon-grid {
@@ -1360,7 +1362,7 @@ select.form-control.result-tie {
   border: 1px solid var(--input-border);
   border-radius: 11px;
   background: var(--suggestion-bg);
-  box-shadow: 0 18px 36px rgba(71, 33, 42, 0.18);
+  box-shadow: 0 18px 36px rgba(48, 35, 70, 0.18);
   list-style: none;
 }
 
@@ -1383,7 +1385,7 @@ select.form-control.result-tie {
 
 .theme-dark .suggestion-item:hover,
 .theme-dark .suggestion-item.active {
-  color: #f0a0ac;
+  color: var(--accent-light);
 }
 
 .pokemon-thumb {
@@ -1452,7 +1454,7 @@ select.form-control.result-tie {
       135deg,
       var(--accent-strong),
       var(--accent),
-      #ec7c8c
+      var(--accent-light)
     );
   box-shadow: 0 10px 22px var(--accent-glow);
 }

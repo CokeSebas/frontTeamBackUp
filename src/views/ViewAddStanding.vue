@@ -884,9 +884,9 @@ const validatePlayers = () => {
       return `Falta el nombre del jugador de la posición ${position}.`;
     }
 
-    if (!String(player.lastName || '').trim()) {
-      return `Falta el apellido del jugador de la posición ${position}.`;
-    }
+    //if (!String(player.lastName || '').trim()) {
+    //  return `Falta el apellido del jugador de la posición ${position}.`;
+    //}
 
     const normalizedPokemons = player.pokemons.map((pokemon) =>
       String(pokemon || '').trim()

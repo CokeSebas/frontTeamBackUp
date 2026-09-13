@@ -234,6 +234,55 @@
       </section>
     </div>
   </main>
+
+  <!-- Modal de bienvenida -->
+  <div
+    v-if="showWelcomeModal"
+    class="welcome-overlay"
+    :class="{ 'welcome-overlay--dark': isDarkMode }"
+    @click.self="closeWelcomeModal"
+  >
+    <div class="welcome-modal">
+
+      <button
+        class="welcome-close"
+        type="button"
+        @click="closeWelcomeModal"
+      >
+        ×
+      </button>
+
+      <div class="welcome-content">
+        <h3>👋 ¡Bienvenido a PokeCircuit!</h3>
+
+        <p> ¡Qué bueno tenerte por aquí! </p>
+
+        <p> PokeCircuit es una plataforma creada para la comunidad competitiva de Pokémon. Aquí puedes explorar equipos, Pokémon, torneos y mucho más. </p>
+
+        <p> ¿Es tu primera vez? Te recomendamos visitar nuestra guía para conocer las principales funcionalidades y descubrir todo lo que puedes hacer en PokeCircuit. </p>
+
+        <div class="welcome-actions">
+          <router-link
+            to="/guide"
+            class="welcome-button welcome-guide-button"
+            @click="closeWelcomeModal"
+          >
+            Ver guía
+          </router-link>
+
+          <button
+            type="button"
+            class="welcome-button"
+            @click="closeWelcomeModal"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </template>
 
 <script>
@@ -266,7 +315,8 @@ export default {
       headEntry: null,
       requestController: null,
       themeObserver: null,
-      detectedDarkTheme: false
+      detectedDarkTheme: false,
+      showWelcomeModal: false,
     };
   },
 
@@ -301,6 +351,13 @@ export default {
     this.observeTheme();
     this.loadTeams();
     this.setHead();
+
+    const hasSeenWelcome = localStorage.getItem('pokecircuit_welcome_seen');
+    if (!hasSeenWelcome) {
+      setTimeout(() => {
+        this.showWelcomeModal = true;
+      }, 1000);
+    }
   },
 
   beforeUnmount() {
@@ -553,7 +610,12 @@ export default {
       }
 
       this.setHead();
-    }
+    },
+
+    closeWelcomeModal() {
+      this.showWelcomeModal = false;
+      localStorage.setItem('pokecircuit_welcome_seen', 'true');
+    },
   }
 };
 </script>
@@ -1160,4 +1222,224 @@ export default {
     animation-duration: 1.4s;
   }
 }
+
+/* ================================
+   Modal de bienvenida
+   ================================ */
+
+.welcome-overlay {
+  --welcome-surface: #ffffff;
+  --welcome-text-primary: #1f2a25;
+  --welcome-text-secondary: #647068;
+  --welcome-border: #dce4df;
+  --welcome-accent: #198754;
+  --welcome-accent-strong: #146c43;
+  --welcome-accent-bright: #37be78;
+  --welcome-accent-soft: rgba(25, 135, 84, 0.12);
+  --welcome-focus-ring: rgba(25, 135, 84, 0.25);
+
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100vw;
+  height: 100vh;
+  padding: 20px;
+
+  background: rgba(15, 24, 19, 0.58);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  box-sizing: border-box;
+  z-index: 99999;
+}
+
+.welcome-overlay--dark {
+  --welcome-surface: #19201c;
+  --welcome-text-primary: #eef5f1;
+  --welcome-text-secondary: #aab8b0;
+  --welcome-border: #334139;
+  --welcome-accent: #37be78;
+  --welcome-accent-strong: #2ba968;
+  --welcome-accent-bright: #6dd99a;
+  --welcome-accent-soft: rgba(55, 190, 120, 0.14);
+  --welcome-focus-ring: rgba(55, 190, 120, 0.3);
+
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.welcome-modal {
+  position: relative;
+
+  width: 100%;
+  max-width: 480px;
+  padding: 30px;
+
+  border: 1px solid var(--welcome-border);
+  border-radius: 18px;
+  color: var(--welcome-text-primary);
+  background: var(--welcome-surface);
+
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.28);
+  box-sizing: border-box;
+
+  animation: welcomeModalIn 0.25s ease-out;
+}
+
+.welcome-content {
+  text-align: center;
+}
+
+.welcome-content h3 {
+  margin: 0 0 15px;
+
+  color: var(--welcome-text-primary);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.welcome-content p {
+  margin: 8px 0;
+
+  color: var(--welcome-text-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.welcome-button {
+  min-height: 44px;
+  margin-top: 22px;
+  padding: 10px 24px;
+
+  border: 1px solid var(--welcome-accent);
+  border-radius: 10px;
+
+  color: #ffffff;
+  background: linear-gradient(
+    135deg,
+    var(--welcome-accent-strong),
+    var(--welcome-accent),
+    var(--welcome-accent-bright)
+  );
+
+  box-shadow: 0 10px 22px rgba(25, 135, 84, 0.22);
+
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+
+  transition:
+    transform 160ms ease,
+    filter 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.welcome-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 13px 28px rgba(25, 135, 84, 0.3);
+}
+
+.welcome-button:focus-visible {
+  outline: 3px solid var(--welcome-focus-ring);
+  outline-offset: 3px;
+}
+
+.welcome-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+
+  border: 1px solid transparent;
+  border-radius: 50%;
+
+  color: var(--welcome-text-secondary);
+  background: transparent;
+
+  font-size: 26px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.welcome-close:hover {
+  border-color: var(--welcome-border);
+  color: var(--welcome-accent);
+  background: var(--welcome-accent-soft);
+}
+
+.welcome-close:focus-visible {
+  outline: 3px solid var(--welcome-focus-ring);
+  outline-offset: 2px;
+}
+
+@keyframes welcomeModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ================================
+   Mobile
+   ================================ */
+
+@media (max-width: 600px) {
+  .welcome-modal {
+    max-width: 100%;
+    padding: 25px 20px;
+  }
+
+  .welcome-content h3 {
+    font-size: 21px;
+  }
+}
+
+.welcome-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.welcome-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 130px;
+  padding: 10px 20px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .welcome-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .welcome-button {
+    width: 100%;
+  }
+}
+
 </style>

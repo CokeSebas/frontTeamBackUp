@@ -2,7 +2,9 @@
   <nav
     :class="[
       'navbar navbar-expand-lg app-navbar',
-      mode === 'dark' ? 'navbar-dark bg-dark' : 'navbar-light bg-light'
+      mode === 'dark'
+        ? 'navbar-dark app-navbar--dark'
+        : 'navbar-light app-navbar--light'
     ]"
     aria-label="Navegación principal"
   >
@@ -261,8 +263,11 @@
   </nav>
 </template>
 
-  <script setup>
-  import { computed, inject, ref, unref } from 'vue'
+<script setup>
+  import { computed, inject, ref, unref, onMounted } from 'vue'
+  import axios from 'axios';
+  import moment from 'moment';
+
   import { useRouter } from 'vue-router'
   import { useI18n } from 'vue-i18n'
   import { useAuthStore } from '@/stores/authStore'
@@ -281,36 +286,29 @@
 
   const logoSrc = logo;
 
-  const notifications = ref([
-    {
-      id: '2026-07-guia',
-      title: 'Guia de Uso',
-      message: 'Explicación de las funciones basicas de PokeCircuit.',
-      link: '/guide',
-      date: '27/07/2026'
-    },
-    {
-      id: '2026-07-new-image',
-      title: 'Nueva Imagen',
-      message: 'Mas colores, mas informacion, mas PokeCircuit.',
-      link: '/',
-      date: '22/07/2026'
-    },
-    {
-      id: '2026-07-team-sheet',
-      title: 'Hoja de equipo',
-      message: 'Ahora puedes generar e imprimir tu hoja de equipo directamente desde PokeCircuit.',
-      link: '/vgc/print-team-sheet',
-      date: '20/07/2026'
-    },
-    {
-      id: '2026-07-match-record',
-      title: '¡Nueva funcionalidad!',
-      message: 'Ahora puedes registrar tus partidas y llevar un historial de tus enfrentamientos.',
-      link: '/vgc/match-record',
-      date: '13/07/2026'
+  const apiUrl = inject('apiUrl', '')
+
+  const notifications = ref([]);
+
+  onMounted(() => {
+    loadNotifications()
+  })
+
+  async function loadNotifications() {
+    try {
+      const { data } = await axios.get(`${apiUrl}notification`)
+
+      notifications.value = data.map(notification => ({
+        id: notification.textId,
+        title: notification.title,
+        message: notification.message,
+        link: notification.link,
+        date: moment(notification.publishDate).format('DD-MM-YYYY')
+      }))
+    } catch (error) {
+      console.error('Error al obtener las notificaciones:', error)
     }
-  ])
+  }
 
   const readNotifications = ref(
     JSON.parse(localStorage.getItem('pokecircuit_read_notifications') || '[]')
@@ -479,6 +477,7 @@
       await router.push('/login')
     }
   }
+
 </script>
 
 <style scoped>
@@ -486,8 +485,34 @@
     width: 100%;
     min-height: 72px;
     padding: 0.65rem 0;
-    border-bottom: 1px solid rgba(127, 127, 127, 0.2);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid var(--layout-accent-border);
+    box-shadow:
+      0 8px 28px -24px var(--layout-accent-glow);
+    transition:
+      background 0.35s ease,
+      border-color 0.35s ease,
+      color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+
+  .app-navbar--light,
+  .app-navbar--dark {
+    background: linear-gradient(
+      180deg,
+      var(--layout-navbar-start) 0%,
+      var(--layout-navbar-end) 100%
+    ) !important;
+  }
+
+  .app-navbar--light {
+    color: #212529;
+  }
+
+  .app-navbar--dark {
+    color: #f1f5f3;
+    box-shadow:
+      0 12px 30px -26px rgba(0, 0, 0, 0.9),
+      inset 0 -14px 28px -30px var(--layout-accent-bright);
   }
 
   .navbar-inner {
@@ -537,11 +562,34 @@
 
   .nav-link:hover,
   .nav-link:focus-visible {
-    background: rgba(127, 127, 127, 0.12);
+    color: var(--layout-accent) !important;
+    background: var(--layout-accent-soft);
   }
 
   .nav-link.router-link-active {
+    color: var(--layout-accent) !important;
     font-weight: 700;
+  }
+
+  .nav-link.router-link-active::after {
+    position: absolute;
+    right: 0.65rem;
+    bottom: 0.2rem;
+    left: 0.65rem;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--layout-accent);
+    content: '';
+  }
+
+  .app-navbar--dark .nav-link:hover,
+  .app-navbar--dark .nav-link:focus-visible,
+  .app-navbar--dark .nav-link.router-link-active {
+    color: var(--layout-accent-bright) !important;
+  }
+
+  .app-navbar--dark .nav-link.router-link-active::after {
+    background: var(--layout-accent-bright);
   }
 
   .navbar-actions {
@@ -595,8 +643,32 @@
   .nav-link:focus-visible,
   .action-button:focus-visible,
   .language-option:focus-visible {
-    outline: 3px solid rgba(13, 110, 253, 0.3);
+    outline: 3px solid var(--layout-accent-soft);
     outline-offset: 2px;
+  }
+
+  .action-button:not(.auth-button):hover,
+  .action-button:not(.auth-button):focus-visible {
+    border-color: var(--layout-accent);
+    color: var(--layout-accent);
+    background: var(--layout-accent-soft);
+  }
+
+  .navbar-toggler {
+    border-color: var(--layout-accent-border);
+  }
+
+  .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem var(--layout-accent-soft);
+  }
+
+  .app-navbar--dark .notification-overline,
+  .app-navbar--dark .mark-read-button {
+    color: var(--layout-accent-bright);
+  }
+
+  .app-navbar--dark .notification-dot {
+    background: var(--layout-accent-bright);
   }
 
   @media (max-width: 1199.98px) and (min-width: 992px) {
@@ -627,9 +699,23 @@
     .navbar-collapse {
       margin-top: 0.75rem;
       padding: 0.85rem;
-      border: 1px solid rgba(127, 127, 127, 0.22);
+      border: 1px solid var(--layout-accent-border);
       border-radius: 0.75rem;
       background: inherit;
+      transition:
+        background-color 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+    }
+
+    .app-navbar--light .navbar-collapse {
+      background: var(--layout-navbar-start);
+      box-shadow: 0 14px 28px -26px var(--layout-accent-glow);
+    }
+
+    .app-navbar--dark .navbar-collapse {
+      background: var(--layout-navbar-start);
+      box-shadow: 0 14px 28px -24px rgba(0, 0, 0, 0.9);
     }
 
     .navbar-nav {
@@ -646,7 +732,7 @@
       align-items: stretch;
       margin-top: 0.75rem;
       padding-top: 0.75rem;
-      border-top: 1px solid rgba(127, 127, 127, 0.2);
+      border-top: 1px solid var(--layout-accent-border);
     }
 
     .navbar-actions .nav-item:first-child {
@@ -742,7 +828,7 @@
 
     margin-bottom: 0.15rem;
 
-    color: #36c980;
+    color: var(--layout-accent);
 
     font-size: 0.65rem;
     font-weight: 800;
@@ -761,7 +847,7 @@
     border: 0;
 
     background: transparent;
-    color: #36c980;
+    color: var(--layout-accent);
 
     font-size: 0.75rem;
     font-weight: 600;
@@ -802,7 +888,7 @@
   }
 
   .notification-unread {
-    background: rgba(54, 201, 128, 0.08);
+    background: var(--layout-accent-soft);
   }
 
   .notification-content strong {
@@ -838,7 +924,7 @@
 
     border-radius: 50%;
 
-    background: #36c980;
+    background: var(--layout-accent);
   }
 
   .notification-empty {
@@ -864,5 +950,13 @@
     font-weight: 700;
 
     text-decoration: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .app-navbar,
+    .nav-link,
+    .navbar-collapse,
+    .action-button {
+      transition: none;
+    }
   }
 </style>
